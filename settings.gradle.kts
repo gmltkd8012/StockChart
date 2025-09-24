@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "StockChart"
 include(":app")
- 
+include(":build-logic:convention")
