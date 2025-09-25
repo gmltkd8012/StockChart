@@ -23,3 +23,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "StockChart"
 include(":app")
+include(":core:network")
+include(":core:data")

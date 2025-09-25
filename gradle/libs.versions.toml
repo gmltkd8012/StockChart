@@ -22,6 +22,10 @@ jetbrainsKotlinJvm = "1.9.0"
 hilt = "2.51.1"
 hiltNavigationCompose = "1.2.0"
 
+## Network
+okhttp = "4.12.0"
+retrofit = "2.11.0"
+
 # Room
 roomVersion = "2.6.1"
 
@@ -40,6 +44,9 @@ datastoreVersion = "1.1.1"
 
 # StatusBar
 accompanistVersion = "0.30.1"
+
+# Gson
+gsonVersion = "2.10.1"
 
 [libraries]
 android-tools-build-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -65,6 +72,10 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-compose-material = { group = "androidx.compose.material", name = "material" }
 androidx-compose-coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilVersion" }
 
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-kotlin-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
+
 # hilt
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
@@ -86,6 +97,8 @@ accompanist-systemUiController = { group = "com.google.accompanist", name = "acc
 androidx-datastore-core = { group = "androidx.datastore", name = "datastore", version.ref = "datastoreVersion" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastoreVersion" }
 
+# Gson
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gsonVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
