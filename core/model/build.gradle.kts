@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.leecoder.stockchart.data"
+    namespace = "com.leecoder.stockchart.model"
 }
 
 dependencies {
@@ -14,6 +14,4 @@ dependencies {
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
-    implementation(project(":core:model"))
-    implementation(project(":core:network"))
 }

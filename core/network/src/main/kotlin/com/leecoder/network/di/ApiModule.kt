@@ -1,7 +1,7 @@
 package com.leecoder.network.di
 
 import com.leecoder.network.StockChartNetwork
-import com.leecoder.network.api.LiveChartApi
+import com.leecoder.network.api.TokenApi
 import com.leecoder.network.createApi
 import dagger.Module
 import dagger.Provides
@@ -15,11 +15,11 @@ internal object ApiModule {
 
     @Provides
     @Singleton
-    fun provideStockChartService(
+    fun provideToeknService(
         stockChartNetwork: StockChartNetwork,
-    ): LiveChartApi {
-        return stockChartNetwork.createApi<LiveChartApi>(
-            baseUrl = "https://query1.finance.yahoo.com/"
+    ): TokenApi {
+        return stockChartNetwork.createApi<TokenApi>(
+            baseUrl = ""
         )
     }
 }
