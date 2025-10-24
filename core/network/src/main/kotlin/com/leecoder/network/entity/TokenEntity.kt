@@ -1,24 +1,35 @@
 package com.leecoder.network.entity
 
 import com.leecoder.stockchart.model.token.TokenData
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-data class TokenEntity(
-    val access_token: String,
-    val access_token_token_expired: String,
-    val token_type: String,
-    val expires_in: Int,
+@Serializable
+data class TokenRequest(
+    @SerialName("grant_type") val grantType: String,
+    @SerialName("appsecret") val appsecret: String,
+    @SerialName("appkey") val appkey: String,
 )
 
-fun TokenEntity.toData() = TokenData(
-    access_token = this.access_token,
-    access_token_token_expired = this.access_token_token_expired,
-    token_type = this.token_type,
-    expires_in = this.expires_in,
+@Serializable
+data class TokenResponse(
+    @SerialName("access_token") val accessToken: String,
+    @SerialName("access_token_token_expired") val tokenExpired: String,
+    @SerialName("token_type") val tokenType: String,
+    @SerialName("expires_in") val tokenExpiresIn: Int,
 )
 
-fun TokenData.toEntity() = TokenEntity(
-    access_token = this.access_token,
-    access_token_token_expired = this.access_token_token_expired,
-    token_type = this.token_type,
-    expires_in = this.expires_in,
+fun TokenResponse.toData() = TokenData(
+    accessToken = this.accessToken,
+    tokenExpired = this.tokenExpired,
+    tokenType = this.tokenType,
+    tokenExpiresIn = this.tokenExpiresIn,
+)
+
+fun TokenData.toEntity() = TokenResponse(
+    accessToken = this.accessToken,
+    tokenExpired = this.tokenExpired,
+    tokenType = this.tokenType,
+    tokenExpiresIn = this.tokenExpiresIn,
 )
