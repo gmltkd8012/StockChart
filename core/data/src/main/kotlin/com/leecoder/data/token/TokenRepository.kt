@@ -10,5 +10,5 @@ interface TokenRepository {
         grantType: String,
         appsecret: String,
         appkey: String,
-    )
+    ): Boolean
 }
