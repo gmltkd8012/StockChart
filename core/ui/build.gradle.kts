@@ -5,12 +5,10 @@ plugins {
 }
 
 android {
-    namespace = "com.leecoder.stockchart.app"
+    namespace = "com.leecoder.stockchart.ui"
 }
 
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:data"))
-    implementation(project(":core:network"))
-    implementation(project(":core:ui"))
 }

@@ -5,24 +5,40 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.util.NetworkResult
+import com.leecoder.stockchart.ui.base.StateViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val tokenRepository: TokenRepository
-): ViewModel() {
+): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
     internal fun postToken() {
-        viewModelScope.launch(Dispatchers.IO) {
+        launch(Dispatchers.IO) {
             val post = tokenRepository.postToken(
                 "client_credentials",
                 "",
                 "")
 
-            Log.d("heesang", "[Token] -> \n${post}")
+            if (!post) showErrorPopup()
         }
     }
+
+    private fun showErrorPopup() {
+        launch(Dispatchers.IO) {
+            sendSideEffect(MainSideEffect.TokenErrorPopup)
+        }
+    }
+}
+
+data class MainState(
+    val krInvestTokenExpired: String? = null,
+)
+
+sealed interface MainSideEffect {
+    data object TokenErrorPopup: MainSideEffect
 }
