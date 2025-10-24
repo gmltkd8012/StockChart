@@ -33,7 +33,7 @@ class TokenRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val body = response.body() ?: return false to null
                 Log.d("heesang", "${response.body()!!.toData()}")
-                dataStoreRepository.refreshKrInvestmentToken(body.accessToken)
+                dataStoreRepository.refreshKrInvestmentToken(body.tokenType + body.accessToken)
                 dataStoreRepository.refreshKrInvestmentTokenExpired(body.tokenExpired)
                 true to null
             }  else {
@@ -44,7 +44,6 @@ class TokenRepositoryImpl @Inject constructor(
                 Json.decodeFromString<TokenError>(it)
             } ?: TokenError()
 
-            Log.i("heesang", "[Exception] -> ${response.errorBody()}")
             false to TokenError(errorBody.errorDescription, errorBody.errorCode)
         }
     }
