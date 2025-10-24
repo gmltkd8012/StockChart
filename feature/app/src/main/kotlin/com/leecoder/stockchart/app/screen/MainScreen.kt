@@ -26,7 +26,7 @@ fun MainScreen(
     var errorDialogState = rememberErrorDialogState<MainSideEffect.TokenErrorPopup>()
 
     LaunchedEffect(Unit) {
-        viewModel.postToken()
+        viewModel.checkExpiredToken()
     }
 
     viewModel.collectSideEffect { sideEffect ->

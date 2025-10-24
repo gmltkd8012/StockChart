@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.preferencesOf
 import com.leecoder.stockchart.datastore.AppDataStore
 import com.leecoder.stockchart.datastore.const.DataStoreConst
+import com.leecoder.stockchart.datastore.extension.toMilliseconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -25,12 +26,12 @@ class DataStoreRepositoryImpl @Inject constructor(
         }
     }
 
-    override val currentKrInvestmentTokenExpired: Flow<String?>
+    override val currentKrInvestmentTokenExpired: Flow<Long?>
         get() = dataStore.data.map { preference -> preference[AppDataStore.Keys.KR_INVESTMENT_TOKEN_EXPIRED] }
 
     override suspend fun refreshKrInvestmentTokenExpired(tokenExpired: String) {
         dataStore.edit { preference ->
-            preference[AppDataStore.Keys.KR_INVESTMENT_TOKEN_EXPIRED] = tokenExpired
+            preference[AppDataStore.Keys.KR_INVESTMENT_TOKEN_EXPIRED] = tokenExpired.toMilliseconds()
         }
     }
 }

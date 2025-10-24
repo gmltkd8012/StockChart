@@ -3,6 +3,7 @@ package com.leecoder.stockchart.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.leecoder.stockchart.datastore.const.DataStoreConst
@@ -15,6 +16,6 @@ class AppDataStore {
 
     object Keys {
         val KR_INVESTMENT_TOKEN = stringPreferencesKey(name = DataStoreConst.KeyConst.KR_INVESTMENT_TOKEN)
-        val KR_INVESTMENT_TOKEN_EXPIRED = stringPreferencesKey(DataStoreConst.KeyConst.KR_INVESTMENT_TOKEN_EXPIRED)
+        val KR_INVESTMENT_TOKEN_EXPIRED = longPreferencesKey(DataStoreConst.KeyConst.KR_INVESTMENT_TOKEN_EXPIRED)
     }
 }

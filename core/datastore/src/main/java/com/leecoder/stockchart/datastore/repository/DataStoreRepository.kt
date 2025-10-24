@@ -8,7 +8,6 @@ interface DataStoreRepository {
     suspend fun refreshKrInvestmentToken(token: String)
 
 
-    val currentKrInvestmentTokenExpired: Flow<String?>
+    val currentKrInvestmentTokenExpired: Flow<Long?>
     suspend fun refreshKrInvestmentTokenExpired(tokenExpired: String)
-
 }
