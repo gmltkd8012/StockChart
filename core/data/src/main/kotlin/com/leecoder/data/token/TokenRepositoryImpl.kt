@@ -7,10 +7,11 @@ import com.leecoder.network.entity.toData
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.token.TokenData
+import com.leecoder.stockchart.model.token.TokenError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.lang.Exception
+import okhttp3.ResponseBody.Companion.toResponseBody
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,24 +25,27 @@ class TokenRepositoryImpl @Inject constructor(
         grantType: String,
         appsecret: String,
         appkey: String
-    ): Boolean {
+    ): Pair<Boolean, TokenError?> {
         val reqeust = TokenRequest(grantType, appsecret, appkey)
         val response = tokenApi.postToken(reqeust)
 
         return try {
             if (response.isSuccessful) {
-                val body = response.body() ?: return false
+                val body = response.body() ?: return false to null
                 Log.d("heesang", "${response.body()!!.toData()}")
                 dataStoreRepository.refreshKrInvestmentToken(body.accessToken)
                 dataStoreRepository.refreshKrInvestmentTokenExpired(body.tokenExpired)
-                true
+                true to null
             }  else {
-                Log.e("heesang", "${response.errorBody()?.string()}")
-                false
+                throw Exception(response.errorBody()?.string())
             }
         } catch (e: Exception) {
+            val errorBody = e.message?.let {
+                Json.decodeFromString<TokenError>(it)
+            } ?: TokenError()
+
             Log.i("heesang", "[Exception] -> ${response.errorBody()}")
-            false
+            false to TokenError(errorBody.errorDescription, errorBody.errorCode)
         }
     }
 }
