@@ -19,7 +19,7 @@ internal object ApiModule {
         stockChartNetwork: StockChartNetwork,
     ): TokenApi {
         return stockChartNetwork.createApi<TokenApi>(
-            baseUrl = ""
+            baseUrl = "https://openapi.koreainvestment.com:9443/"
         )
     }
 }

@@ -1,8 +1,17 @@
 package com.leecoder.stockchart.model.token
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 data class TokenData(
-    val access_token: String,
-    val access_token_token_expired: String,
-    val token_type: String,
-    val expires_in: Int,
+    val accessToken: String,
+    val tokenExpired: String,
+    val tokenType: String,
+    val tokenExpiresIn: Int,
+)
+
+@Serializable
+data class TokenError(
+    @SerialName("error_description") val errorDescription: String = "",
+    @SerialName("error_code") val errorCode: String = "",
 )

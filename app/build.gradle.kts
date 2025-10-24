@@ -43,6 +43,7 @@ android {
 dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:data"))
+    implementation(project(":feature:app"))
 
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.kotlin.serialization)

@@ -8,10 +8,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Provider
@@ -28,6 +32,7 @@ object NetworkModule {
 
     @Provides
     @StockInterceptors
+    @IntoSet
     fun providerHttpLoggingInterceptor(): Interceptor =
         HttpLoggingInterceptor {
             Log.d("[LeeCorder]", it)
@@ -56,9 +61,15 @@ object NetworkModule {
     @Named("stock")
     fun provideRetrofitBuilder(
         @Named("stock") okHttpClient: OkHttpClient,
-    ): Retrofit.Builder =
-        Retrofit.Builder()
+    ): Retrofit.Builder {
+        val json = Json { ignoreUnknownKeys = true }
+        return  Retrofit.Builder()
+            .addConverterFactory(
+                json.asConverterFactory("application/json".toMediaType())
+            )
             .client(okHttpClient)
+    }
+
 
 
     @Provides
