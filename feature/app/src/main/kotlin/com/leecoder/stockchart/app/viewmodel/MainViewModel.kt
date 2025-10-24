@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.leecoder.data.token.TokenRepository
+import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.ui.base.StateViewModel
@@ -21,9 +22,10 @@ class MainViewModel @Inject constructor(
     internal fun postToken() {
         launch(Dispatchers.IO) {
             val post = tokenRepository.postToken(
-                "client_credentials",
+                Credential.CLIENT_CREDENTIAL,
                 "",
-                "")
+                 "",
+            )
 
             if (!post.first) showErrorPopup(post.second)
         }
