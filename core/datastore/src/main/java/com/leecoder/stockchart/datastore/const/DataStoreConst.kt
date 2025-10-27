@@ -8,6 +8,8 @@ object DataStoreConst {
     object KeyConst {
         const val KR_INVESTMENT_TOKEN = "kr_investment_token"
         const val KR_INVESTMENT_TOKEN_EXPIRED = "kr_investment_token_expired"
+
+        const val KR_INVESTMENT_WEBSOCKET = "kr_investment_websocket"
     }
 
     object ValueConst {

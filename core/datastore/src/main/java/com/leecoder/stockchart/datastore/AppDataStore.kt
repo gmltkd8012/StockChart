@@ -17,5 +17,7 @@ class AppDataStore {
     object Keys {
         val KR_INVESTMENT_TOKEN = stringPreferencesKey(name = DataStoreConst.KeyConst.KR_INVESTMENT_TOKEN)
         val KR_INVESTMENT_TOKEN_EXPIRED = longPreferencesKey(DataStoreConst.KeyConst.KR_INVESTMENT_TOKEN_EXPIRED)
+
+        val KR_INVESTMENT_WEBSOCKET = stringPreferencesKey(DataStoreConst.KeyConst.KR_INVESTMENT_WEBSOCKET)
     }
 }
