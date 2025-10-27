@@ -2,6 +2,7 @@ package com.leecoder.network.di
 
 import com.leecoder.network.StockChartNetwork
 import com.leecoder.network.api.TokenApi
+import com.leecoder.network.api.WebSocketApi
 import com.leecoder.network.createApi
 import dagger.Module
 import dagger.Provides
@@ -19,6 +20,16 @@ internal object ApiModule {
         stockChartNetwork: StockChartNetwork,
     ): TokenApi {
         return stockChartNetwork.createApi<TokenApi>(
+            baseUrl = "https://openapi.koreainvestment.com:9443/"
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideWebSocketService(
+        stockChartNetwork: StockChartNetwork,
+    ): WebSocketApi {
+        return stockChartNetwork.createApi<WebSocketApi>(
             baseUrl = "https://openapi.koreainvestment.com:9443/"
         )
     }

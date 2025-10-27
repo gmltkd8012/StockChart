@@ -34,4 +34,13 @@ class DataStoreRepositoryImpl @Inject constructor(
             preference[AppDataStore.Keys.KR_INVESTMENT_TOKEN_EXPIRED] = tokenExpired.toMilliseconds()
         }
     }
+
+    override val currentKrInvestmentWebSocket: Flow<String?>
+        get() = dataStore.data.map { preference -> preference[AppDataStore.Keys.KR_INVESTMENT_WEBSOCKET] }
+
+    override suspend fun refreshKrInvestmentWebSocket(webSocket: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.KR_INVESTMENT_WEBSOCKET] = webSocket
+        }
+    }
 }
