@@ -2,8 +2,9 @@ package com.leecoder.data.di
 
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.data.token.TokenRepositoryImpl
-import com.leecoder.data.websocket.WebSocketRepository
-import com.leecoder.data.websocket.WebSocketRepositoryImpl
+import com.leecoder.data.repository.WebSocketRepository
+import com.leecoder.data.repository.WebSocketRepositoryImpl
+import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.network.api.TokenApi
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
@@ -25,6 +26,7 @@ object RepositoryModule {
     @Provides
     fun provideWebSocketRepository(
         webSocketApi: WebSocketApi,
+        webSocketDataSource: WebSocketDataSource,
         dataStoreRepository: DataStoreRepository,
-    ): WebSocketRepository = WebSocketRepositoryImpl(webSocketApi, dataStoreRepository)
+    ): WebSocketRepository = WebSocketRepositoryImpl(webSocketApi, webSocketDataSource, dataStoreRepository)
 }

@@ -17,4 +17,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:design_system"))
     implementation(project(":core:datastore"))
+
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.kotlin.serialization)
 }

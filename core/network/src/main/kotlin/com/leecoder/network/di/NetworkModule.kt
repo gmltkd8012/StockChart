@@ -70,6 +70,14 @@ object NetworkModule {
             .client(okHttpClient)
     }
 
+    @Provides
+    @Singleton
+    @Named("websocket")
+    fun provideWebSocketClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .pingInterval(30, TimeUnit.SECONDS)
+            .build()
+
 
 
     @Provides

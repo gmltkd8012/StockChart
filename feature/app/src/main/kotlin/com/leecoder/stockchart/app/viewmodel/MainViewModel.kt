@@ -3,8 +3,8 @@ package com.leecoder.stockchart.app.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
-import com.leecoder.data.websocket.WebSocketRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
@@ -14,6 +14,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import java.net.InetAddress
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -52,6 +56,8 @@ class MainViewModel @Inject constructor(
                     if (!post.first) showErrorPopup(post.second)
                 }
             }
+
+            connectToWebSocket()
         }
     }
 
@@ -62,6 +68,13 @@ class MainViewModel @Inject constructor(
                 code = error?.errorCode,
             ))
         }
+    }
+
+
+    private fun connectToWebSocket() {
+        webSocketRepository.connect(
+            "ws://ops.koreainvestment.com:21000/tryitout/H0STCNT0",
+        )
     }
 }
 

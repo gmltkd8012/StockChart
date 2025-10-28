@@ -1,19 +1,34 @@
-package com.leecoder.data.websocket
+package com.leecoder.data.repository
 
 import android.util.Log
+import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.network.entity.WebSocketRequest
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.token.TokenError
 import kotlinx.serialization.json.Json
+import okhttp3.WebSocketListener
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class WebSocketRepositoryImpl @Inject constructor(
     private val webSocketApi: WebSocketApi,
+    private val webSocketDataSource: WebSocketDataSource,
     private val dataStoreRepository: DataStoreRepository,
 ): WebSocketRepository {
+
+    override fun connect(url: String) {
+        webSocketDataSource.connect(url)
+    }
+
+    override fun disconnect() {
+        webSocketDataSource.disconnect()
+    }
+
+    override fun sendMessage() {
+        webSocketDataSource.sendMessage()
+    }
 
     override suspend fun postWebSocket(
         grantType: String,
