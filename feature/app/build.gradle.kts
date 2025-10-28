@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.library)
     alias(libs.plugins.lib.flavor)
     alias(libs.plugins.all.hilt)
+    alias(libs.plugins.lib.compose)
 }
 
 android {

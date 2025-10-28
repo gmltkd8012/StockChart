@@ -3,15 +3,18 @@ package com.leecoder.stockchart.app.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
+import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.ui.base.StateViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.Response
@@ -57,7 +60,23 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            connectToWebSocket()
+
+        }
+    }
+
+    internal fun connectWebSocket() {
+        connectToWebSocket()
+        collectStockTick()
+    }
+
+    private fun collectStockTick() {
+        viewModelScope.launch(Dispatchers.IO) {
+            webSocketRepository.channelStockTick.consumeEach { tick ->
+                Log.d("heesang", "collectStockTick: $tick")
+                reduceState {
+                    copy(stockTick = tick)
+                }
+            }
         }
     }
 
@@ -80,6 +99,7 @@ class MainViewModel @Inject constructor(
 
 data class MainState(
     val krInvestTokenExpired: String? = null,
+    val stockTick: StockTick? = null,
 )
 
 sealed interface MainSideEffect {
