@@ -18,14 +18,14 @@ import androidx.compose.ui.unit.sp
 fun BaseSymbolItem(
     name: String,
     code: String,
-    onClick: (String) -> Unit,
+    onClick: (Pair<String, String>) -> Unit,
 ) {
     Row(
        modifier = Modifier
            .fillMaxWidth()
            .wrapContentHeight()
            .padding(horizontal = 8.dp)
-           .clickable { onClick(code) },
+           .clickable { onClick(code to name) },
         horizontalArrangement = Arrangement.Start
     ) {
         Text(

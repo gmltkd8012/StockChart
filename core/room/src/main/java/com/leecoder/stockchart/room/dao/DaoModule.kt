@@ -14,4 +14,9 @@ object DaoModule {
     fun provideKrxSymbolDao(
         database: AppDatabase
     ): KrxSymbolDao = database.krxSymbolDao()
+
+    @Provides
+    fun provideRegistedStockDao(
+        database: AppDatabase
+    ): RegistedStockDao = database.registedStockDao()
 }

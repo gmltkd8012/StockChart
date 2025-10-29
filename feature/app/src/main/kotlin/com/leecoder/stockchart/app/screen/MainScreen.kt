@@ -37,6 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import com.leecoder.stockchart.app.viewmodel.MainSideEffect
 import com.leecoder.stockchart.app.viewmodel.MainViewModel
 import com.leecoder.stockchart.design_system.component.BaseDialog
+import com.leecoder.stockchart.design_system.component.BaseRegistedBox
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
 import com.leecoder.stockchart.design_system.component.BaseTextField
 import com.leecoder.stockchart.ui.extension.hide
@@ -55,6 +56,7 @@ fun MainScreen(
     val textFieldState by viewModel.textFieldState.collectAsState()
 
     LaunchedEffect(Unit) {
+        viewModel.initSubcribeStock()
         viewModel.connectWebSocket()
     }
 
@@ -129,8 +131,9 @@ fun MainScreen(
                                 BaseSymbolItem(
                                     name = result.name,
                                     code = result.code,
-                                    onClick = { code ->
-                                        viewModel.subscribeStock(code)
+                                    onClick = { (code, name) ->
+                                        viewModel.addSubscribeStock(code, name)
+                                        viewModel.onQueryChanged("")
                                     }
                                 )
 
@@ -144,9 +147,11 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    contentAlignment = Alignment.Center
                 ) {
                     Column {
+                        Spacer(Modifier.height(8.dp))
+                        BaseRegistedBox(count = state.registedStock)
+
                         if (stockTickList.isEmpty()) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),

@@ -5,12 +5,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.leecoder.data.repository.RegistedStockRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
+import com.leecoder.stockchart.model.stock.RegistedStockData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
 import com.leecoder.stockchart.model.token.TokenError
@@ -44,6 +46,7 @@ class MainViewModel @Inject constructor(
     private val tokenRepository: TokenRepository,
     private val webSocketRepository: WebSocketRepository,
     private val dataStoreRepository: DataStoreRepository,
+    private val registedStockRepository: RegistedStockRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
@@ -133,8 +136,28 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun subscribeStock(iscd: String) {
-        webSocketRepository.addSubscribe(iscd)
+    fun initSubcribeStock() {
+        launch(Dispatchers.IO) {
+            val registedStock = registedStockRepository.getRegistedStock().first()
+
+            reduceState {
+                copy(registedStock = registedStock.size)
+            }
+        }
+    }
+
+    fun addSubscribeStock(code: String, name: String) {
+
+        launch(Dispatchers.IO) {
+            registedStockRepository.insert(RegistedStockData(code, name))
+            val registedStock = registedStockRepository.getRegistedStock().first()
+
+            reduceState {
+                copy(registedStock = registedStock.size)
+            }
+
+            //webSocketRepository.addSubscribe(code)
+        }
     }
 
     private fun showErrorPopup(error: TokenError?) {
@@ -158,6 +181,7 @@ data class MainState(
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockTick>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
+    val registedStock: Int = 0
 )
 
 sealed interface MainSideEffect {
