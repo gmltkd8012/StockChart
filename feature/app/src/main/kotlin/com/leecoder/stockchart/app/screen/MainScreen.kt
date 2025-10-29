@@ -48,6 +48,7 @@ fun MainScreen(
 
     LaunchedEffect(Unit) {
         viewModel.connectWebSocket()
+        viewModel.textSearch()
     }
 
     viewModel.collectSideEffect { sideEffect ->

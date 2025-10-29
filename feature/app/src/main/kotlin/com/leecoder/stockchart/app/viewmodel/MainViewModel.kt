@@ -9,6 +9,7 @@ import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
+import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.ui.base.StateViewModel
@@ -29,6 +30,7 @@ class MainViewModel @Inject constructor(
     private val tokenRepository: TokenRepository,
     private val webSocketRepository: WebSocketRepository,
     private val dataStoreRepository: DataStoreRepository,
+    private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
     private val tickMap = mutableMapOf<String, StockTick>()
@@ -69,6 +71,14 @@ class MainViewModel @Inject constructor(
     internal fun connectWebSocket() {
         connectToWebSocket()
         collectStockTick()
+    }
+
+    fun textSearch() {
+        launch(Dispatchers.IO) {
+            searchKrxSymbolUseCase.invoke("SK").collect() {
+                Log.d("lynn", "[검색 결과] -> $it")
+            }
+        }
     }
 
     private fun collectStockTick() {

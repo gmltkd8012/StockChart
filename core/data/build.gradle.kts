@@ -18,4 +18,5 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:datastore"))
     implementation(project(":core:util"))
+    implementation(project(":core:room"))
 }
