@@ -39,8 +39,8 @@ class AppDatabaseCallback @Inject constructor(
                                 val name = spl[1]
 
                                 iscds += KrxSymbolEntity(
-                                    code = code,
-                                    name = name,
+                                    code = code.trim('"'),
+                                    name = name.trim('"'),
                                 )
                             }
                         }
