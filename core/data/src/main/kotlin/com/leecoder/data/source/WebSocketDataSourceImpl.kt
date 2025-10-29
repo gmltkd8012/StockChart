@@ -128,6 +128,24 @@ class WebSocketDataSourceImpl @Inject constructor(
         webSocket?.send( Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body)))
     }
 
+    override fun addSubscribe(iscd: String) {
+        val header = WebSocketApprovalHeader(
+            approvalKey = "",
+            custType = "P",
+            trType = "1",
+            contentType = "utf-8",
+        )
+
+        val body = WebSocketApprovalBody(
+            input = WebSocketApprovalInput(
+                id = "H0STCNT0",
+                key = iscd,
+            )
+        )
+
+        webSocket?.send(Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body)))
+    }
+
     fun decryptAES256(encryptedBase64: String, keyString: String, ivString: String): String {
         // 1. Base64 -> ByteArray
         val encryptedBytes = Base64.decode(encryptedBase64, Base64.DEFAULT)

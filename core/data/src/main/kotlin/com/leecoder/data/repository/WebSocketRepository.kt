@@ -12,6 +12,7 @@ interface WebSocketRepository {
     fun connect(url: String)
     fun disconnect()
     fun sendMessage()
+    fun addSubscribe(iscd: String)
 
     suspend fun postWebSocket(
         grantType: String,

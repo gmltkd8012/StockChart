@@ -35,6 +35,10 @@ class WebSocketRepositoryImpl @Inject constructor(
         webSocketDataSource.sendMessage()
     }
 
+    override fun addSubscribe(iscd: String) {
+       webSocketDataSource.addSubscribe(iscd)
+    }
+
     override suspend fun postWebSocket(
         grantType: String,
         appkey: String,

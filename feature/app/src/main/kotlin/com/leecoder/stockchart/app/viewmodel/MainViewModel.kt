@@ -31,6 +31,8 @@ class MainViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
+    private val tickMap = mutableMapOf<String, StockTick>()
+
     internal fun checkExpiredToken() {
         launch(Dispatchers.IO) {
             val tokenExpiredTime =
@@ -73,11 +75,20 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             webSocketRepository.channelStockTick.consumeEach { tick ->
                 Log.d("heesang", "collectStockTick: $tick")
+
+                tick.mkscShrnIscd?.let { iscd ->
+                    tickMap[iscd] = tick
+                }
+
                 reduceState {
-                    copy(stockTick = tick)
+                    copy(stockTickMap = tickMap.toMap())
                 }
             }
         }
+    }
+
+    fun subscribeStock(iscd: String) {
+        webSocketRepository.addSubscribe(iscd)
     }
 
     private fun showErrorPopup(error: TokenError?) {
@@ -99,7 +110,7 @@ class MainViewModel @Inject constructor(
 
 data class MainState(
     val krInvestTokenExpired: String? = null,
-    val stockTick: StockTick? = null,
+    val stockTickMap: Map<String, StockTick>? = null,
 )
 
 sealed interface MainSideEffect {
