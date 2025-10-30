@@ -41,7 +41,9 @@ fun BaseTextField(
     onTextChanged: (String) -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
     ) {
         BasicTextField(
             modifier = modifier
