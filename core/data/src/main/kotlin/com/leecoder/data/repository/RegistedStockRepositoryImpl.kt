@@ -20,6 +20,12 @@ class RegistedStockRepositoryImpl @Inject constructor(
     override suspend fun getRegistedStock(): Flow<List<RegistedStockData>> =
         registedStockDao.getRegistedStock().map { it.map { it.toData() } }
 
+    override suspend fun getRegistedStockByCode(code: String?): RegistedStockData {
+        require(code != null)
+
+        return registedStockDao.getRegistedStockByCode(code).toData()
+    }
+
     override suspend fun delete(stock: RegistedStockData) {
         registedStockDao.delete(stock.toEntity())
     }

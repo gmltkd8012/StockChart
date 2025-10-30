@@ -173,10 +173,10 @@ fun MainScreen(
                             LazyColumn {
                                 items(stockTickList) { stockTick ->
                                     BaseStockBox(
-                                        name =  stockTick.mkscShrnIscd?.iscdName() ?: "UNKNOWN",
-                                        code = stockTick.mkscShrnIscd,
-                                        tradePrice = stockTick.stckPrpr?.toInt() ?: -1,
-                                        priceDiff = stockTick.prdyVrss?.toInt() ?: -1,
+                                        name =  stockTick.name ?: "UNKNOWN",
+                                        code = stockTick.code,
+                                        tradePrice = stockTick.tradePrice ?: -1,
+                                        priceDiff = stockTick.priceDiff ?: -1,
                                         onDelete = { code, name ->
                                             //viewModel.addSubscribeStock(code, name)
                                         }

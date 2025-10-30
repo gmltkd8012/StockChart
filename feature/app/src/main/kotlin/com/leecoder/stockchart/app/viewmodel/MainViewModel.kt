@@ -16,6 +16,7 @@ import com.leecoder.stockchart.model.stock.RegistedStockData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
 import com.leecoder.stockchart.model.token.TokenError
+import com.leecoder.stockchart.model.ui.StockUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,7 @@ class MainViewModel @Inject constructor(
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
-    private val tickMap = mutableMapOf<String, StockTick>()
+    private val tickMap = mutableMapOf<String, StockUiData>()
 
     private val _textFieldState = MutableStateFlow<String>("")
     val textFieldState: StateFlow<String> = _textFieldState
@@ -133,8 +134,16 @@ class MainViewModel @Inject constructor(
                 Log.d("heesang", "collectStockTick: $tick")
 
                 tick.mkscShrnIscd?.let { iscd ->
-                    tickMap[iscd] = tick
+                    val parseName = registedStockRepository.getRegistedStockByCode(iscd).name
+
+                    tickMap[iscd] = StockUiData(
+                        code = iscd,
+                        name = parseName,
+                        tradePrice = tick.stckPrpr?.toInt(),
+                        priceDiff = tick.prdyVrss?.toInt(),
+                    )
                 }
+
 
                 reduceState {
                     copy(stockTickMap = tickMap.toMap())
@@ -187,7 +196,7 @@ class MainViewModel @Inject constructor(
 data class MainState(
     val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
-    val stockTickMap: Map<String, StockTick>? = null,
+    val stockTickMap: Map<String, StockUiData>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
     val registedStock: Int = 0
 )

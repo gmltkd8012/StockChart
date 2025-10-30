@@ -10,5 +10,7 @@ interface RegistedStockRepository {
 
     suspend fun getRegistedStock(): Flow<List<RegistedStockData>>
 
+    suspend fun getRegistedStockByCode(code: String?): RegistedStockData
+
     suspend fun delete(stock: RegistedStockData)
 }
