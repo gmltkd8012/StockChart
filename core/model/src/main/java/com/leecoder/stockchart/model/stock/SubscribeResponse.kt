@@ -3,6 +3,21 @@ package com.leecoder.stockchart.model.stock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+
+// 서버에서 처음에 오는 데이터
+@Serializable
+data class HeartBeatResponse(
+    @SerialName("header") val header: HeartBeatHeader
+) {
+    @Serializable
+    data class HeartBeatHeader(
+        @SerialName("tr_id") val trId: String,
+        @SerialName("datetime") val dateTime: String,
+    )
+}
+
+
+
 @Serializable
 data class SubscribeResponse(
     @SerialName("header") val header: Header,

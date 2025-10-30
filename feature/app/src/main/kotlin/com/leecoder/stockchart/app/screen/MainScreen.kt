@@ -56,8 +56,11 @@ fun MainScreen(
     val textFieldState by viewModel.textFieldState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.initSubcribeStock()
         viewModel.connectWebSocket()
+    }
+
+    LaunchedEffect(state.isConnected) {
+        if (state.isConnected) viewModel.initSubcribeStock()
     }
 
     viewModel.collectSideEffect { sideEffect ->
