@@ -9,6 +9,7 @@ import com.leecoder.network.entity.WebSocketApprovalBody
 import com.leecoder.network.entity.WebSocketApprovalHeader
 import com.leecoder.network.entity.WebSocketApprovalInput
 import com.leecoder.network.entity.WebSocketRequest
+import com.leecoder.stockchart.model.stock.HeartBeatResponse
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribeResponse
 import com.leecoder.stockchart.util.extension.isJsonHuristic
@@ -20,8 +21,14 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -44,12 +51,20 @@ class WebSocketDataSourceImpl @Inject constructor(
     private val webSocketApi: WebSocketApi,
 ): WebSocketDataSource {
 
+    companion object {
+        const val PING_PONG = "PINGPONG" // 웹소켓 하트비트 체크
+    }
+
     private var webSocket: WebSocket? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val _channelStockTick: Channel<StockTick> = Channel<StockTick>(Channel.UNLIMITED)
     override val channelStockTick: ReceiveChannel<StockTick>
         get() = _channelStockTick
+
+    private val _connectedWebSocketSession: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val connectedWebSocketSession: Flow<Boolean>
+        get() = _connectedWebSocketSession.asStateFlow()
 
     override fun connect(url: String) {
         val request = Request.Builder()
@@ -59,7 +74,9 @@ class WebSocketDataSourceImpl @Inject constructor(
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 super.onOpen(webSocket, response)
-                sendMessage()
+                scope.launch {
+                    _connectedWebSocketSession.emit(true)
+                }
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
@@ -70,10 +87,34 @@ class WebSocketDataSourceImpl @Inject constructor(
             override fun onMessage(webSocket: WebSocket, text: String) {
                 super.onMessage(webSocket, text)
 
+                Log.e("heesang", "onMessage: -> $text")
+
                 scope.launch {
-                    if (text.isJsonHuristic()) {
-                        val response = Json.decodeFromString<SubscribeResponse>(text)
-                        Log.i("heesang", "onMessage (response) -> ${response}")
+                    if (text.isJsonHuristic()) { // Json 인 경우, 파싱 작업 진행 초기 데이터
+                        val json = Json { ignoreUnknownKeys = true }
+                        val root = json.parseToJsonElement(text).jsonObject
+                        val header = root["header"]?.jsonObject
+                        val trId = header?.get("tr_id")?.jsonPrimitive?.contentOrNull
+
+                        trId?.let { id ->
+                            if (id == PING_PONG) {
+                                val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.KOREA)
+                                val currentTime = formatter.format(Date(System.currentTimeMillis()))
+
+                                val response = HeartBeatResponse(
+                                    header = HeartBeatResponse.HeartBeatHeader(
+                                        trId = trId,
+                                        dateTime = currentTime,
+                                    )
+                                )
+
+                                webSocket.send(json.encodeToString(response))
+                            } else {
+                                val response = json.decodeFromString<SubscribeResponse>(text)
+                                Log.i("heesang", "onMessage (response) -> ${response}")
+                            }
+                        }
+
                         return@launch
                     }
 
@@ -110,7 +151,7 @@ class WebSocketDataSourceImpl @Inject constructor(
 
     override fun sendMessage() {
         val header = WebSocketApprovalHeader(
-            approvalKey = "",
+            approvalKey = "2a1f469a-9b05-41b0-8bde-4cb934d3d969",
             custType = "P",
             trType = "1",
             contentType = "utf-8",
@@ -128,7 +169,17 @@ class WebSocketDataSourceImpl @Inject constructor(
         webSocket?.send( Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body)))
     }
 
-    override fun addSubscribe(iscd: String) {
+    override fun initSubscribe(symbols: List<String>) {
+        symbols.forEach { symbol ->
+            requestData(symbol)
+        }
+    }
+
+    override fun addSubscribe(symbol: String) {
+        requestData(symbol)
+    }
+
+    private fun requestData(symbol: String) {
         val header = WebSocketApprovalHeader(
             approvalKey = "",
             custType = "P",
@@ -139,7 +190,7 @@ class WebSocketDataSourceImpl @Inject constructor(
         val body = WebSocketApprovalBody(
             input = WebSocketApprovalInput(
                 id = "H0STCNT0",
-                key = iscd,
+                key = symbol,
             )
         )
 

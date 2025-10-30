@@ -8,6 +8,7 @@ import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.token.TokenError
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
 import okhttp3.WebSocketListener
 import javax.inject.Inject
@@ -23,6 +24,9 @@ class WebSocketRepositoryImpl @Inject constructor(
     override val channelStockTick: ReceiveChannel<StockTick>
         get() = webSocketDataSource.channelStockTick
 
+    override val connectedWebSocketSession: Flow<Boolean>
+        get() = webSocketDataSource.connectedWebSocketSession
+
     override fun connect(url: String) {
         webSocketDataSource.connect(url)
     }
@@ -35,8 +39,12 @@ class WebSocketRepositoryImpl @Inject constructor(
         webSocketDataSource.sendMessage()
     }
 
-    override fun addSubscribe(iscd: String) {
-       webSocketDataSource.addSubscribe(iscd)
+    override fun initSubscribe(symbols: List<String>) {
+        webSocketDataSource.initSubscribe(symbols)
+    }
+
+    override fun addSubscribe(symbol: String) {
+       webSocketDataSource.addSubscribe(symbol)
     }
 
     override suspend fun postWebSocket(

@@ -76,6 +76,13 @@ class MainViewModel @Inject constructor(
                     }
                 }
             }.launchIn(viewModelScope)
+
+        webSocketRepository.connectedWebSocketSession
+            .onEach { isConnected ->
+                reduceState {
+                    copy(isConnected = isConnected)
+                }
+            }.launchIn(viewModelScope)
     }
 
     fun onQueryChanged(text: String) {
@@ -139,6 +146,7 @@ class MainViewModel @Inject constructor(
     fun initSubcribeStock() {
         launch(Dispatchers.IO) {
             val registedStock = registedStockRepository.getRegistedStock().first()
+            webSocketRepository.initSubscribe(registedStock.map { it.code })
 
             reduceState {
                 copy(registedStock = registedStock.size)
@@ -147,7 +155,6 @@ class MainViewModel @Inject constructor(
     }
 
     fun addSubscribeStock(code: String, name: String) {
-
         launch(Dispatchers.IO) {
             registedStockRepository.insert(RegistedStockData(code, name))
             val registedStock = registedStockRepository.getRegistedStock().first()
@@ -156,7 +163,7 @@ class MainViewModel @Inject constructor(
                 copy(registedStock = registedStock.size)
             }
 
-            //webSocketRepository.addSubscribe(code)
+            webSocketRepository.addSubscribe(code)
         }
     }
 
@@ -178,6 +185,7 @@ class MainViewModel @Inject constructor(
 }
 
 data class MainState(
+    val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockTick>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
