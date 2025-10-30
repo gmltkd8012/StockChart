@@ -38,6 +38,7 @@ import com.leecoder.stockchart.app.viewmodel.MainSideEffect
 import com.leecoder.stockchart.app.viewmodel.MainViewModel
 import com.leecoder.stockchart.design_system.component.BaseDialog
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
+import com.leecoder.stockchart.design_system.component.BaseStockBox
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
 import com.leecoder.stockchart.design_system.component.BaseTextField
 import com.leecoder.stockchart.ui.extension.hide
@@ -171,33 +172,15 @@ fun MainScreen(
                         } else {
                             LazyColumn {
                                 items(stockTickList) { stockTick ->
-                                    Row {
-                                        Text(
-                                            text = stockTick.mkscShrnIscd?.iscdName() ?: "UNKNOWN",
-                                            style = TextStyle(
-                                                fontSize = 30.sp,
-                                                fontWeight = FontWeight.Bold,
-                                            )
-                                        )
-
-                                        Spacer(Modifier.width(12.dp))
-
-                                        Text(
-                                            text = stockTick.stckPrpr + " (${stockTick.prdyVrss})",
-                                            style = TextStyle(
-                                                fontSize = 30.sp,
-                                                color = when {
-                                                    (stockTick.prdyVrss?.toInt()
-                                                        ?: 0) > 0 -> Color.Red
-
-                                                    (stockTick.prdyVrss?.toInt()
-                                                        ?: 0) < 0 -> Color.Blue
-
-                                                    else -> Color.Gray
-                                                }
-                                            )
-                                        )
-                                    }
+                                    BaseStockBox(
+                                        name =  stockTick.mkscShrnIscd?.iscdName() ?: "UNKNOWN",
+                                        code = stockTick.mkscShrnIscd,
+                                        tradePrice = stockTick.stckPrpr?.toInt() ?: -1,
+                                        priceDiff = stockTick.prdyVrss?.toInt() ?: -1,
+                                        onDelete = { code, name ->
+                                            //viewModel.addSubscribeStock(code, name)
+                                        }
+                                    )
 
                                     Spacer(Modifier.height(12.dp))
                                 }
