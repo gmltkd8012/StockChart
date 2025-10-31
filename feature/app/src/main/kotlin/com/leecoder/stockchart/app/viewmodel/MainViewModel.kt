@@ -1,7 +1,9 @@
 package com.leecoder.stockchart.app.viewmodel
 
 import android.util.Log
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -60,6 +62,8 @@ class MainViewModel @Inject constructor(
     private val registedStockRepository: RegistedStockRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
+
+    private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
 
     private val _textFieldState = MutableStateFlow<String>("")
     val textFieldState: StateFlow<String> = _textFieldState
@@ -154,12 +158,19 @@ class MainViewModel @Inject constructor(
                         return@flatMapLatest emptyFlow()
                     }
 
-                    val subscribedMap =
-                        subscribedStocks.map { it.code }.associateWith { StockUiData() }.toMutableMap()
                     val codeToName = subscribedStocks.associate { it.code to it.name }
 
+                    val removeList = _subscribedMap.keys.filter { it !in codeToName.keys }
+                    removeList.forEach { key ->
+                        _subscribedMap.remove(key)
+                    }
+
+                    codeToName.forEach { (key, _) ->
+                        _subscribedMap[key] = StockUiData()
+                    }
+
                     stockTickFlow
-                        .filter { it.mkscShrnIscd in subscribedMap.keys }
+                        .filter { it.mkscShrnIscd in _subscribedMap.keys }
                         .onEach { tick ->
                             val stockUiData = StockUiData(
                                 code = tick.mkscShrnIscd,
@@ -168,14 +179,14 @@ class MainViewModel @Inject constructor(
                                 priceDiff = tick.prdyVrss?.toInt(),
                             )
 
-                            subscribedMap.put(
+                            _subscribedMap.put(
                                 key = tick.mkscShrnIscd ?: "",
                                 value = stockUiData
                             )
 
                             reduceState {
                                 copy(
-                                    stockTickMap = subscribedMap.toMap()
+                                    stockTickMap = _subscribedMap.toMap()
                                 )
                             }
                         }
