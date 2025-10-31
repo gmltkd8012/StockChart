@@ -17,6 +17,9 @@ interface RegistedStockDao {
     @Query("SELECT * FROM registedstock")
     fun getRegistedStock(): Flow<List<RegistedStockEntity>>
 
+    @Query("SELECT * FROM registedstock WHERE code = :code")
+    fun getRegistedStockByCode(code: String): RegistedStockEntity
+
     @Delete
     suspend fun delete(stock: RegistedStockEntity)
 }

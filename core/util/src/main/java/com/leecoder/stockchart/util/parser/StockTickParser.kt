@@ -1,5 +1,6 @@
 package com.leecoder.stockchart.util.parser
 
+import android.util.Log
 import com.leecoder.stockchart.model.stock.StockTick
 
 object StockTickParser {
@@ -58,56 +59,60 @@ object StockTickParser {
     private fun String?.toLongSafe(): Long? = try { this?.toLong() } catch (e: NumberFormatException) { null }
     private fun String?.toDoubleSafe(): Double? = try { this?.toDouble() } catch (e: NumberFormatException) { null }
 
-    fun parse(raw: String, delimiter: String = "^"): StockTick {
-        val parts = raw.split(delimiter)
+    fun parse(raw: String, delimiter: String = "^"): List<StockTick> {
+        val headPattern = "${raw.split(delimiter).first()}$delimiter"
+        val parts = raw.split(headPattern.toRegex())
 
-        return StockTick(
-            mkscShrnIscd = parts.getOrNull(FieldIndex.MKSC_SHRN_ISCD.idx),
-            stckCntgHour = parts.getOrNull(FieldIndex.STCK_CNTG_HOUR.idx),
-            stckPrpr = parts.getOrNull(FieldIndex.STCK_PRPR.idx),
-            prdyVrssSign = parts.getOrNull(FieldIndex.PRDY_VRSS_SIGN.idx),
-            prdyVrss = parts.getOrNull(FieldIndex.PRDY_VRSS.idx),
-            prdyCtrt = parts.getOrNull(FieldIndex.PRDY_CTRT.idx),
-            wghnAvrgStckPrc = parts.getOrNull(FieldIndex.WGHN_AVRG_STCK_PRC.idx),
-            stckOprc = parts.getOrNull(FieldIndex.STCK_OPRC.idx),
-            stckHgpr = parts.getOrNull(FieldIndex.STCK_HGPR.idx),
-            stckLwpr = parts.getOrNull(FieldIndex.STCK_LWPR.idx),
-            askp1 = parts.getOrNull(FieldIndex.ASKP1.idx),
-            bidp1 = parts.getOrNull(FieldIndex.BIDP1.idx),
-            cntgVol = parts.getOrNull(FieldIndex.CNTG_VOL.idx),
-            acmlVol = parts.getOrNull(FieldIndex.ACML_VOL.idx),
-            acmlTrPbmn = parts.getOrNull(FieldIndex.ACML_TR_PBMN.idx),
-            selnCntgCsnu = parts.getOrNull(FieldIndex.SELN_CNTG_CSNU.idx),
-            shnuCntgCsnu = parts.getOrNull(FieldIndex.SHNU_CNTG_CSNU.idx),
-            ntbyCntgCsnu = parts.getOrNull(FieldIndex.NTBY_CNTG_CSNU.idx),
-            cttr = parts.getOrNull(FieldIndex.CTTR.idx),
-            selnCntgSmtn = parts.getOrNull(FieldIndex.SELN_CNTG_SMTN.idx),
-            shnuCntgSmtn = parts.getOrNull(FieldIndex.SHNU_CNTG_SMTN.idx),
-            ccldDvsn = parts.getOrNull(FieldIndex.CCLD_DVSN.idx),
-            shnuRate = parts.getOrNull(FieldIndex.SHNU_RATE.idx),
-            prdyVolVrssAcmlVolRate = parts.getOrNull(FieldIndex.PRDY_VOL_VRSS_ACML_VOL_RATE.idx),
-            oprcHour = parts.getOrNull(FieldIndex.OPRC_HOUR.idx),
-            oprcVrssPrprSign = parts.getOrNull(FieldIndex.OPRC_VRSS_PRPR_SIGN.idx),
-            oprcVrssPrpr = parts.getOrNull(FieldIndex.OPRC_VRSS_PRPR.idx),
-            hgprHour = parts.getOrNull(FieldIndex.HGPR_HOUR.idx),
-            hgprVrssPrprSign = parts.getOrNull(FieldIndex.HGPR_VRSS_PRPR_SIGN.idx),
-            hgprVrssPrpr = parts.getOrNull(FieldIndex.HGPR_VRSS_PRPR.idx),
-            lwprHour = parts.getOrNull(FieldIndex.LWPR_HOUR.idx),
-            lwprVrssPrprSign = parts.getOrNull(FieldIndex.LWPR_VRSS_PRPR_SIGN.idx),
-            lwprVrssPrpr = parts.getOrNull(FieldIndex.LWPR_VRSS_PRPR.idx),
-            bsopDate = parts.getOrNull(FieldIndex.BSOP_DATE.idx),
-            newMkopClsCode = parts.getOrNull(FieldIndex.NEW_MKOP_CLS_CODE.idx),
-            trhtYn = parts.getOrNull(FieldIndex.TRHT_YN.idx),
-            askpRsqn1 = parts.getOrNull(FieldIndex.ASKP_RSQN1.idx),
-            bidpRsqn1 = parts.getOrNull(FieldIndex.BIDP_RSQN1.idx),
-            totalAskpRsqn = parts.getOrNull(FieldIndex.TOTAL_ASKP_RSQN.idx),
-            totalBidpRsqn = parts.getOrNull(FieldIndex.TOTAL_BIDP_RSQN.idx),
-            volTnrt = parts.getOrNull(FieldIndex.VOL_TNRT.idx),
-            prdySmnsHourAcmlVol = parts.getOrNull(FieldIndex.PRDY_SMNS_HOUR_ACML_VOL.idx),
-            prdySmnsHourAcmlVolRate = parts.getOrNull(FieldIndex.PRDY_SMNS_HOUR_ACML_VOL_RATE.idx),
-            hourClsCode = parts.getOrNull(FieldIndex.HOUR_CLS_CODE.idx),
-            mrktTrtmClsCode = parts.getOrNull(FieldIndex.MRKT_TRTM_CLS_CODE.idx),
-            viStndPrc = parts.getOrNull(FieldIndex.VI_STND_PRC.idx),
-        )
+        return parts.map { part ->
+            val spl = part.split(delimiter)
+            StockTick(
+                mkscShrnIscd = spl.getOrNull(FieldIndex.MKSC_SHRN_ISCD.idx),
+                stckCntgHour = spl.getOrNull(FieldIndex.STCK_CNTG_HOUR.idx),
+                stckPrpr = spl.getOrNull(FieldIndex.STCK_PRPR.idx),
+                prdyVrssSign = spl.getOrNull(FieldIndex.PRDY_VRSS_SIGN.idx),
+                prdyVrss = spl.getOrNull(FieldIndex.PRDY_VRSS.idx),
+                prdyCtrt = spl.getOrNull(FieldIndex.PRDY_CTRT.idx),
+                wghnAvrgStckPrc = spl.getOrNull(FieldIndex.WGHN_AVRG_STCK_PRC.idx),
+                stckOprc = spl.getOrNull(FieldIndex.STCK_OPRC.idx),
+                stckHgpr = spl.getOrNull(FieldIndex.STCK_HGPR.idx),
+                stckLwpr = spl.getOrNull(FieldIndex.STCK_LWPR.idx),
+                askp1 = spl.getOrNull(FieldIndex.ASKP1.idx),
+                bidp1 = spl.getOrNull(FieldIndex.BIDP1.idx),
+                cntgVol = spl.getOrNull(FieldIndex.CNTG_VOL.idx),
+                acmlVol = spl.getOrNull(FieldIndex.ACML_VOL.idx),
+                acmlTrPbmn = spl.getOrNull(FieldIndex.ACML_TR_PBMN.idx),
+                selnCntgCsnu = spl.getOrNull(FieldIndex.SELN_CNTG_CSNU.idx),
+                shnuCntgCsnu = spl.getOrNull(FieldIndex.SHNU_CNTG_CSNU.idx),
+                ntbyCntgCsnu = spl.getOrNull(FieldIndex.NTBY_CNTG_CSNU.idx),
+                cttr = spl.getOrNull(FieldIndex.CTTR.idx),
+                selnCntgSmtn = spl.getOrNull(FieldIndex.SELN_CNTG_SMTN.idx),
+                shnuCntgSmtn = spl.getOrNull(FieldIndex.SHNU_CNTG_SMTN.idx),
+                ccldDvsn = spl.getOrNull(FieldIndex.CCLD_DVSN.idx),
+                shnuRate = spl.getOrNull(FieldIndex.SHNU_RATE.idx),
+                prdyVolVrssAcmlVolRate = spl.getOrNull(FieldIndex.PRDY_VOL_VRSS_ACML_VOL_RATE.idx),
+                oprcHour = spl.getOrNull(FieldIndex.OPRC_HOUR.idx),
+                oprcVrssPrprSign = spl.getOrNull(FieldIndex.OPRC_VRSS_PRPR_SIGN.idx),
+                oprcVrssPrpr = spl.getOrNull(FieldIndex.OPRC_VRSS_PRPR.idx),
+                hgprHour = spl.getOrNull(FieldIndex.HGPR_HOUR.idx),
+                hgprVrssPrprSign = spl.getOrNull(FieldIndex.HGPR_VRSS_PRPR_SIGN.idx),
+                hgprVrssPrpr = spl.getOrNull(FieldIndex.HGPR_VRSS_PRPR.idx),
+                lwprHour = spl.getOrNull(FieldIndex.LWPR_HOUR.idx),
+                lwprVrssPrprSign = spl.getOrNull(FieldIndex.LWPR_VRSS_PRPR_SIGN.idx),
+                lwprVrssPrpr = spl.getOrNull(FieldIndex.LWPR_VRSS_PRPR.idx),
+                bsopDate = spl.getOrNull(FieldIndex.BSOP_DATE.idx),
+                newMkopClsCode = spl.getOrNull(FieldIndex.NEW_MKOP_CLS_CODE.idx),
+                trhtYn = spl.getOrNull(FieldIndex.TRHT_YN.idx),
+                askpRsqn1 = spl.getOrNull(FieldIndex.ASKP_RSQN1.idx),
+                bidpRsqn1 = spl.getOrNull(FieldIndex.BIDP_RSQN1.idx),
+                totalAskpRsqn = spl.getOrNull(FieldIndex.TOTAL_ASKP_RSQN.idx),
+                totalBidpRsqn = spl.getOrNull(FieldIndex.TOTAL_BIDP_RSQN.idx),
+                volTnrt = spl.getOrNull(FieldIndex.VOL_TNRT.idx),
+                prdySmnsHourAcmlVol = spl.getOrNull(FieldIndex.PRDY_SMNS_HOUR_ACML_VOL.idx),
+                prdySmnsHourAcmlVolRate = spl.getOrNull(FieldIndex.PRDY_SMNS_HOUR_ACML_VOL_RATE.idx),
+                hourClsCode = spl.getOrNull(FieldIndex.HOUR_CLS_CODE.idx),
+                mrktTrtmClsCode = spl.getOrNull(FieldIndex.MRKT_TRTM_CLS_CODE.idx),
+                viStndPrc = spl.getOrNull(FieldIndex.VI_STND_PRC.idx),
+            )
+        }
     }
 }

@@ -26,10 +26,10 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun BaseStockBox(
-    name: String,
+    name: String?,
     code: String?,
-    tradePrice: Int, // 현재 체결가
-    priceDiff: Int, // 전일 대비 상승가
+    tradePrice: Int?, // 현재 체결가
+    priceDiff: Int?, // 전일 대비 상승가
     onDelete: (String, String) -> Unit,
 ) {
     Row(
@@ -41,44 +41,55 @@ fun BaseStockBox(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Row(
-            modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                modifier = Modifier.width(300.dp),
-                text = name ?: "UNKNOWN",
-                style = TextStyle(
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
-                color = Color.White
+        if (name != null && code != null &&
+                tradePrice != null && priceDiff != null) {
+            Row(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    modifier = Modifier.width(300.dp),
+                    text = name.ifEmpty { "Unknown" },
+                    style = TextStyle(
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    color = Color.White
+                )
+
+                Spacer(Modifier.width(12.dp))
+
+                Text(
+                    text = "$tradePrice ($priceDiff)",
+                    style = TextStyle(
+                        fontSize = 30.sp,
+                        color = when {
+                            priceDiff > 0 -> Color.Red
+                            priceDiff < 0 -> Color.Blue
+                            else -> Color.Gray
+                        }
+                    )
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "삭제",
+                tint = Color.Red,
+                modifier = Modifier.clickable {
+                    onDelete(code, name)
+                }
             )
 
             Spacer(Modifier.width(12.dp))
-
+        } else {
             Text(
-                text = "$tradePrice ($priceDiff)",
+                text = "종목 정보 가져오는중...",
                 style = TextStyle(
                     fontSize = 30.sp,
-                    color = when {
-                        priceDiff > 0 -> Color.Red
-                        priceDiff < 0 -> Color.Blue
-                        else -> Color.Gray
-                    }
+                    color = Color.Gray
                 )
             )
         }
-
-        Icon(
-            imageVector = Icons.Default.Close,
-            contentDescription = "삭제",
-            tint = Color.Red,
-            modifier = Modifier.clickable {
-                if (code != null) onDelete(code, name)
-            }
-        )
-
-        Spacer(Modifier.width(12.dp))
     }
 }
 

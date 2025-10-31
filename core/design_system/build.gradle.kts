@@ -8,4 +8,6 @@ android {
     namespace = "com.leecoder.stockchart.design_system"
 }
 
-dependencies {}
+dependencies {
+    implementation(project(":core:model"))
+}

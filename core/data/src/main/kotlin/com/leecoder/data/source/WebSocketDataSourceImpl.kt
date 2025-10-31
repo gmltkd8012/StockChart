@@ -53,6 +53,9 @@ class WebSocketDataSourceImpl @Inject constructor(
 
     companion object {
         const val PING_PONG = "PINGPONG" // 웹소켓 하트비트 체크
+        const val SUBSCRIBE_CODE = "1" // 등록: "1"
+        const val UNSUBSCRIBE_CODE = "2" // 해제: "2"
+
     }
 
     private var webSocket: WebSocket? = null
@@ -110,8 +113,8 @@ class WebSocketDataSourceImpl @Inject constructor(
 
                                 webSocket.send(json.encodeToString(response))
                             } else {
-                                val response = json.decodeFromString<SubscribeResponse>(text)
-                                Log.i("heesang", "onMessage (response) -> ${response}")
+//                                val response = json.decodeFromString<SubscribeResponse>(text)
+//                                Log.i("heesang", "onMessage (response) -> ${response}")
                             }
                         }
 
@@ -120,8 +123,11 @@ class WebSocketDataSourceImpl @Inject constructor(
 
                     val parts = text.split("\\|".toRegex())
                     require(parts.size >= 4)
-                    val stockTick: StockTick = StockTickParser.parse(parts[parts.lastIndex])
-                    _channelStockTick.send(stockTick)
+
+                    StockTickParser.parse(parts[parts.lastIndex])
+                        .forEach { stockTick ->
+                            _channelStockTick.send(stockTick)
+                        }
                 }
 
             }
@@ -171,19 +177,23 @@ class WebSocketDataSourceImpl @Inject constructor(
 
     override fun initSubscribe(symbols: List<String>) {
         symbols.forEach { symbol ->
-            requestData(symbol)
+            requestData(symbol, SUBSCRIBE_CODE)
         }
     }
 
-    override fun addSubscribe(symbol: String) {
-        requestData(symbol)
+    override fun subscribe(symbol: String) {
+        requestData(symbol, SUBSCRIBE_CODE)
     }
 
-    private fun requestData(symbol: String) {
+    override fun unSubscribe(symbol: String) {
+        requestData(symbol, UNSUBSCRIBE_CODE)
+    }
+
+    private fun requestData(symbol: String, trType: String) {
         val header = WebSocketApprovalHeader(
             approvalKey = "",
             custType = "P",
-            trType = "1",
+            trType = trType,
             contentType = "utf-8",
         )
 
