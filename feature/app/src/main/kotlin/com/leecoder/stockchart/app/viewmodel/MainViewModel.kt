@@ -165,7 +165,8 @@ class MainViewModel @Inject constructor(
                         _subscribedMap.remove(key)
                     }
 
-                    codeToName.forEach { (key, _) ->
+                    val addList = codeToName.keys.filter { it !in _subscribedMap.keys }
+                    addList.forEach { key ->
                         _subscribedMap[key] = StockUiData()
                     }
 
