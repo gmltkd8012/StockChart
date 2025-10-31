@@ -110,13 +110,16 @@ fun MainScreen(
         ) {
             composable(Screen.Subscribe.route) {
                 SubscribeScreen(
+                    isConnected= state.isConnected,
                     textFieldState = textFieldState,
                     searchResult = state.searchResultList ?: emptyList(),
-                    registedCount = state.registedStock,
                     stockTick = state.stockTickMap?.values?.toList() ?: emptyList(),
-                    onClickedSymbol = { code, name ->
-                        viewModel.addSubscribeStock(code, name)
+                    onRegistedSymbol = { code, name ->
+                        viewModel.subscribeStock(code, name)
                         viewModel.onQueryChanged("")
+                    },
+                    onDeletedSymbol = { code, name ->
+                        viewModel.unSubsctibeStock(code, name)
                     }
 
                 )
@@ -136,13 +139,5 @@ fun MainScreen(
                 onFinish()
             }
         )
-    }
-}
-
-private fun String.iscdName(): String {
-    return when (this) {
-        "005930" -> "삼성 전자"
-        "000660" -> "SK 하이닉스"
-        else -> "UNKNOWN"
     }
 }

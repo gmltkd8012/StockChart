@@ -20,25 +20,35 @@ import com.leecoder.stockchart.model.ui.StockUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import java.net.InetAddress
+import java.nio.file.Files.find
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -50,8 +60,6 @@ class MainViewModel @Inject constructor(
     private val registedStockRepository: RegistedStockRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
-
-    private val tickMap = mutableMapOf<String, StockUiData>()
 
     private val _textFieldState = MutableStateFlow<String>("")
     val textFieldState: StateFlow<String> = _textFieldState
@@ -128,27 +136,50 @@ class MainViewModel @Inject constructor(
         collectStockTick()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun collectStockTick() {
         viewModelScope.launch(Dispatchers.IO) {
-            webSocketRepository.channelStockTick.consumeEach { tick ->
-                Log.d("heesang", "collectStockTick: $tick")
+            val stockTickFlow = webSocketRepository.channelStockTick
+                .consumeAsFlow()
+                .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 0)
 
-                tick.mkscShrnIscd?.let { iscd ->
-                    val parseName = registedStockRepository.getRegistedStockByCode(iscd).name
+           registedStockRepository.getRegistedStock()
+                .flatMapLatest { subscribedStocks ->
+                    if (subscribedStocks.isEmpty()) {
+                        reduceState {
+                            copy(
+                                stockTickMap = emptyMap()
+                            )
+                        }
+                        return@flatMapLatest emptyFlow()
+                    }
 
-                    tickMap[iscd] = StockUiData(
-                        code = iscd,
-                        name = parseName,
-                        tradePrice = tick.stckPrpr?.toInt(),
-                        priceDiff = tick.prdyVrss?.toInt(),
-                    )
-                }
+                    val subscribedMap =
+                        subscribedStocks.map { it.code }.associateWith { StockUiData() }.toMutableMap()
+                    val codeToName = subscribedStocks.associate { it.code to it.name }
 
+                    stockTickFlow
+                        .filter { it.mkscShrnIscd in subscribedMap.keys }
+                        .onEach { tick ->
+                            val stockUiData = StockUiData(
+                                code = tick.mkscShrnIscd,
+                                name = codeToName[tick.mkscShrnIscd],
+                                tradePrice = tick.stckPrpr?.toInt(),
+                                priceDiff = tick.prdyVrss?.toInt(),
+                            )
 
-                reduceState {
-                    copy(stockTickMap = tickMap.toMap())
-                }
-            }
+                            subscribedMap.put(
+                                key = tick.mkscShrnIscd ?: "",
+                                value = stockUiData
+                            )
+
+                            reduceState {
+                                copy(
+                                    stockTickMap = subscribedMap.toMap()
+                                )
+                            }
+                        }
+                }.launchIn(viewModelScope)
         }
     }
 
@@ -156,23 +187,20 @@ class MainViewModel @Inject constructor(
         launch(Dispatchers.IO) {
             val registedStock = registedStockRepository.getRegistedStock().first()
             webSocketRepository.initSubscribe(registedStock.map { it.code })
-
-            reduceState {
-                copy(registedStock = registedStock.size)
-            }
         }
     }
 
-    fun addSubscribeStock(code: String, name: String) {
+    fun subscribeStock(code: String, name: String) {
         launch(Dispatchers.IO) {
             registedStockRepository.insert(RegistedStockData(code, name))
-            val registedStock = registedStockRepository.getRegistedStock().first()
+            webSocketRepository.subscribe(code)
+        }
+    }
 
-            reduceState {
-                copy(registedStock = registedStock.size)
-            }
-
-            webSocketRepository.addSubscribe(code)
+    fun unSubsctibeStock(code: String, name: String) {
+        launch(Dispatchers.IO) {
+            registedStockRepository.delete(RegistedStockData(code, name))
+            webSocketRepository.unSubscribe(code)
         }
     }
 
@@ -198,7 +226,6 @@ data class MainState(
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
-    val registedStock: Int = 0
 )
 
 sealed interface MainSideEffect {
