@@ -123,8 +123,11 @@ class WebSocketDataSourceImpl @Inject constructor(
 
                     val parts = text.split("\\|".toRegex())
                     require(parts.size >= 4)
-                    val stockTick: StockTick = StockTickParser.parse(parts[parts.lastIndex])
-                    _channelStockTick.send(stockTick)
+
+                    StockTickParser.parse(parts[parts.lastIndex])
+                        .forEach { stockTick ->
+                            _channelStockTick.send(stockTick)
+                        }
                 }
 
             }
