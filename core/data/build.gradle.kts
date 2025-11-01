@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     alias(libs.plugins.library)
     alias(libs.plugins.lib.flavor)
@@ -7,6 +9,14 @@ plugins {
 
 android {
     namespace = "com.leecoder.stockchart.data"
+
+    val appKey: String = System.getenv("APP_KEY") ?: gradleLocalProperties(rootDir, providers).getProperty("app_key")
+    val appSecret: String = System.getenv("APP_SECRET") ?: gradleLocalProperties(rootDir, providers).getProperty("app_secret")
+
+    defaultConfig {
+        buildConfigField("String", "AppKey", appKey)
+        buildConfigField("String", "AppSecret", appSecret)
+    }
 }
 
 dependencies {

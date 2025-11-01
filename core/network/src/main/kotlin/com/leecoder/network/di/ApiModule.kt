@@ -1,6 +1,7 @@
 package com.leecoder.network.di
 
 import com.leecoder.network.StockChartNetwork
+import com.leecoder.network.api.DailyPriceApi
 import com.leecoder.network.api.TokenApi
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.network.createApi
@@ -31,6 +32,16 @@ internal object ApiModule {
     ): WebSocketApi {
         return stockChartNetwork.createApi<WebSocketApi>(
             baseUrl = "https://openapi.koreainvestment.com:9443/"
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideDaliyPriceApi(
+        stockChartNetwork: StockChartNetwork,
+    ): DailyPriceApi {
+        return stockChartNetwork.createApi<DailyPriceApi>(
+            baseUrl = "https://openapi.koreainvestment.com:9443"
         )
     }
 }

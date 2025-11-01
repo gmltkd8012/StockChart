@@ -1,12 +1,12 @@
 package com.leecoder.stockchart.app.viewmodel
 
 import android.util.Log
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.RegistedStockRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
@@ -20,6 +20,7 @@ import com.leecoder.stockchart.model.symbol.KrxSymbolData
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.model.ui.StockUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
+import com.leecoder.stockchart.util.calculator.BollingerCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,6 +61,7 @@ class MainViewModel @Inject constructor(
     private val webSocketRepository: WebSocketRepository,
     private val dataStoreRepository: DataStoreRepository,
     private val registedStockRepository: RegistedStockRepository,
+    private val ksInvestmentRepository: KsInvestmentRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
@@ -119,17 +121,17 @@ class MainViewModel @Inject constructor(
                 }
             }
 
-            launch(Dispatchers.IO) {
-                if (dataStoreRepository.currentKrInvestmentWebSocket.first() == null) {
-                    val post = webSocketRepository.postWebSocket(
-                        Credential.CLIENT_CREDENTIAL,
-                        Credential.APP_KEY,
-                        Credential.APP_SECRET,
-                    )
-
-                    if (!post.first) showErrorPopup(post.second)
-                }
-            }
+//            launch(Dispatchers.IO) {
+//                if (dataStoreRepository.currentKrInvestmentWebSocket.first() != null) {
+//                    val post = webSocketRepository.postWebSocket(
+//                        Credential.CLIENT_CREDENTIAL,
+//                        Credential.APP_KEY,
+//                        Credential.APP_SECRET,
+//                    )
+//
+//                    if (!post.first) showErrorPopup(post.second)
+//                }
+//            }
 
 
         }
@@ -138,6 +140,17 @@ class MainViewModel @Inject constructor(
     internal fun connectWebSocket() {
         connectToWebSocket()
         collectStockTick()
+
+//        launch {
+//            val list = ksInvestmentRepository.getDailyPrice(
+//                "005930",
+//                "D").first().map { it.stckClpr.toInt() }
+//
+//            Log.e("lynn", "[서버응답] -> $list")
+//
+//
+//            Log.e("lynn", "[하한가] -> ${BollingerCalculator().calculate(list)}")
+//        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -238,6 +251,7 @@ data class MainState(
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
+    val bollingerLowers: List<RegistedStockData> = emptyList()
 )
 
 sealed interface MainSideEffect {

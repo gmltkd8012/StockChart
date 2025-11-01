@@ -63,6 +63,7 @@ fun MainScreen(
     val textFieldState by viewModel.textFieldState.collectAsState()
 
     LaunchedEffect(Unit) {
+        viewModel.checkExpiredToken()
         viewModel.connectWebSocket()
     }
 
