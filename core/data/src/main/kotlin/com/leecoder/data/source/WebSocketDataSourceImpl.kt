@@ -157,26 +157,6 @@ class WebSocketDataSourceImpl @Inject constructor(
         webSocket = null
     }
 
-    override fun sendMessage() {
-        val header = WebSocketApprovalHeader(
-            approvalKey = "2a1f469a-9b05-41b0-8bde-4cb934d3d969",
-            custType = "P",
-            trType = "1",
-            contentType = "utf-8",
-        )
-
-        val body = WebSocketApprovalBody(
-            input = WebSocketApprovalInput(
-                id = "H0STCNT0",
-                key = "005930",
-            )
-        )
-
-        Log.d("heesang", "sendMessage Text -> ${Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body))} ")
-
-        webSocket?.send( Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body)))
-    }
-
     override fun initSubscribe(symbols: List<String>) {
         symbols.forEach { symbol ->
             requestData(symbol, SUBSCRIBE_CODE)
