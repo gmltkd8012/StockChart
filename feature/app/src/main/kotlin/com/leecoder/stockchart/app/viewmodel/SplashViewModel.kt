@@ -1,16 +1,21 @@
 package com.leecoder.stockchart.app.viewmodel
 
+import androidx.lifecycle.viewModelScope
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
+import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.ui.base.StateViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import okhttp3.WebSocket
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,7 +38,10 @@ class SplashViewModel @Inject constructor(
                     Credential.APP_KEY,
                 ).let { (isSuccess, errorMessage) ->
                     if (!isSuccess) {
-                        showTokenErrorPopup(errorMessage)
+                        showErrorPopup(
+                            errorCode = errorMessage?.errorCode,
+                            errorMessage = errorMessage?.errorDescription
+                        )
                         return@launch
                     }
                 }
@@ -45,11 +53,33 @@ class SplashViewModel @Inject constructor(
         }
     }
 
-    private fun showTokenErrorPopup(error: TokenError?) {
+    internal fun connectWebSocket() {
+        launch(Dispatchers.IO) {
+            webSocketRepository.connect(
+                "ws://ops.koreainvestment.com:21000/tryitout/H0STCNT0",
+            )
+
+            webSocketRepository.connectedWebSocketSession
+                .onEach { state ->
+                    if (state is WebSocketState.Error) {
+                        showErrorPopup(
+                            errorCode = "웹소켓 연결 실패",
+                            errorMessage = state.message
+                        )
+                    }
+
+                    reduceState {
+                        copy(connectWebSocekt = state)
+                    }
+                }.launchIn(this@SplashViewModel)
+        }
+    }
+
+    private fun showErrorPopup(errorCode: String?, errorMessage: String?) {
         launch(Dispatchers.IO) {
             sendSideEffect(SplashSideEffect.ErrorPopup(
-                errorCode = error?.errorCode,
-                errorMessage = error?.errorDescription,
+                errorCode = errorCode,
+                errorMessage = errorMessage,
             ))
         }
     }
@@ -64,5 +94,5 @@ sealed interface SplashSideEffect {
 
 data class SplashState(
     val hasToken: Boolean = false,
-    val connectWebSocekt: Boolean = false,
+    val connectWebSocekt: WebSocketState = WebSocketState.Connecting,
 )

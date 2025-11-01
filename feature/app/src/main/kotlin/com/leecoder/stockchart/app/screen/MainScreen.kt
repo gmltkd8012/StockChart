@@ -103,7 +103,6 @@ fun MainScreen(
         ) {
             composable(Screen.Subscribe.route) {
                 SubscribeScreen(
-                    isConnected= state.isConnected,
                     textFieldState = textFieldState,
                     searchResult = state.searchResultList ?: emptyList(),
                     stockTick = state.stockTickMap?.values?.toList() ?: emptyList(),

@@ -91,13 +91,6 @@ class MainViewModel @Inject constructor(
                     }
                 }
             }.launchIn(viewModelScope)
-
-        webSocketRepository.connectedWebSocketSession
-            .onEach { isConnected ->
-                reduceState {
-                    copy(isConnected = isConnected)
-                }
-            }.launchIn(viewModelScope)
     }
 
     fun onQueryChanged(text: String) {
@@ -124,7 +117,6 @@ class MainViewModel @Inject constructor(
     }
 
     internal fun connectWebSocket() {
-        connectToWebSocket()
         collectStockTick()
 
 //        launch {
@@ -213,12 +205,6 @@ class MainViewModel @Inject constructor(
             registedStockRepository.delete(RegistedStockData(code, name))
             webSocketRepository.unSubscribe(code)
         }
-    }
-
-    private fun connectToWebSocket() {
-        webSocketRepository.connect(
-            "ws://ops.koreainvestment.com:21000/tryitout/H0STCNT0",
-        )
     }
 }
 

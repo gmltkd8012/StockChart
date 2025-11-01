@@ -21,6 +21,7 @@ import com.leecoder.stockchart.app.viewmodel.MainSideEffect
 import com.leecoder.stockchart.app.viewmodel.SplashSideEffect
 import com.leecoder.stockchart.app.viewmodel.SplashViewModel
 import com.leecoder.stockchart.design_system.component.BaseDialog
+import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.ui.extension.hide
 import com.leecoder.stockchart.ui.extension.isShown
 import com.leecoder.stockchart.ui.extension.rememberErrorDialogState
@@ -49,11 +50,11 @@ fun SplashScreen(
 
     LaunchedEffect(Unit) {
         viewModel.checkToken()
+        viewModel.connectWebSocket()
     }
 
-    // TODO - 웹소켓도 추가좀 ..
     LaunchedEffect(state.hasToken, state.connectWebSocekt) {
-        if (state.hasToken) {
+        if (state.hasToken && state.connectWebSocekt is WebSocketState.Connected) {
             callMainScreen()
         }
     }

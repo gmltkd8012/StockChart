@@ -1,5 +1,6 @@
 package com.leecoder.data.repository
 
+import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.token.TokenError
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -9,7 +10,7 @@ import okhttp3.WebSocketListener
 interface WebSocketRepository {
 
     val channelStockTick: ReceiveChannel<StockTick>
-    val connectedWebSocketSession: Flow<Boolean>
+    val connectedWebSocketSession: Flow<WebSocketState>
 
     fun connect(url: String)
     fun disconnect()
