@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.leecoder.stockchart.app.screen.MainScreen
+import com.leecoder.stockchart.app.screen.SplashScreen
 import com.leecoder.stockchart.ui.theme.StockChartTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +31,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            MainScreen(
+            App(
                 onFinish = { finish() }
             )
         }

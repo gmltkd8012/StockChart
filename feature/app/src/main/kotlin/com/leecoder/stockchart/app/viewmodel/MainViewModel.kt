@@ -63,7 +63,7 @@ class MainViewModel @Inject constructor(
     private val registedStockRepository: RegistedStockRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
-): StateViewModel<MainState, MainSideEffect>(MainState()) {
+): StateViewModel<MainState, Nothing>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
 
@@ -106,20 +106,6 @@ class MainViewModel @Inject constructor(
 
     internal fun checkExpiredToken() {
         launch(Dispatchers.IO) {
-            val tokenExpiredTime =
-                dataStoreRepository.currentKrInvestmentTokenExpired.first() ?: 0L
-
-            launch(Dispatchers.IO) {
-                if (tokenExpiredTime < System.currentTimeMillis()) {
-                    val post = tokenRepository.postToken(
-                        Credential.CLIENT_CREDENTIAL,
-                        Credential.APP_SECRET,
-                        Credential.APP_KEY,
-                    )
-
-                    if (!post.first) showErrorPopup(post.second)
-                }
-            }
 
 //            launch(Dispatchers.IO) {
 //                if (dataStoreRepository.currentKrInvestmentWebSocket.first() != null) {
@@ -228,16 +214,6 @@ class MainViewModel @Inject constructor(
             webSocketRepository.unSubscribe(code)
         }
     }
-
-    private fun showErrorPopup(error: TokenError?) {
-        launch(Dispatchers.IO) {
-            sendSideEffect(MainSideEffect.TokenErrorPopup(
-                description = error?.errorDescription,
-                code = error?.errorCode,
-            ))
-        }
-    }
-
 
     private fun connectToWebSocket() {
         webSocketRepository.connect(

@@ -43,6 +43,7 @@ android {
 dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:data"))
+    implementation(project(":core:model"))
     implementation(project(":feature:app"))
 
     implementation(libs.retrofit.core)

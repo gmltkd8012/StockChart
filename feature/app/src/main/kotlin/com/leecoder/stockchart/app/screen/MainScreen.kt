@@ -1,6 +1,7 @@
 package com.leecoder.stockchart.app.screen
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.EnterTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -59,11 +60,9 @@ fun MainScreen(
 ) {
     val navController = rememberNavController()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var errorDialogState = rememberErrorDialogState<MainSideEffect.TokenErrorPopup>()
     val textFieldState by viewModel.textFieldState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.checkExpiredToken()
         viewModel.connectWebSocket()
     }
 
@@ -71,15 +70,8 @@ fun MainScreen(
         if (state.isConnected) viewModel.initSubcribeStock()
     }
 
-    viewModel.collectSideEffect { sideEffect ->
-        when (sideEffect) {
-            is MainSideEffect.TokenErrorPopup -> {
-                errorDialogState.show(
-                    description = sideEffect.description,
-                    code = sideEffect.code
-                )
-            }
-        }
+    BackHandler {
+        onFinish()
     }
 
     Scaffold(
@@ -129,16 +121,5 @@ fun MainScreen(
                 AlarmScreen()
             }
         }
-    }
-
-    if (errorDialogState.isShown) {
-        BaseDialog(
-            description = errorDialogState.value.description,
-            code = errorDialogState.value.code,
-            onClickConfirm = {
-                errorDialogState.hide()
-                onFinish()
-            }
-        )
     }
 }
