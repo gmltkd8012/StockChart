@@ -1,6 +1,9 @@
-package com.leecoder.stockchart.room.dao
+package com.leecoder.stockchart.room.di
 
 import com.leecoder.stockchart.room.AppDatabase
+import com.leecoder.stockchart.room.dao.BollingerDao
+import com.leecoder.stockchart.room.dao.KrxSymbolDao
+import com.leecoder.stockchart.room.dao.RegistedStockDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,4 +22,9 @@ object DaoModule {
     fun provideRegistedStockDao(
         database: AppDatabase
     ): RegistedStockDao = database.registedStockDao()
+
+    @Provides
+    fun provideBollingerDao(
+        database: AppDatabase
+    ): BollingerDao = database.bollingerDao()
 }
