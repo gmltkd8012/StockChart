@@ -2,12 +2,15 @@ package com.leecoder.data.di
 
 import com.leecoder.data.repository.KrxSymbolRepository
 import com.leecoder.data.repository.KrxSymbolRepositoryImpl
+import com.leecoder.data.repository.KsInvestmentRepository
+import com.leecoder.data.repository.KsInvestmentRepositoryImpl
 import com.leecoder.data.repository.RegistedStockRepository
 import com.leecoder.data.repository.RegistedStockRepositoryImpl
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.data.token.TokenRepositoryImpl
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.repository.WebSocketRepositoryImpl
+import com.leecoder.data.source.KsInvestmentDataSource
 import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.network.api.TokenApi
 import com.leecoder.network.api.WebSocketApi
@@ -45,4 +48,9 @@ object RepositoryModule {
     fun provideRegistedStockRepository(
         registedStockDao: RegistedStockDao,
     ): RegistedStockRepository = RegistedStockRepositoryImpl(registedStockDao)
+
+    @Provides
+    fun provideKsInvestmentRepository(
+        ksInvestmentDataSource: KsInvestmentDataSource,
+    ): KsInvestmentRepository = KsInvestmentRepositoryImpl(ksInvestmentDataSource)
 }

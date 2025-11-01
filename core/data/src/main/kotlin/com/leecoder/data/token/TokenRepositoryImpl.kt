@@ -32,8 +32,7 @@ class TokenRepositoryImpl @Inject constructor(
         return try {
             if (response.isSuccessful) {
                 val body = response.body() ?: return false to null
-                Log.d("heesang", "${response.body()!!.toData()}")
-                dataStoreRepository.refreshKrInvestmentToken(body.tokenType + body.accessToken)
+                dataStoreRepository.refreshKrInvestmentToken(body.tokenType + " " + body.accessToken)
                 dataStoreRepository.refreshKrInvestmentTokenExpired(body.tokenExpired)
                 true to null
             }  else {

@@ -9,6 +9,7 @@ import com.leecoder.network.entity.WebSocketApprovalBody
 import com.leecoder.network.entity.WebSocketApprovalHeader
 import com.leecoder.network.entity.WebSocketApprovalInput
 import com.leecoder.network.entity.WebSocketRequest
+import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.stock.HeartBeatResponse
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribeResponse
@@ -65,8 +66,8 @@ class WebSocketDataSourceImpl @Inject constructor(
     override val channelStockTick: ReceiveChannel<StockTick>
         get() = _channelStockTick
 
-    private val _connectedWebSocketSession: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    override val connectedWebSocketSession: Flow<Boolean>
+    private val _connectedWebSocketSession: MutableStateFlow<WebSocketState> = MutableStateFlow(WebSocketState.Connecting)
+    override val connectedWebSocketSession: Flow<WebSocketState>
         get() = _connectedWebSocketSession.asStateFlow()
 
     override fun connect(url: String) {
@@ -78,7 +79,7 @@ class WebSocketDataSourceImpl @Inject constructor(
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 super.onOpen(webSocket, response)
                 scope.launch {
-                    _connectedWebSocketSession.emit(true)
+                    _connectedWebSocketSession.emit(WebSocketState.Connected)
                 }
             }
 
@@ -134,8 +135,9 @@ class WebSocketDataSourceImpl @Inject constructor(
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
-                Log.e("heesang", "onFailure -> [code]: ${t.cause} / [msg]: ${t.message}")
-                Log.e("heesang", "onFailure -> [response] ${response}")
+                scope.launch {
+                    _connectedWebSocketSession.emit(WebSocketState.Error(t.message ?: "Unknown Error"))
+                }
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
@@ -153,26 +155,6 @@ class WebSocketDataSourceImpl @Inject constructor(
     override fun disconnect() {
         webSocket?.cancel()
         webSocket = null
-    }
-
-    override fun sendMessage() {
-        val header = WebSocketApprovalHeader(
-            approvalKey = "2a1f469a-9b05-41b0-8bde-4cb934d3d969",
-            custType = "P",
-            trType = "1",
-            contentType = "utf-8",
-        )
-
-        val body = WebSocketApprovalBody(
-            input = WebSocketApprovalInput(
-                id = "H0STCNT0",
-                key = "005930",
-            )
-        )
-
-        Log.d("heesang", "sendMessage Text -> ${Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body))} ")
-
-        webSocket?.send( Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body)))
     }
 
     override fun initSubscribe(symbols: List<String>) {
