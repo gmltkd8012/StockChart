@@ -2,10 +2,12 @@ package com.leecoder.stockchart.app.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.leecoder.data.repository.KsInvestmentRepository
+import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
+import com.leecoder.stockchart.domain.usecase.SaveAllBollingersUseCase
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.ui.base.StateViewModel
@@ -24,6 +26,8 @@ class SplashViewModel @Inject constructor(
     private val tokenRepository: TokenRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val dataStoreRepository: DataStoreRepository,
+    private val roomDatabaseRepository: RoomDatabaseRepository,
+    private val saveAllBollingersUseCase: SaveAllBollingersUseCase,
 ): StateViewModel<SplashState, SplashSideEffect>(SplashState()) {
 
     internal fun checkToken(){
@@ -75,6 +79,16 @@ class SplashViewModel @Inject constructor(
         }
     }
 
+    internal fun calculatorBollingers() {
+        launch(Dispatchers.IO) {
+            val insertComplete = saveAllBollingersUseCase()
+
+            reduceState {
+                copy(isCompleteBollinger = insertComplete)
+            }
+        }
+    }
+
     private fun showErrorPopup(errorCode: String?, errorMessage: String?) {
         launch(Dispatchers.IO) {
             sendSideEffect(SplashSideEffect.ErrorPopup(
@@ -94,5 +108,6 @@ sealed interface SplashSideEffect {
 
 data class SplashState(
     val hasToken: Boolean = false,
+    val isCompleteBollinger: Boolean = false,
     val connectWebSocekt: WebSocketState = WebSocketState.Connecting,
 )
