@@ -3,6 +3,7 @@ package com.leecoder.stockchart.app.screen
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.leecoder.stockchart.app.viewmodel.MainSideEffect
 import com.leecoder.stockchart.app.viewmodel.MainViewModel
@@ -59,6 +61,9 @@ fun MainScreen(
     onFinish: () -> Unit,
 ) {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination?.route
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val textFieldState by viewModel.textFieldState.collectAsState()
 
@@ -72,6 +77,14 @@ fun MainScreen(
 
     BackHandler {
         onFinish()
+    }
+
+    LaunchedEffect(textFieldState, currentDestination) {
+        if (textFieldState.isNotEmpty() && currentDestination != Screen.Search.route) {
+            navController.navigate(Screen.Search.route)
+        } else if (textFieldState.isEmpty() && currentDestination == Screen.Search.route) {
+            navController.popBackStack()
+        }
     }
 
     Scaffold(
@@ -90,14 +103,17 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            BaseNavigationBar(navController, Screen.allScreen)
+            BaseNavigationBar(navController, Screen.navScreen)
         }
     ) { innerPadding ->
 
         NavHost(
             navController = navController,
             startDestination = Screen.Subscribe.route,
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
             modifier = Modifier
+                .background(Color.White)
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp),
         ) {
@@ -118,6 +134,16 @@ fun MainScreen(
             }
             composable(Screen.Alarm.route) {
                 AlarmScreen()
+            }
+            composable(Screen.Search.route) {
+                SearchScreen(
+                    textFieldState = textFieldState,
+                    searchResult = state.searchResultList ?: emptyList(),
+                    onRegistedSymbol = { code, name ->
+                        //viewModel.subscribeStock(code, name)
+                        viewModel.onQueryChanged("")
+                    },
+                )
             }
         }
     }

@@ -40,49 +40,7 @@ fun SubscribeScreen(
             .background(Color.White),
     ) {
         if (textFieldState.isNotEmpty()) {
-            if (searchResult.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "검색 결과가 없어요.",
-                        style = TextStyle(
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    )
-                }
-            } else {
-                Column {
-                    Spacer(Modifier.height(8.dp))
 
-                    Text(
-                        text = "검색된 종목 결과",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    LazyColumn {
-                        items(searchResult) { result ->
-                            BaseSymbolItem(
-                                name = result.name,
-                                code = result.code,
-                                onClick = { (code, name) ->
-                                    onRegistedSymbol(code, name)
-                                }
-                            )
-
-                            Spacer(Modifier.height(12.dp))
-                        }
-                    }
-                }
-            }
         } else {
             Box(
                 modifier = Modifier
@@ -99,11 +57,12 @@ fun SubscribeScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "종목을 구독하세요.",
+                                text = "종목을 구독해주세요.",
                                 style = TextStyle(
-                                    fontSize = 50.sp,
-                                    color = Color.Gray
-                                )
+                                    fontSize = 30.sp,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                color = Color.Gray
                             )
                         }
                     } else {
