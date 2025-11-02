@@ -4,7 +4,7 @@ import com.leecoder.data.source.KsInvestmentDataSoruceImpl
 import com.leecoder.data.source.KsInvestmentDataSource
 import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.data.source.WebSocketDataSourceImpl
-import com.leecoder.network.api.DailyPriceApi
+import com.leecoder.network.api.KisInvestmentApi
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import dagger.Module
@@ -27,7 +27,7 @@ object DataSourceModule {
     @Provides
     fun provideKrInvestmentDataSource(
         @Named("stock") client: OkHttpClient,
-        dailyPriceApi: DailyPriceApi,
+        kisInvestmentApi: KisInvestmentApi,
         dataStoreRepository: DataStoreRepository,
-    ): KsInvestmentDataSource = KsInvestmentDataSoruceImpl(client, dailyPriceApi, dataStoreRepository)
+    ): KsInvestmentDataSource = KsInvestmentDataSoruceImpl(client, kisInvestmentApi, dataStoreRepository)
 }

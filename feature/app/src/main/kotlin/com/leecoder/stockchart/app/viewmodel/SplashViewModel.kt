@@ -1,5 +1,6 @@
 package com.leecoder.stockchart.app.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.RoomDatabaseRepository
@@ -8,6 +9,7 @@ import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SaveAllBollingersUseCase
+import com.leecoder.stockchart.domain.usecase.UpdateCurrentPricesUseCase
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.ui.base.StateViewModel
@@ -28,6 +30,7 @@ class SplashViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
     private val saveAllBollingersUseCase: SaveAllBollingersUseCase,
+    private val updateCurrentPricesUseCase: UpdateCurrentPricesUseCase,
 ): StateViewModel<SplashState, SplashSideEffect>(SplashState()) {
 
     internal fun checkToken(){
@@ -86,6 +89,12 @@ class SplashViewModel @Inject constructor(
             reduceState {
                 copy(isCompleteBollinger = insertComplete)
             }
+        }
+    }
+
+    internal fun saveCurrentPrices() {
+        launch(Dispatchers.IO) {
+            updateCurrentPricesUseCase()
         }
     }
 

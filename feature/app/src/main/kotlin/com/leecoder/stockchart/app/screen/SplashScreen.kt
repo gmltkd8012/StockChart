@@ -53,11 +53,14 @@ fun SplashScreen(
         viewModel.connectWebSocket()
     }
 
-    LaunchedEffect(state.hasToken, state.connectWebSocekt, state.isCompleteBollinger) {
+    LaunchedEffect(state.hasToken) {
         if (state.hasToken) {
             viewModel.calculatorBollingers()
+            viewModel.saveCurrentPrices()
         }
+    }
 
+    LaunchedEffect(state.hasToken, state.connectWebSocekt, state.isCompleteBollinger) {
         if (state.hasToken &&
             state.isCompleteBollinger &&
             state.connectWebSocekt is WebSocketState.Connected) {
