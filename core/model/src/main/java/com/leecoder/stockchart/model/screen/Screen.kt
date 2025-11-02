@@ -3,6 +3,7 @@ package com.leecoder.stockchart.model.screen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -23,8 +24,14 @@ sealed class Screen(
         icon = Icons.Default.Notifications,
     )
 
+    data object Search: Screen(
+        route = "search",
+        label = "검색",
+        icon = Icons.Default.Search,
+    )
+
     companion object {
-        val allScreen = listOf(
+        val navScreen = listOf(
             Subscribe,
             Alarm,
         )

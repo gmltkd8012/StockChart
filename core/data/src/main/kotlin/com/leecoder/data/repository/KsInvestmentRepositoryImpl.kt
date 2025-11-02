@@ -1,6 +1,7 @@
 package com.leecoder.data.repository
 
 import com.leecoder.data.source.KsInvestmentDataSource
+import com.leecoder.stockchart.model.stock.CurrentPriceData
 import com.leecoder.stockchart.model.stock.DailyPriceData
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -15,4 +16,8 @@ class KsInvestmentRepositoryImpl @Inject constructor(
         iscd: String,
         periodCode: String
     ): Flow<List<DailyPriceData>> = ksInvestmentDataSource.getDailyPrice(iscd, periodCode)
+
+    override suspend fun getCurrentPrice(
+        iscd: String
+    ): Flow<CurrentPriceData> = ksInvestmentDataSource.getCurrentPrice(iscd)
 }

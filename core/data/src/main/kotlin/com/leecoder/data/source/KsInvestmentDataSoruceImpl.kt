@@ -1,12 +1,13 @@
 package com.leecoder.data.source
 
 import android.util.Log
-import com.leecoder.network.api.DailyPriceApi
+import com.leecoder.network.api.KisInvestmentApi
 import com.leecoder.network.entity.DailyPriceResponse
-import com.leecoder.network.entity.DailyPriceRquestHeader
+import com.leecoder.network.entity.KisInvestmentRquestHeader
 import com.leecoder.network.entity.toData
 import com.leecoder.stockchart.data.BuildConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
+import com.leecoder.stockchart.model.stock.CurrentPriceData
 import com.leecoder.stockchart.model.stock.DailyPriceData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -20,7 +21,7 @@ import javax.inject.Named
 
 class KsInvestmentDataSoruceImpl @Inject constructor(
     @Named("stock") private val client: OkHttpClient,
-    private val dailyPriceApi: DailyPriceApi,
+    private val kisInvestmentApi: KisInvestmentApi,
     private val datsStoreRepository: DataStoreRepository,
 ): KsInvestmentDataSource {
 
@@ -35,7 +36,7 @@ class KsInvestmentDataSoruceImpl @Inject constructor(
             return flow { emit(emptyList()) }
         }
 
-        val requestHeader = DailyPriceRquestHeader(
+        val requestHeader = KisInvestmentRquestHeader(
             contentType = "application/json; charset=utf-8",
             authorization = authorization,
             appkey = BuildConfig.AppKey,
@@ -53,8 +54,8 @@ class KsInvestmentDataSoruceImpl @Inject constructor(
 
         return flow {
             emit (
-                dailyPriceApi.getDailyPrice(
-                    contentType = null,
+                kisInvestmentApi.getDailyPrice(
+                    contentType = requestHeader.contentType,
                     authorization = requestHeader.authorization,
                     appkey = requestHeader.appkey,
                     appsecret = requestHeader.appsecret,
@@ -65,6 +66,48 @@ class KsInvestmentDataSoruceImpl @Inject constructor(
                     divCode = periodCode,
                     prc = "1",
                 ).output.map { it.toData() }
+            )
+        }
+    }
+
+    override suspend fun getCurrentPrice(iscd: String): Flow<CurrentPriceData> {
+        val authorization = datsStoreRepository.currentKrInvestmentToken.first()
+
+        if (authorization == null) {
+            Log.e("[LeeCode]", "Error : Token is null")
+            return flow { emit(CurrentPriceData(stckPrpr = "-1")) }
+        }
+
+        val requestHeader = KisInvestmentRquestHeader(
+            contentType = "application/json; charset=utf-8",
+            authorization = authorization,
+            appkey = BuildConfig.AppKey,
+            appsecret = BuildConfig.AppSecret,
+            personalseckeypkey = null,
+            trId = "FHKST01010300",
+            trCont = null,
+            custtype = "P",
+            seqNo = null,
+            macAddress = null,
+            phoneNumber = null,
+            ipAddr = null,
+            gtUid = null,
+        )
+
+        Log.d("lynn", "[서버 요청]")
+
+        return flow {
+            emit (
+                kisInvestmentApi.getCurrentPrice(
+                    contentType = requestHeader.contentType,
+                    authorization = requestHeader.authorization,
+                    appkey = requestHeader.appkey,
+                    appsecret = requestHeader.appsecret,
+                    trId = requestHeader.trId,
+                    custtype = requestHeader.custtype,
+                    mrktDivCode = "J",
+                    inputIscd = iscd,
+                ).output.first().toData()
             )
         }
     }

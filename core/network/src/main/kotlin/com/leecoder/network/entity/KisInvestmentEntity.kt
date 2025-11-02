@@ -1,12 +1,13 @@
 package com.leecoder.network.entity
 
+import com.leecoder.stockchart.model.stock.CurrentPriceData
 import com.leecoder.stockchart.model.stock.DailyPriceData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class DailyPriceRquestHeader(
+data class KisInvestmentRquestHeader(
     @SerialName("content-type") val contentType: String?, // 컨텐츠타입
     @SerialName("authorization") val authorization: String, // 접근 토큰
     @SerialName("appkey") val appkey: String, // 앱 키
@@ -23,8 +24,9 @@ data class DailyPriceRquestHeader(
 )
 
 @Serializable
-data class DailyPriceResponse(
-    @SerialName("output") val output: List<DailyPriceResponse.Output>,
+data class KisInvestmentResponse(
+    @SerialName("header") val header: KisInvestmentResponse.Header,
+    @SerialName("body") val body: KisInvestmentResponse.Body,
 ) {
     @Serializable
     data class Header(
@@ -41,7 +43,12 @@ data class DailyPriceResponse(
         @SerialName("msg1") val msg1: String,
         @SerialName("output") val output: List<DailyPriceResponse.Output>,
     )
+}
 
+@Serializable
+data class DailyPriceResponse(
+    @SerialName("output") val output: List<DailyPriceResponse.Output>,
+) {
     @Serializable
     data class Output(
         @SerialName("stck_bsop_date") val stckBsopDate: String,
@@ -61,8 +68,28 @@ data class DailyPriceResponse(
     )
 }
 
+@Serializable
+data class CurrentPriceResponse(
+    @SerialName("output") val output: List<CurrentPriceResponse.Output>,
+) {
+    @Serializable
+    data class Output(
+        @SerialName("stck_cntg_hour") val stckCntgHour: String,
+        @SerialName("stck_prpr") val stckPrpr: String,
+        @SerialName("prdy_vrss") val prdyVrss: String,
+        @SerialName("prdy_vrss_sign") val prdyVrssSign: String,
+        @SerialName("cntg_vol") val cntgVol: String,
+        @SerialName("tday_rltv") val tdayRltv: String,
+        @SerialName("prdy_ctrt") val prdyCtrt: String,
+    )
+}
+
 fun DailyPriceResponse.Output.toData() = DailyPriceData(
     stckBsopDate = stckBsopDate,
     stckClpr = stckClpr,
     acmlVol = acmlVol
+)
+
+fun CurrentPriceResponse.Output.toData() = CurrentPriceData(
+    stckPrpr = stckPrpr
 )
