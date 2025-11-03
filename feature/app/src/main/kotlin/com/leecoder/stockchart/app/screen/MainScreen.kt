@@ -67,10 +67,18 @@ fun MainScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val textFieldState by viewModel.textFieldState.collectAsState()
 
+    val isShowAlarmBadge = remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         viewModel.collectStockTick()
     }
 
+    LaunchedEffect(state.bollingerLowers) {
+        Log.d("lynn", "[BollingerLowers]: ${state.bollingerLowers}")
+        if (state.bollingerLowers.isNotEmpty()) {
+            isShowAlarmBadge.value = true
+        }
+    }
 
     BackHandler {
         onFinish()
@@ -100,7 +108,14 @@ fun MainScreen(
             )
         },
         bottomBar = {
-            BaseNavigationBar(navController, Screen.navScreen)
+            BaseNavigationBar(
+                navController = navController,
+                items = Screen.navScreen,
+                hasAlarm = isShowAlarmBadge.value,
+                onClickNav = {
+                    isShowAlarmBadge.value = false
+                }
+            )
         }
     ) { innerPadding ->
 
@@ -116,13 +131,7 @@ fun MainScreen(
         ) {
             composable(Screen.Subscribe.route) {
                 SubscribeScreen(
-                    textFieldState = textFieldState,
-                    searchResult = state.searchResultList ?: emptyList(),
                     stockTick = state.stockTickMap?.values?.toList() ?: emptyList(),
-                    onRegistedSymbol = { code, name ->
-                        viewModel.subscribeStock(code, name)
-                        viewModel.onQueryChanged("")
-                    },
                     onDeletedSymbol = { code, name ->
                         viewModel.unSubsctibeStock(code, name)
                     }
@@ -130,7 +139,11 @@ fun MainScreen(
                 )
             }
             composable(Screen.Alarm.route) {
-                AlarmScreen()
+                AlarmScreen(
+                    bollingers = state.bollingerLowers,
+                    maxCount = state.stockTickMap?.size ?: 0,
+                    onDeletedAlarm = {_,_ -> }
+                )
             }
             composable(Screen.Search.route) {
                 SearchScreen(

@@ -19,7 +19,9 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun BaseRegistedBox(
-    count: Int,
+    title: String,
+    currentCount: Int,
+    maxCount: Int = 30
 ) {
     Row(
         modifier = Modifier
@@ -30,7 +32,7 @@ fun BaseRegistedBox(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "구독 종목",
+            text = title,
             style = TextStyle(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -41,7 +43,7 @@ fun BaseRegistedBox(
         Spacer(Modifier.height(8.dp))
 
         Text(
-            text = "${count}/30",
+            text = "${currentCount}/${maxCount}",
             style = TextStyle(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold

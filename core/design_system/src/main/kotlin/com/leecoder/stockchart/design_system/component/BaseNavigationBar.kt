@@ -24,7 +24,9 @@ import com.leecoder.stockchart.model.screen.Screen
 @Composable
 fun BaseNavigationBar(
     navController: NavController,
-    items: List<Screen>
+    items: List<Screen>,
+    hasAlarm: Boolean,
+    onClickNav: (Screen) -> Unit,
 ) {
     NavigationBar(
         containerColor = Color.Gray,
@@ -43,8 +45,12 @@ fun BaseNavigationBar(
                 NavButton (
                     icon = item.icon,
                     title = item.label,
+                    screen = item,
                     isSelected = selected,
+                    isShownBadge = hasAlarm
                 ) {
+                    onClickNav(item)
+
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true

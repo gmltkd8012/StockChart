@@ -8,12 +8,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.RegistedStockRepository
+import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
+import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.RegistedStockData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
@@ -62,10 +64,12 @@ class MainViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val registedStockRepository: RegistedStockRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
+    private val roomDatabaseRepository: RoomDatabaseRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
 ): StateViewModel<MainState, Nothing>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
+    private val _bollingerLowers = mutableSetOf<BollingerData>()
 
     private val _textFieldState = MutableStateFlow<String>("")
     val textFieldState: StateFlow<String> = _textFieldState
@@ -115,6 +119,8 @@ class MainViewModel @Inject constructor(
                         return@flatMapLatest emptyFlow()
                     }
 
+                    val bollingerLowerList = roomDatabaseRepository.getAllBollingers().first()
+
                     val codeToName = subscribedStocks.associate { it.code to it.name }
 
                     val removeList = _subscribedMap.keys.filter { it !in codeToName.keys }
@@ -130,6 +136,16 @@ class MainViewModel @Inject constructor(
                     stockTickFlow
                         .filter { it.mkscShrnIscd in _subscribedMap.keys }
                         .onEach { tick ->
+                            val currentBollingerData = bollingerLowerList.find { it.code == tick.mkscShrnIscd }
+
+                            currentBollingerData?.let { v -> // 종목 데이터 틱당 볼린저 계산하여 리스트 등록
+                                val currentPrice = tick.stckPrpr?.toInt() ?: 0
+
+                                if (currentBollingerData.lower > currentPrice && currentPrice > 0) {
+                                    _bollingerLowers.add(v)
+                                }
+                            }
+
                             val stockUiData = StockUiData(
                                 code = tick.mkscShrnIscd,
                                 name = codeToName[tick.mkscShrnIscd],
@@ -144,7 +160,8 @@ class MainViewModel @Inject constructor(
 
                             reduceState {
                                 copy(
-                                    stockTickMap = _subscribedMap.toMap()
+                                    stockTickMap = _subscribedMap.toMap(),
+                                    bollingerLowers = _bollingerLowers.toList()
                                 )
                             }
                         }
@@ -172,7 +189,7 @@ data class MainState(
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
-    val bollingerLowers: List<RegistedStockData> = emptyList()
+    val bollingerLowers: List<BollingerData> = emptyList()
 )
 
 sealed interface MainSideEffect {
