@@ -155,6 +155,9 @@ fun MainScreen(
                     },
                 )
             }
+            composable(Screen.Setting.route) {
+                SettingScreen()
+            }
         }
     }
 }
