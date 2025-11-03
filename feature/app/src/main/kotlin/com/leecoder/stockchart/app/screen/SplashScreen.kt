@@ -50,7 +50,14 @@ fun SplashScreen(
 
     LaunchedEffect(Unit) {
         viewModel.checkToken()
+        viewModel.checkAprovalKey()
         viewModel.connectWebSocket()
+    }
+
+    LaunchedEffect(state.hasApprovalKey, state.connectWebSocekt) {
+        if (state.hasApprovalKey && state.connectWebSocekt is WebSocketState.Connected) {
+            viewModel.initSubcribeStock()
+        }
     }
 
     LaunchedEffect(state.hasToken) {

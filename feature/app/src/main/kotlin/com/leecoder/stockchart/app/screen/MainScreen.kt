@@ -68,12 +68,9 @@ fun MainScreen(
     val textFieldState by viewModel.textFieldState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.connectWebSocket()
+        viewModel.collectStockTick()
     }
 
-    LaunchedEffect(state.isConnected) {
-        if (state.isConnected) viewModel.initSubcribeStock()
-    }
 
     BackHandler {
         onFinish()
@@ -140,7 +137,7 @@ fun MainScreen(
                     textFieldState = textFieldState,
                     searchResult = state.searchResultList ?: emptyList(),
                     onRegistedSymbol = { code, name ->
-                        //viewModel.subscribeStock(code, name)
+                        viewModel.subscribeStock(code, name)
                         viewModel.onQueryChanged("")
                     },
                 )

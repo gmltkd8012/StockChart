@@ -97,42 +97,8 @@ class MainViewModel @Inject constructor(
         _textFieldState.value = text
     }
 
-    internal fun checkExpiredToken() {
-        launch(Dispatchers.IO) {
-
-//            launch(Dispatchers.IO) {
-//                if (dataStoreRepository.currentKrInvestmentWebSocket.first() != null) {
-//                    val post = webSocketRepository.postWebSocket(
-//                        Credential.CLIENT_CREDENTIAL,
-//                        Credential.APP_KEY,
-//                        Credential.APP_SECRET,
-//                    )
-//
-//                    if (!post.first) showErrorPopup(post.second)
-//                }
-//            }
-
-
-        }
-    }
-
-    internal fun connectWebSocket() {
-        collectStockTick()
-
-//        launch {
-//            val list = ksInvestmentRepository.getDailyPrice(
-//                "005930",
-//                "D").first().map { it.stckClpr.toInt() }
-//
-//            Log.e("lynn", "[서버응답] -> $list")
-//
-//
-//            Log.e("lynn", "[하한가] -> ${BollingerCalculator().calculate(list)}")
-//        }
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun collectStockTick() {
+    internal fun collectStockTick() {
         viewModelScope.launch(Dispatchers.IO) {
             val stockTickFlow = webSocketRepository.channelStockTick
                 .consumeAsFlow()
@@ -183,13 +149,6 @@ class MainViewModel @Inject constructor(
                             }
                         }
                 }.launchIn(viewModelScope)
-        }
-    }
-
-    fun initSubcribeStock() {
-        launch(Dispatchers.IO) {
-            val registedStock = registedStockRepository.getRegistedStock().first()
-            webSocketRepository.initSubscribe(registedStock.map { it.code })
         }
     }
 

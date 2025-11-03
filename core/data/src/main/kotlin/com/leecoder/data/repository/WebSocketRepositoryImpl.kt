@@ -36,15 +36,15 @@ class WebSocketRepositoryImpl @Inject constructor(
         webSocketDataSource.disconnect()
     }
 
-    override fun initSubscribe(symbols: List<String>) {
+    override suspend fun initSubscribe(symbols: List<String>) {
         webSocketDataSource.initSubscribe(symbols)
     }
 
-    override fun subscribe(symbol: String) {
+    override suspend fun subscribe(symbol: String) {
        webSocketDataSource.subscribe(symbol)
     }
 
-    override fun unSubscribe(symbol: String) {
+    override suspend fun unSubscribe(symbol: String) {
         webSocketDataSource.unSubscribe(symbol)
     }
 
