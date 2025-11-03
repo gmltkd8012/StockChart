@@ -28,10 +28,7 @@ import com.leecoder.stockchart.model.ui.StockUiData
 
 @Composable
 fun SubscribeScreen(
-    textFieldState: String,
-    searchResult: List<KrxSymbolData>,
     stockTick: List<StockUiData>,
-    onRegistedSymbol: (code: String, name: String) -> Unit,
     onDeletedSymbol: (code: String, name: String) -> Unit,
 ) {
     Box(
@@ -39,48 +36,42 @@ fun SubscribeScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
-        if (textFieldState.isNotEmpty()) {
+        Column {
+            Spacer(Modifier.height(20.dp))
+            BaseRegistedBox(
+                title = "구독 종목",
+                currentCount = stockTick.size,
+            )
+            Spacer(Modifier.height(16.dp))
 
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                Column {
-                    Spacer(Modifier.height(20.dp))
-                    BaseRegistedBox(count = stockTick.size)
-                    Spacer(Modifier.height(16.dp))
-
-                    if (stockTick.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "종목을 구독해주세요.",
-                                style = TextStyle(
-                                    fontSize = 30.sp,
-                                    fontWeight = FontWeight.Bold,
-                                ),
-                                color = Color.Gray
-                            )
-                        }
-                    } else {
-                        LazyColumn {
-                            items(stockTick) { stockTick ->
-                                BaseStockBox(
-                                    name =  stockTick.name,
-                                    code = stockTick.code,
-                                    tradePrice = stockTick.tradePrice,
-                                    priceDiff = stockTick.priceDiff,
-                                    onDelete = { code, name ->
-                                        onDeletedSymbol(code, name)
-                                    }
-                                )
-
-                                Spacer(Modifier.height(12.dp))
+            if (stockTick.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "종목을 구독해주세요.",
+                        style = TextStyle(
+                            fontSize = 30.sp,
+                            fontWeight = FontWeight.Bold,
+                        ),
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                LazyColumn {
+                    items(stockTick) { stockTick ->
+                        BaseStockBox(
+                            name =  stockTick.name,
+                            code = stockTick.code,
+                            tradePrice = stockTick.tradePrice,
+                            priceDiff = stockTick.priceDiff,
+                            onDelete = { code, name ->
+                                onDeletedSymbol(code, name)
                             }
-                        }
+                        )
+
+                        Spacer(Modifier.height(12.dp))
                     }
                 }
             }

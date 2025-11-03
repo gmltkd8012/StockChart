@@ -9,6 +9,7 @@ import com.leecoder.network.entity.WebSocketApprovalBody
 import com.leecoder.network.entity.WebSocketApprovalHeader
 import com.leecoder.network.entity.WebSocketApprovalInput
 import com.leecoder.network.entity.WebSocketRequest
+import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.stock.HeartBeatResponse
 import com.leecoder.stockchart.model.stock.StockTick
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -46,10 +48,13 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 import javax.inject.Named
+import javax.inject.Singleton
 
+@Singleton
 class WebSocketDataSourceImpl @Inject constructor(
     @Named("websocket") private val client: OkHttpClient,
     private val webSocketApi: WebSocketApi,
+    private val dataStoreRepository: DataStoreRepository,
 ): WebSocketDataSource {
 
     companion object {
@@ -135,6 +140,7 @@ class WebSocketDataSourceImpl @Inject constructor(
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
+                Log.e("heesang", "onFailure: ${t.message} / ${t.cause} / $response ")
                 scope.launch {
                     _connectedWebSocketSession.emit(WebSocketState.Error(t.message ?: "Unknown Error"))
                 }
@@ -157,23 +163,29 @@ class WebSocketDataSourceImpl @Inject constructor(
         webSocket = null
     }
 
-    override fun initSubscribe(symbols: List<String>) {
+    override suspend fun initSubscribe(symbols: List<String>) {
+        val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
+
         symbols.forEach { symbol ->
-            requestData(symbol, SUBSCRIBE_CODE)
+            requestData(approvalKey, symbol, SUBSCRIBE_CODE)
         }
     }
 
-    override fun subscribe(symbol: String) {
-        requestData(symbol, SUBSCRIBE_CODE)
+    override suspend fun subscribe(symbol: String) {
+        val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
+        requestData(approvalKey, symbol, SUBSCRIBE_CODE)
     }
 
-    override fun unSubscribe(symbol: String) {
-        requestData(symbol, UNSUBSCRIBE_CODE)
+    override suspend fun unSubscribe(symbol: String) {
+        val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
+        requestData(approvalKey, symbol, UNSUBSCRIBE_CODE)
     }
 
-    private fun requestData(symbol: String, trType: String) {
+    private fun requestData(approvalKey:String?, symbol: String, trType: String) {
+        if (approvalKey == null) return
+
         val header = WebSocketApprovalHeader(
-            approvalKey = "",
+            approvalKey = approvalKey,
             custType = "P",
             trType = trType,
             contentType = "utf-8",

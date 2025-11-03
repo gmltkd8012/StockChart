@@ -3,6 +3,7 @@ package com.leecoder.stockchart.app.viewmodel
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.leecoder.data.repository.KsInvestmentRepository
+import com.leecoder.data.repository.RegistedStockRepository
 import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
@@ -15,6 +16,7 @@ import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.ui.base.StateViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -29,6 +31,7 @@ class SplashViewModel @Inject constructor(
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val dataStoreRepository: DataStoreRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
+    private val registedStockRepository: RegistedStockRepository,
     private val saveAllBollingersUseCase: SaveAllBollingersUseCase,
     private val updateCurrentPricesUseCase: UpdateCurrentPricesUseCase,
 ): StateViewModel<SplashState, SplashSideEffect>(SplashState()) {
@@ -56,6 +59,32 @@ class SplashViewModel @Inject constructor(
 
             reduceState {
                 copy(hasToken = true)
+            }
+        }
+    }
+
+    internal fun checkAprovalKey() {
+        launch(Dispatchers.IO) {
+            val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
+
+            if (approvalKey == null) {
+                webSocketRepository.postWebSocket(
+                    Credential.CLIENT_CREDENTIAL,
+                    Credential.APP_KEY,
+                    Credential.APP_SECRET,
+                ).let { (isSuccess, errorMessage) ->
+                    if (!isSuccess) {
+                        showErrorPopup(
+                            errorCode = errorMessage?.errorCode,
+                            errorMessage = errorMessage?.errorDescription
+                        )
+                        return@launch
+                    }
+                }
+            }
+
+            reduceState {
+                copy(hasApprovalKey = true)
             }
         }
     }
@@ -98,6 +127,16 @@ class SplashViewModel @Inject constructor(
         }
     }
 
+    internal fun initSubcribeStock() {
+        launch(Dispatchers.IO) {
+            val registedStock = registedStockRepository.getRegistedStock().first()
+
+            webSocketRepository.initSubscribe(
+                registedStock.map { it.code }
+            )
+        }
+    }
+
     private fun showErrorPopup(errorCode: String?, errorMessage: String?) {
         launch(Dispatchers.IO) {
             sendSideEffect(SplashSideEffect.ErrorPopup(
@@ -117,6 +156,7 @@ sealed interface SplashSideEffect {
 
 data class SplashState(
     val hasToken: Boolean = false,
+    val hasApprovalKey: Boolean = false,
     val isCompleteBollinger: Boolean = false,
     val connectWebSocekt: WebSocketState = WebSocketState.Connecting,
 )

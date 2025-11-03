@@ -14,7 +14,7 @@ interface WebSocketDataSource {
 
     fun connect(url: String)
     fun disconnect()
-    fun initSubscribe(symbols: List<String>)
-    fun subscribe(symbol: String)
-    fun unSubscribe(symbol: String)
+    suspend fun initSubscribe(symbols: List<String>)
+    suspend fun subscribe(symbol: String)
+    suspend fun unSubscribe(symbol: String)
 }

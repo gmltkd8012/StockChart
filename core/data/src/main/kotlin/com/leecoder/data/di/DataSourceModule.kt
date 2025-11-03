@@ -13,16 +13,19 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import javax.inject.Named
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object DataSourceModule {
 
     @Provides
+    @Singleton
     fun provideWebSocketDataSource(
         @Named("websocket") client: OkHttpClient,
         webSocketApi: WebSocketApi,
-    ): WebSocketDataSource = WebSocketDataSourceImpl(client, webSocketApi)
+        dataStoreRepository: DataStoreRepository,
+    ): WebSocketDataSource = WebSocketDataSourceImpl(client, webSocketApi, dataStoreRepository)
 
     @Provides
     fun provideKrInvestmentDataSource(

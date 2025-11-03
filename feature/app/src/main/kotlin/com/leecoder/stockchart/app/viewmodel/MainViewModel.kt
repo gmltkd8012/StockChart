@@ -8,12 +8,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.RegistedStockRepository
+import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
+import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.RegistedStockData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
@@ -62,10 +64,12 @@ class MainViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val registedStockRepository: RegistedStockRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
+    private val roomDatabaseRepository: RoomDatabaseRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
 ): StateViewModel<MainState, Nothing>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
+    private val _bollingerLowers = mutableSetOf<BollingerData>()
 
     private val _textFieldState = MutableStateFlow<String>("")
     val textFieldState: StateFlow<String> = _textFieldState
@@ -97,42 +101,8 @@ class MainViewModel @Inject constructor(
         _textFieldState.value = text
     }
 
-    internal fun checkExpiredToken() {
-        launch(Dispatchers.IO) {
-
-//            launch(Dispatchers.IO) {
-//                if (dataStoreRepository.currentKrInvestmentWebSocket.first() != null) {
-//                    val post = webSocketRepository.postWebSocket(
-//                        Credential.CLIENT_CREDENTIAL,
-//                        Credential.APP_KEY,
-//                        Credential.APP_SECRET,
-//                    )
-//
-//                    if (!post.first) showErrorPopup(post.second)
-//                }
-//            }
-
-
-        }
-    }
-
-    internal fun connectWebSocket() {
-        collectStockTick()
-
-//        launch {
-//            val list = ksInvestmentRepository.getDailyPrice(
-//                "005930",
-//                "D").first().map { it.stckClpr.toInt() }
-//
-//            Log.e("lynn", "[서버응답] -> $list")
-//
-//
-//            Log.e("lynn", "[하한가] -> ${BollingerCalculator().calculate(list)}")
-//        }
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun collectStockTick() {
+    internal fun collectStockTick() {
         viewModelScope.launch(Dispatchers.IO) {
             val stockTickFlow = webSocketRepository.channelStockTick
                 .consumeAsFlow()
@@ -149,6 +119,8 @@ class MainViewModel @Inject constructor(
                         return@flatMapLatest emptyFlow()
                     }
 
+                    val bollingerLowerList = roomDatabaseRepository.getAllBollingers().first()
+
                     val codeToName = subscribedStocks.associate { it.code to it.name }
 
                     val removeList = _subscribedMap.keys.filter { it !in codeToName.keys }
@@ -164,6 +136,16 @@ class MainViewModel @Inject constructor(
                     stockTickFlow
                         .filter { it.mkscShrnIscd in _subscribedMap.keys }
                         .onEach { tick ->
+                            val currentBollingerData = bollingerLowerList.find { it.code == tick.mkscShrnIscd }
+
+                            currentBollingerData?.let { v -> // 종목 데이터 틱당 볼린저 계산하여 리스트 등록
+                                val currentPrice = tick.stckPrpr?.toInt() ?: 0
+
+                                if (currentBollingerData.lower > currentPrice && currentPrice > 0) {
+                                    _bollingerLowers.add(v)
+                                }
+                            }
+
                             val stockUiData = StockUiData(
                                 code = tick.mkscShrnIscd,
                                 name = codeToName[tick.mkscShrnIscd],
@@ -178,18 +160,12 @@ class MainViewModel @Inject constructor(
 
                             reduceState {
                                 copy(
-                                    stockTickMap = _subscribedMap.toMap()
+                                    stockTickMap = _subscribedMap.toMap(),
+                                    bollingerLowers = _bollingerLowers.toList()
                                 )
                             }
                         }
                 }.launchIn(viewModelScope)
-        }
-    }
-
-    fun initSubcribeStock() {
-        launch(Dispatchers.IO) {
-            val registedStock = registedStockRepository.getRegistedStock().first()
-            webSocketRepository.initSubscribe(registedStock.map { it.code })
         }
     }
 
@@ -213,7 +189,7 @@ data class MainState(
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
-    val bollingerLowers: List<RegistedStockData> = emptyList()
+    val bollingerLowers: List<BollingerData> = emptyList()
 )
 
 sealed interface MainSideEffect {
