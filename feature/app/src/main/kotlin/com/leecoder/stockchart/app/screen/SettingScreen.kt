@@ -81,7 +81,18 @@ fun BollingerSettingMenu() {
                     description =  menu.description,
                     isChecked = menu.menuId == selectedBollingerOption.value,
                     onCheckedChanged = { selectedMenuId ->
-                        selectedBollingerOption.value = selectedMenuId
+                        if (selectedBollingerOption.value == selectedMenuId) {
+                            selectedBollingerOption.value = when {
+                                selectedMenuId == BollingerSetting.DailyBollinger.menuId -> {
+                                    BollingerSetting.LiveBollinger.menuId
+                                }
+                                else -> {
+                                    BollingerSetting.DailyBollinger.menuId
+                                }
+                            }
+                        } else {
+                            selectedBollingerOption.value = selectedMenuId
+                        }
                     }
                 )
 
