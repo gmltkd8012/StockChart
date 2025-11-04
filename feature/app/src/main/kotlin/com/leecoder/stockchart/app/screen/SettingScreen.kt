@@ -1,5 +1,6 @@
 package com.leecoder.stockchart.app.screen
 
+import android.util.Log
 import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -22,6 +25,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.leecoder.stockchart.app.viewmodel.SettingViewModel
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
 import com.leecoder.stockchart.design_system.component.BaseSettingBox
 import com.leecoder.stockchart.model.screen.BollingerSetting
@@ -29,21 +35,39 @@ import com.leecoder.stockchart.model.screen.Screen
 
 @Composable
 fun SettingScreen(
-
+    viewModel: SettingViewModel = hiltViewModel<SettingViewModel>()
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.currentBollingerSetting()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
     ) {
-        BollingerSettingMenu()
+        BollingerSettingMenu(
+            bollingerValue = state.bollingerSettingValue,
+            onChangedBollinger = { value ->
+                viewModel.changedBollingerSetting(value)
+            }
+        )
     }
 }
 
 
 @Composable
-fun BollingerSettingMenu() {
+fun BollingerSettingMenu(
+    bollingerValue: String,
+    onChangedBollinger:(String) -> Unit,
+) {
     var selectedBollingerOption = remember { mutableStateOf("") }
+
+    LaunchedEffect(bollingerValue) {
+        selectedBollingerOption.value = bollingerValue
+    }
 
     Column(
         modifier = Modifier
@@ -84,13 +108,16 @@ fun BollingerSettingMenu() {
                         if (selectedBollingerOption.value == selectedMenuId) {
                             selectedBollingerOption.value = when {
                                 selectedMenuId == BollingerSetting.DailyBollinger.menuId -> {
+                                    onChangedBollinger(BollingerSetting.LiveBollinger.menuId)
                                     BollingerSetting.LiveBollinger.menuId
                                 }
                                 else -> {
+                                    onChangedBollinger(BollingerSetting.DailyBollinger.menuId)
                                     BollingerSetting.DailyBollinger.menuId
                                 }
                             }
                         } else {
+                            onChangedBollinger(selectedMenuId)
                             selectedBollingerOption.value = selectedMenuId
                         }
                     }
@@ -101,6 +128,9 @@ fun BollingerSettingMenu() {
         }
 
         Spacer(Modifier.height(16.dp))
-        Spacer(Modifier.fillMaxWidth().height(0.5.dp).background(Color.LightGray))
+        Spacer(Modifier
+            .fillMaxWidth()
+            .height(0.5.dp)
+            .background(Color.LightGray))
     }
 }

@@ -43,4 +43,15 @@ class DataStoreRepositoryImpl @Inject constructor(
             preference[AppDataStore.Keys.KR_INVESTMENT_WEBSOCKET] = webSocket
         }
     }
+
+    override val currentBollingerSetting: Flow<String>
+        get() = dataStore.data.map { preference ->
+            preference[AppDataStore.Keys.BOLLINGER_ALARM_SETTING] ?: DataStoreConst.ValueConst.BOLLINGER_DAILY_SETTING
+        }
+
+    override suspend fun updateBollingerSetting(value: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.BOLLINGER_ALARM_SETTING] = value
+        }
+    }
 }

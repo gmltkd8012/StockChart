@@ -10,9 +10,12 @@ object DataStoreConst {
         const val KR_INVESTMENT_TOKEN_EXPIRED = "kr_investment_token_expired"
 
         const val KR_INVESTMENT_WEBSOCKET = "kr_investment_websocket"
+
+        const val BOLLINGER_SETTING = "bollinger_setting"
     }
 
     object ValueConst {
-
+        const val BOLLINGER_DAILY_SETTING = "daily_bollinger"
+        const val BOLLINGER_LIVE_SETTING = "live_bollinger"
     }
 }
