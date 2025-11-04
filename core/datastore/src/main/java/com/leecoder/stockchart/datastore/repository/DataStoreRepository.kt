@@ -12,4 +12,7 @@ interface DataStoreRepository {
 
     val currentKrInvestmentWebSocket: Flow<String?>
     suspend fun refreshKrInvestmentWebSocket(webSocket: String)
+
+    val currentBollingerSetting: Flow<String>
+    suspend fun updateBollingerSetting(value: String)
 }

@@ -10,7 +10,7 @@ class BollingerCalculator(
 ) {
     fun calculate(
         code: String,
-        name: String,
+        name: String = "",
         prices: List<Int>
     ): BollingerData {
         // 데이터 개수가 period보다 적으면 계산 불가

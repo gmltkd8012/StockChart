@@ -2,6 +2,7 @@ package com.leecoder.network.entity
 
 import com.leecoder.stockchart.model.stock.CurrentPriceData
 import com.leecoder.stockchart.model.stock.DailyPriceData
+import com.leecoder.stockchart.model.stock.TimeItemChartPriceData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -84,6 +85,36 @@ data class CurrentPriceResponse(
     )
 }
 
+@Serializable
+data class TimeItemChartPriceResponse(
+    @SerialName("output1") val output1: TimeItemChartPriceResponse.Output1,
+    @SerialName("output2") val output2: List<TimeItemChartPriceResponse.Output2>,
+) {
+    @Serializable
+    data class Output1(
+        @SerialName("prdy_vrss") val prdyVrss: String,
+        @SerialName("prdy_vrss_sign") val prdyVrssSign: String,
+        @SerialName("prdy_ctrt") val prdyCtrt: String,
+        @SerialName("stck_prdy_clpr") val stckPrdyClpr: String,
+        @SerialName("acml_vol") val acmlVol: String,
+        @SerialName("acml_tr_pbmn") val acmlTrPbmn: String,
+        @SerialName("hts_kor_isnm") val htsKorIsnm: String,
+        @SerialName("stck_prpr") val stckPrpr: String,
+    )
+
+    @Serializable
+    data class Output2(
+        @SerialName("stck_bsop_date") val stckBsopDate: String,
+        @SerialName("stck_cntg_hour") val stckCntgHour: String,
+        @SerialName("stck_prpr") val stckPrpr: String,
+        @SerialName("stck_oprc") val stckOprc: String,
+        @SerialName("stck_hgpr") val stckHgpr: String,
+        @SerialName("stck_lwpr") val stckLwpr: String,
+        @SerialName("cntg_vol") val cntgVol: String,
+        @SerialName("acml_tr_pbmn") val acmlTrPbmn: String,
+    )
+}
+
 fun DailyPriceResponse.Output.toData() = DailyPriceData(
     stckBsopDate = stckBsopDate,
     stckClpr = stckClpr,
@@ -91,5 +122,10 @@ fun DailyPriceResponse.Output.toData() = DailyPriceData(
 )
 
 fun CurrentPriceResponse.Output.toData() = CurrentPriceData(
+    stckPrpr = stckPrpr
+)
+
+fun TimeItemChartPriceResponse.Output2.toData() = TimeItemChartPriceData(
+    stckCntgHour = stckCntgHour,
     stckPrpr = stckPrpr
 )

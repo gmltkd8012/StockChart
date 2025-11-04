@@ -14,6 +14,7 @@ import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
+import com.leecoder.stockchart.domain.usecase.GetLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.RegistedStockData
@@ -66,6 +67,7 @@ class MainViewModel @Inject constructor(
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
+    private val getLiveBollingersUseCase: GetLiveBollingersUseCase,
 ): StateViewModel<MainState, Nothing>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
@@ -95,6 +97,13 @@ class MainViewModel @Inject constructor(
                     }
                 }
             }.launchIn(viewModelScope)
+
+
+        launch(Dispatchers.IO) {
+            Log.d("lynn", "ViewModel Coroutine Scope = ${this@launch.coroutineContext}")
+            Log.i("lynn", "Bollinger Live Data = ${getLiveBollingersUseCase(listOf("005930"))}")
+
+        }
     }
 
     fun onQueryChanged(text: String) {

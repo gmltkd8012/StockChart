@@ -2,6 +2,7 @@ package com.leecoder.data.repository
 
 import com.leecoder.stockchart.model.stock.CurrentPriceData
 import com.leecoder.stockchart.model.stock.DailyPriceData
+import com.leecoder.stockchart.model.stock.TimeItemChartPriceData
 import kotlinx.coroutines.flow.Flow
 
 interface KsInvestmentRepository {
@@ -14,4 +15,8 @@ interface KsInvestmentRepository {
     suspend fun getCurrentPrice(
         iscd: String,
     ): Flow<CurrentPriceData>
+
+    suspend fun getTimeItemChartPrice(
+        iscd: String,
+    ): Flow<List<TimeItemChartPriceData>>
 }
