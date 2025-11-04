@@ -27,7 +27,6 @@ class SettingViewModel @Inject constructor(
 
     internal fun changedBollingerSetting(value: String) {
         launch(Dispatchers.IO) {
-            Log.d("lynn", "saveSetting -> $value")
             dataStoreRepository.updateBollingerSetting(value)
         }
     }

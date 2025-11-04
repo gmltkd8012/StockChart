@@ -9,6 +9,7 @@ import com.leecoder.stockchart.data.BuildConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.stock.CurrentPriceData
 import com.leecoder.stockchart.model.stock.DailyPriceData
+import com.leecoder.stockchart.model.stock.TimeItemChartPriceData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -94,8 +95,6 @@ class KsInvestmentDataSoruceImpl @Inject constructor(
             gtUid = null,
         )
 
-        Log.d("lynn", "[서버 요청]")
-
         return flow {
             emit (
                 kisInvestmentApi.getCurrentPrice(
@@ -108,6 +107,51 @@ class KsInvestmentDataSoruceImpl @Inject constructor(
                     mrktDivCode = "J",
                     inputIscd = iscd,
                 ).output.first().toData()
+            )
+        }
+    }
+
+    override suspend fun getTimeItemChartPrice(
+        iscd: String
+    ): Flow<List<TimeItemChartPriceData>> {
+        val authorization = datsStoreRepository.currentKrInvestmentToken.first()
+
+        if (authorization == null) {
+            Log.e("[LeeCode]", "Error : Token is null")
+            return flow { emit(emptyList()) }
+        }
+
+        val requestHeader = KisInvestmentRquestHeader(
+            contentType = "application/json; charset=utf-8",
+            authorization = authorization,
+            appkey = BuildConfig.AppKey,
+            appsecret = BuildConfig.AppSecret,
+            personalseckeypkey = null,
+            trId = "FHKST03010200",
+            trCont = null,
+            custtype = "P",
+            seqNo = null,
+            macAddress = null,
+            phoneNumber = null,
+            ipAddr = null,
+            gtUid = null,
+        )
+
+        return flow {
+            emit(
+                kisInvestmentApi.getTimeItemChartPrice(
+                    contentType = requestHeader.contentType,
+                    authorization = requestHeader.authorization,
+                    appkey = requestHeader.appkey,
+                    appsecret = requestHeader.appsecret,
+                    trId = requestHeader.trId,
+                    custtype = requestHeader.custtype,
+                    mrktDivCode = "J",
+                    inputIscd = iscd,
+                    inputHour = "Y",
+                    incuYn = "Y",
+                    clsCode = "Y",
+                ).output2.map { it.toData() }
             )
         }
     }
