@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leecoder.data.repository.KsInvestmentRepository
-import com.leecoder.data.repository.RegistedStockRepository
 import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
@@ -17,11 +16,12 @@ import com.leecoder.stockchart.datastore.const.DataStoreConst
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.AddLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.InitLiveBollingersUseCase
+import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
 import com.leecoder.stockchart.model.bollinger.LiveBollingerData
 import com.leecoder.stockchart.model.room.BollingerData
-import com.leecoder.stockchart.model.stock.RegistedStockData
 import com.leecoder.stockchart.model.stock.StockTick
+import com.leecoder.stockchart.model.stock.SubscribedStockData
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.model.ui.StockUiData
@@ -68,12 +68,12 @@ class MainViewModel @Inject constructor(
     private val tokenRepository: TokenRepository,
     private val webSocketRepository: WebSocketRepository,
     private val dataStoreRepository: DataStoreRepository,
-    private val registedStockRepository: RegistedStockRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
     private val initLiveBollingersUseCase: InitLiveBollingersUseCase,
     private val addLiveBollingersUseCase: AddLiveBollingersUseCase,
+    private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
 ): StateViewModel<MainState, Nothing>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
@@ -119,7 +119,7 @@ class MainViewModel @Inject constructor(
                 .consumeAsFlow()
                 .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 0)
 
-           registedStockRepository.getRegistedStock()
+           roomDatabaseRepository.getAllSubscribedStocks()
                 .flatMapLatest { subscribedStocks ->
                     if (subscribedStocks.isEmpty()) {
                         reduceState {
@@ -190,14 +190,15 @@ class MainViewModel @Inject constructor(
 
     fun subscribeStock(code: String, name: String) {
         launch(Dispatchers.IO) {
-            registedStockRepository.insert(RegistedStockData(code, name))
+            Log.i("lynn", "[MainViewModel] -> ${this@launch.coroutineContext}")
+            saveStockWithCurrentPriceUseCase(SubscribedStockData(code, name))
             webSocketRepository.subscribe(code)
         }
     }
 
     fun unSubsctibeStock(code: String, name: String) {
         launch(Dispatchers.IO) {
-            registedStockRepository.delete(RegistedStockData(code, name))
+            roomDatabaseRepository.unSubscribeStock(SubscribedStockData(code, name))
             webSocketRepository.unSubscribe(code)
         }
     }
@@ -206,7 +207,7 @@ class MainViewModel @Inject constructor(
         // TODO - 데이터 스토어를 통한 분기 처리 적용
         launch(Dispatchers.IO) {
             dataStoreRepository.currentBollingerSetting.collect { currentBollingerSetting ->
-                val subscribeStocks = registedStockRepository.getRegistedStock().first().map { it.code }
+                val subscribeStocks = roomDatabaseRepository.getAllSubscribedStocks().first().map { it.code }
 
                 if (currentBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
                     // 실시간 데이터 Map 저장

@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
 import com.leecoder.stockchart.design_system.component.BaseStockBox
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
-import com.leecoder.stockchart.model.stock.RegistedStockData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
 import com.leecoder.stockchart.model.ui.StockUiData

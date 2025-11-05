@@ -63,7 +63,6 @@ fun SplashScreen(
     LaunchedEffect(state.hasToken) {
         if (state.hasToken) {
             viewModel.calculatorBollingers()
-            viewModel.saveCurrentPrices()
         }
     }
 
