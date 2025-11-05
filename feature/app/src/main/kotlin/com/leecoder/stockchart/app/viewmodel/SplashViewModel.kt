@@ -1,27 +1,21 @@
 package com.leecoder.stockchart.app.viewmodel
 
-import android.util.Log
-import androidx.lifecycle.viewModelScope
 import com.leecoder.data.repository.KsInvestmentRepository
-import com.leecoder.data.repository.RegistedStockRepository
 import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SaveAllBollingersUseCase
-import com.leecoder.stockchart.domain.usecase.UpdateCurrentPricesUseCase
+import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.model.network.WebSocketState
-import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.ui.base.StateViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import okhttp3.WebSocket
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,9 +25,8 @@ class SplashViewModel @Inject constructor(
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val dataStoreRepository: DataStoreRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
-    private val registedStockRepository: RegistedStockRepository,
     private val saveAllBollingersUseCase: SaveAllBollingersUseCase,
-    private val updateCurrentPricesUseCase: UpdateCurrentPricesUseCase,
+    private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
 ): StateViewModel<SplashState, SplashSideEffect>(SplashState()) {
 
     internal fun checkToken(){
@@ -121,19 +114,12 @@ class SplashViewModel @Inject constructor(
         }
     }
 
-    internal fun saveCurrentPrices() {
-        launch(Dispatchers.IO) {
-            updateCurrentPricesUseCase()
-        }
-    }
-
     internal fun initSubcribeStock() {
         launch(Dispatchers.IO) {
-            val registedStock = registedStockRepository.getRegistedStock().first()
+            val subscribedStocks = roomDatabaseRepository.getAllSubscribedStocks().first()
 
-            webSocketRepository.initSubscribe(
-                registedStock.map { it.code }
-            )
+            saveStockWithCurrentPriceUseCase(*subscribedStocks.toTypedArray()) // 서버로부터 DB 저장 목록에 대해 현재가 저장
+            webSocketRepository.initSubscribe(subscribedStocks.map { it.code }) // DB 저장 목록으로 WebSocket 세션 연결.
         }
     }
 

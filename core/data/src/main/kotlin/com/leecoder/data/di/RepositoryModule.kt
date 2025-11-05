@@ -4,8 +4,6 @@ import com.leecoder.data.repository.KrxSymbolRepository
 import com.leecoder.data.repository.KrxSymbolRepositoryImpl
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.KsInvestmentRepositoryImpl
-import com.leecoder.data.repository.RegistedStockRepository
-import com.leecoder.data.repository.RegistedStockRepositoryImpl
 import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.RoomDatabaseRepositoryImpl
 import com.leecoder.data.token.TokenRepository
@@ -19,7 +17,7 @@ import com.leecoder.network.api.WebSocketApi
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.room.dao.BollingerDao
 import com.leecoder.stockchart.room.dao.KrxSymbolDao
-import com.leecoder.stockchart.room.dao.RegistedStockDao
+import com.leecoder.stockchart.room.dao.SubscribedStockDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,11 +48,6 @@ object RepositoryModule {
     ): KrxSymbolRepository = KrxSymbolRepositoryImpl(krxSymbolDao)
 
     @Provides
-    fun provideRegistedStockRepository(
-        registedStockDao: RegistedStockDao,
-    ): RegistedStockRepository = RegistedStockRepositoryImpl(registedStockDao)
-
-    @Provides
     fun provideKsInvestmentRepository(
         ksInvestmentDataSource: KsInvestmentDataSource,
     ): KsInvestmentRepository = KsInvestmentRepositoryImpl(ksInvestmentDataSource)
@@ -62,5 +55,6 @@ object RepositoryModule {
     @Provides
     fun provideRoomDatabaseRepository(
         bollingerDao: BollingerDao,
-    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(bollingerDao)
+        subscribedStockDao: SubscribedStockDao,
+    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(bollingerDao, subscribedStockDao)
 }

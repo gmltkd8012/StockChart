@@ -2,7 +2,6 @@ package com.leecoder.stockchart.domain.usecase
 
 import android.util.Log
 import com.leecoder.data.repository.KsInvestmentRepository
-import com.leecoder.data.repository.RegistedStockRepository
 import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.util.calculator.BollingerCalculator
@@ -18,13 +17,12 @@ import javax.inject.Inject
 class SaveAllBollingersUseCase @Inject constructor(
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
-    private val registedStockRepository: RegistedStockRepository,
 ) {
     private val calculator = BollingerCalculator()
 
     suspend operator fun invoke(): Boolean = supervisorScope {
         try {
-            val subscribeStocks = registedStockRepository.getRegistedStock().first()
+            val subscribeStocks = roomDatabaseRepository.getAllSubscribedStocks().first()
 
             val async = subscribeStocks.map { stock ->
                 async {
