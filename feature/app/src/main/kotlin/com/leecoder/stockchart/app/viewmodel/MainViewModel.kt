@@ -13,9 +13,12 @@ import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
+import com.leecoder.stockchart.datastore.const.DataStoreConst
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
-import com.leecoder.stockchart.domain.usecase.GetLiveBollingersUseCase
+import com.leecoder.stockchart.domain.usecase.AddLiveBollingersUseCase
+import com.leecoder.stockchart.domain.usecase.InitLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
+import com.leecoder.stockchart.model.bollinger.LiveBollingerData
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.RegistedStockData
 import com.leecoder.stockchart.model.stock.StockTick
@@ -23,7 +26,9 @@ import com.leecoder.stockchart.model.symbol.KrxSymbolData
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.model.ui.StockUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
+import com.leecoder.stockchart.util.calculator.BollingerAggregator
 import com.leecoder.stockchart.util.calculator.BollingerCalculator
+import com.leecoder.stockchart.util.calculator.MinuteAggregator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -67,11 +72,15 @@ class MainViewModel @Inject constructor(
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
     private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
-    private val getLiveBollingersUseCase: GetLiveBollingersUseCase,
+    private val initLiveBollingersUseCase: InitLiveBollingersUseCase,
+    private val addLiveBollingersUseCase: AddLiveBollingersUseCase,
 ): StateViewModel<MainState, Nothing>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
     private val _bollingerLowers = mutableSetOf<BollingerData>()
+    private val _subscribedLiveBollingerMap = mutableStateMapOf<String, MinuteAggregator>()
+
+    private var curBollingerSetting = ""
 
     private val _textFieldState = MutableStateFlow<String>("")
     val textFieldState: StateFlow<String> = _textFieldState
@@ -97,13 +106,6 @@ class MainViewModel @Inject constructor(
                     }
                 }
             }.launchIn(viewModelScope)
-
-
-        launch(Dispatchers.IO) {
-            Log.d("lynn", "ViewModel Coroutine Scope = ${this@launch.coroutineContext}")
-            Log.i("lynn", "Bollinger Live Data = ${getLiveBollingersUseCase(listOf("005930"))}")
-
-        }
     }
 
     fun onQueryChanged(text: String) {
@@ -140,20 +142,28 @@ class MainViewModel @Inject constructor(
                     val addList = codeToName.keys.filter { it !in _subscribedMap.keys }
                     addList.forEach { key ->
                         _subscribedMap[key] = StockUiData()
+                        _subscribedLiveBollingerMap.putAll(addLiveBollingersUseCase(key))
                     }
 
                     stockTickFlow
                         .filter { it.mkscShrnIscd in _subscribedMap.keys }
                         .onEach { tick ->
-                            val currentBollingerData = bollingerLowerList.find { it.code == tick.mkscShrnIscd }
 
-                            currentBollingerData?.let { v -> // 종목 데이터 틱당 볼린저 계산하여 리스트 등록
-                                val currentPrice = tick.stckPrpr?.toInt() ?: 0
 
-                                if (currentBollingerData.lower > currentPrice && currentPrice > 0) {
-                                    _bollingerLowers.add(v)
-                                }
+                            if (curBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
+                                checkLiveBollinger(tick)
+                            } else {
+                                //TODO - 데일리 볼린저 로직
                             }
+
+                          //  val currentBollingerData = bollingerLowerList.find { it.code == tick.mkscShrnIscd }
+//                            currentBollingerData?.let { v -> // 종목 데이터 틱당 볼린저 계산하여 리스트 등록
+//                                val currentPrice = tick.stckPrpr?.toInt() ?: 0
+//
+//                                if (currentBollingerData.lower > currentPrice && currentPrice > 0) {
+//                                    _bollingerLowers.add(v)
+//                                }
+//                            }
 
                             val stockUiData = StockUiData(
                                 code = tick.mkscShrnIscd,
@@ -190,6 +200,53 @@ class MainViewModel @Inject constructor(
             registedStockRepository.delete(RegistedStockData(code, name))
             webSocketRepository.unSubscribe(code)
         }
+    }
+
+    internal fun initBollingerData() {
+        // TODO - 데이터 스토어를 통한 분기 처리 적용
+        launch(Dispatchers.IO) {
+            dataStoreRepository.currentBollingerSetting.collect { currentBollingerSetting ->
+                val subscribeStocks = registedStockRepository.getRegistedStock().first().map { it.code }
+
+                if (currentBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
+                    // 실시간 데이터 Map 저장
+                    Log.e("lynn", "실시간 볼린저 설정")
+                    if (_subscribedLiveBollingerMap.isNotEmpty()) _subscribedLiveBollingerMap.clear()
+                    _subscribedLiveBollingerMap.putAll(initLiveBollingersUseCase(subscribeStocks))
+
+                } else {
+                    Log.d("lynn", "데일리 볼린저 설정")
+
+                }
+
+                curBollingerSetting = currentBollingerSetting
+            }
+        }
+    }
+
+
+    private suspend fun checkLiveBollinger(tick: StockTick) {
+        val agg = _subscribedLiveBollingerMap[tick.mkscShrnIscd]
+        val result = agg?.onTick(tick.stckCntgHour ?: "", tick.stckPrpr?.toIntOrNull() ?: 0)
+
+        result?.let {
+            val currentPrice = tick.stckPrpr?.toInt() ?: 0
+            val bollingerData = it.bollinger
+
+            bollingerData?.let { v ->
+                val lowerPrice = v.lower
+
+                if (lowerPrice > currentPrice && currentPrice > 0) {
+                    _bollingerLowers.add(v)
+                }
+            }
+        }
+
+        Log.i("lynn", "result -> $result")
+    }
+
+    private suspend fun checkDailyBollinger(tick: StockTick) {
+
     }
 }
 

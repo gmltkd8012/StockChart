@@ -71,6 +71,7 @@ fun MainScreen(
 
     LaunchedEffect(Unit) {
         viewModel.collectStockTick()
+        viewModel.initBollingerData()
     }
 
     LaunchedEffect(state.bollingerLowers) {
