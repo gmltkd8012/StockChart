@@ -29,6 +29,7 @@ class MinuteAggregator(
 
     suspend fun onTick(
         timeString: String,
+        name: String,
         price: Int
     ): MinuteBollingerResult? = mutex.withLock {
         val minuteKey = try {
@@ -68,6 +69,7 @@ class MinuteAggregator(
                 withContext(Dispatchers.Default) {
                     calculator.calculate(
                         code = code,
+                        name = name,
                         prices = parsed
                     )
                 }

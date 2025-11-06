@@ -148,7 +148,7 @@ class MainViewModel @Inject constructor(
                         }
                         .onEach { tick ->
                             if (curBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
-                                checkLiveBollinger(tick)
+                                checkLiveBollinger(tick, codeToNameMap[tick.mkscShrnIscd]?.name)
                             } else {
                                 //TODO - 데일리 볼린저 로직
                             }
@@ -241,9 +241,13 @@ class MainViewModel @Inject constructor(
     }
 
 
-    private suspend fun checkLiveBollinger(tick: StockTick) {
+    private suspend fun checkLiveBollinger(tick: StockTick, stockName: String?) {
         val agg = _subscribedLiveBollingerMap[tick.mkscShrnIscd]
-        val result = agg?.onTick(tick.stckCntgHour ?: "", tick.stckPrpr?.toIntOrNull() ?: 0)
+        val result = agg?.onTick(
+            timeString = tick.stckCntgHour ?: "",
+            name = stockName ?: "",
+            price = tick.stckPrpr?.toIntOrNull() ?: 0,
+        )
 
         result?.let {
             val currentPrice = tick.stckPrpr?.toInt() ?: 0
