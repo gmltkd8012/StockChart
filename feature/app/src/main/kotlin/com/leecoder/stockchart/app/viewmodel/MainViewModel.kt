@@ -109,7 +109,7 @@ class MainViewModel @Inject constructor(
                         copy(searchResultList = emptyList())
                     }
                 } else {
-                    val result = roomDatabaseRepository.searchNasSymbol(query).first()
+                    val result = searchKrxSymbolUseCase(query).first()
                     reduceState {
                         copy(searchResultList = result)
                     }
@@ -308,7 +308,7 @@ data class MainState(
     val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
-    val searchResultList: List<NasSymbolData>? = null,
+    val searchResultList: List<KrxSymbolData>? = null,
     val bollingerLowers: Map<String, BollingerUiData> = emptyMap()
 )
 

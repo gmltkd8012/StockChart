@@ -24,7 +24,6 @@ import com.leecoder.stockchart.model.symbol.NasSymbolData
 
 @Composable
 fun SearchScreen(
-    textFieldState: String,
     searchResult: List<KrxSymbolData>,
     onRegistedSymbol: (code: String, name: String) -> Unit,
 ) {

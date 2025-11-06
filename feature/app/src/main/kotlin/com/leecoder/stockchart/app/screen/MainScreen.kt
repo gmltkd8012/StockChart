@@ -148,7 +148,6 @@ fun MainScreen(
             }
             composable(Screen.Search.route) {
                 SearchScreen(
-                    textFieldState = textFieldState,
                     searchResult = state.searchResultList ?: emptyList(),
                     onRegistedSymbol = { code, name ->
                         viewModel.subscribeStock(code, name)
