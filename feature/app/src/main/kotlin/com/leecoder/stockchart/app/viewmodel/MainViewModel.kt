@@ -17,9 +17,11 @@ import com.leecoder.stockchart.datastore.const.DataStoreConst
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.AddLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.InitLiveBollingersUseCase
+import com.leecoder.stockchart.domain.usecase.ReconnectWebSocketUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
 import com.leecoder.stockchart.model.bollinger.LiveBollingerData
+import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribedStockData
@@ -78,6 +80,8 @@ class MainViewModel @Inject constructor(
     private val initLiveBollingersUseCase: InitLiveBollingersUseCase,
     private val addLiveBollingersUseCase: AddLiveBollingersUseCase,
     private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
+    private val networkStateObserver: NetworkStateObserver,
+    private val reconnectWebSocketUseCase: ReconnectWebSocketUseCase,
 ): StateViewModel<MainState, Nothing>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
@@ -110,6 +114,24 @@ class MainViewModel @Inject constructor(
                     }
                 }
             }.launchIn(viewModelScope)
+
+        observeNetworkState()
+    }
+
+    private fun observeNetworkState() {
+        launch(Dispatchers.IO) {
+            networkStateObserver.isConnectedNetwork.collect { isConnected ->
+                if (isConnected) {
+                    val session = webSocketRepository.connectedWebSocketSession.first()
+
+                    if (session is WebSocketState.Disconnected || session is WebSocketState.Error) {
+                        reconnectWebSocketUseCase()
+                    }
+                } else {
+                    webSocketRepository.disconnect()
+                }
+            }
+        }
     }
 
     fun onQueryChanged(text: String) {

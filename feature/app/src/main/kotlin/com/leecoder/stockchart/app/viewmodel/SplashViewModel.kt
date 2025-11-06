@@ -144,5 +144,5 @@ data class SplashState(
     val hasToken: Boolean = false,
     val hasApprovalKey: Boolean = false,
     val isCompleteBollinger: Boolean = false,
-    val connectWebSocekt: WebSocketState = WebSocketState.Connecting,
+    val connectWebSocekt: WebSocketState = WebSocketState.Disconnected,
 )

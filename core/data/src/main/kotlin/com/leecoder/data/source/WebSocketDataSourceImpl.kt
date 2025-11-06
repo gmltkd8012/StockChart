@@ -71,7 +71,7 @@ class WebSocketDataSourceImpl @Inject constructor(
     override val channelStockTick: ReceiveChannel<StockTick>
         get() = _channelStockTick
 
-    private val _connectedWebSocketSession: MutableStateFlow<WebSocketState> = MutableStateFlow(WebSocketState.Connecting)
+    private val _connectedWebSocketSession: MutableStateFlow<WebSocketState> = MutableStateFlow(WebSocketState.Disconnected)
     override val connectedWebSocketSession: Flow<WebSocketState>
         get() = _connectedWebSocketSession.asStateFlow()
 
@@ -148,12 +148,16 @@ class WebSocketDataSourceImpl @Inject constructor(
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 super.onClosed(webSocket, code, reason)
-                Log.e("heesang", "onClosed")
+                Log.e("[Leecoder]", "WebSocket Session onClosed")
+
+                scope.launch {
+                    _connectedWebSocketSession.emit(WebSocketState.Disconnected)
+                }
             }
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 super.onClosing(webSocket, code, reason)
-                Log.e("heesang", "onClosed")
+                Log.e("[Leecoder]", "WebSocket Session onClosing")
             }
         })
     }
