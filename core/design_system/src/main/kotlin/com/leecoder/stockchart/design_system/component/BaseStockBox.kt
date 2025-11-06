@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.leecoder.stockchart.util.extension.toCurrency
 
 @Composable
 fun BaseStockBox(
@@ -59,7 +60,7 @@ fun BaseStockBox(
                 Spacer(Modifier.width(12.dp))
 
                 Text(
-                    text = "$tradePrice ($priceDiff)",
+                    text = "${tradePrice.toCurrency()} (${priceDiff.toCurrency()})",
                     style = TextStyle(
                         fontSize = 30.sp,
                         color = when {
