@@ -127,8 +127,6 @@ class MainViewModel @Inject constructor(
                     if (session is WebSocketState.Disconnected || session is WebSocketState.Error) {
                         reconnectWebSocketUseCase()
                     }
-                } else {
-                    webSocketRepository.disconnect()
                 }
             }
         }
