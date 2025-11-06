@@ -131,7 +131,7 @@ class MainViewModel @Inject constructor(
                         return@flatMapLatest emptyFlow()
                     }
 
-                    //val bollingerLowerList = roomDatabaseRepository.getAllBollingers().first()
+                    val bollingerLowerList = roomDatabaseRepository.getAllBollingers().first()
 
                     // Tick 데이터 맞는 이름 조회 시 빠른 탐색을 위한 Map 변환
                     val codeToNameMap = subscribedStocks.associateBy { it.code }
@@ -150,17 +150,8 @@ class MainViewModel @Inject constructor(
                             if (curBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
                                 checkLiveBollinger(tick, codeToNameMap[tick.mkscShrnIscd]?.name)
                             } else {
-                                //TODO - 데일리 볼린저 로직
+                                checkDailyBollinger(tick, bollingerLowerList)
                             }
-
-                          //  val currentBollingerData = bollingerLowerList.find { it.code == tick.mkscShrnIscd }
-//                            currentBollingerData?.let { v -> // 종목 데이터 틱당 볼린저 계산하여 리스트 등록
-//                                val currentPrice = tick.stckPrpr?.toInt() ?: 0
-//
-//                                if (currentBollingerData.lower > currentPrice && currentPrice > 0) {
-//                                    _bollingerLowers.add(v)
-//                                }
-//                            }
 
                             val stockUiData = StockUiData(
                                 code = tick.mkscShrnIscd,
@@ -257,18 +248,24 @@ class MainViewModel @Inject constructor(
                 val lowerPrice = v.lower
 
                 if (lowerPrice > currentPrice && currentPrice > 0) {
+                    Log.d("[LeeCoder]", "Live Bollinger Calculator Result -> $result")
                     _bollingerLowers.add(v)
                 }
             }
-
-            Log.i("lynn", "result -> $result")
         }
-
-
     }
 
-    private suspend fun checkDailyBollinger(tick: StockTick) {
+    private suspend fun checkDailyBollinger(tick: StockTick, bollingerList: List<BollingerData>) {
+        val currentBollingerData = bollingerList.find { it.code == tick.mkscShrnIscd }
 
+        currentBollingerData?.let { v -> // 종목 데이터 틱당 볼린저 계산하여 리스트 등록
+            val currentPrice = tick.stckPrpr?.toInt() ?: 0
+
+            if (currentBollingerData.lower > currentPrice && currentPrice > 0) {
+                Log.d("[LeeCoder]", "Daily Bollinger Calculator Result -> $currentBollingerData")
+                _bollingerLowers.add(v)
+            }
+        }
     }
 }
 
