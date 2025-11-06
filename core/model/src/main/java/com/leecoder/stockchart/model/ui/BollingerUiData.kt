@@ -6,5 +6,5 @@ data class BollingerUiData(
     val upper: Int,
     val middle: Int,
     val lower: Int,
-    val cntgHour: String, // 체결 시각
+    val cntgHour: Long, // 체결 시각
 )

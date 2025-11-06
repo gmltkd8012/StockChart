@@ -277,7 +277,7 @@ class MainViewModel @Inject constructor(
                         upper = v.upper,
                         middle = v.middle,
                         lower = v.lower,
-                        cntgHour = System.currentTimeMillis().toDateTimeString()
+                        cntgHour = System.currentTimeMillis()
                     )
                 }
             }
@@ -298,7 +298,7 @@ class MainViewModel @Inject constructor(
                     upper = v.upper,
                     middle = v.middle,
                     lower = v.lower,
-                    cntgHour = System.currentTimeMillis().toDateTimeString()
+                    cntgHour = System.currentTimeMillis()
                 )
             }
         }

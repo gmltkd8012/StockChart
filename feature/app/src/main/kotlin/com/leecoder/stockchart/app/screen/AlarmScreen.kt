@@ -22,6 +22,7 @@ import com.leecoder.stockchart.design_system.component.BaseAlarmBox
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.ui.BollingerUiData
+import com.leecoder.stockchart.util.extension.toDateTimeString
 
 @Composable
 fun AlarmScreen(
@@ -59,15 +60,17 @@ fun AlarmScreen(
             }
         } else {
             LazyColumn {
-                items(bollingers) { bollinger ->
+                items(bollingers.sortedByDescending { it.cntgHour }) { bollinger ->
                     BaseAlarmBox(
                         name = bollinger.name,
                         code = bollinger.code,
-                        cntgHour = bollinger.cntgHour,
+                        cntgHour = bollinger.cntgHour.toDateTimeString(),
                         onDelete = { code, name ->
                             onDeletedAlarm(code, name)
                         }
                     )
+
+                    Spacer(Modifier.height(12.dp))
                 }
             }
         }
