@@ -20,7 +20,7 @@ class SaveAllBollingersUseCase @Inject constructor(
 ) {
     private val calculator = BollingerCalculator()
 
-    suspend operator fun invoke(): Boolean = supervisorScope {
+    suspend operator fun invoke(): Boolean = coroutineScope {
         try {
             val subscribeStocks = roomDatabaseRepository.getAllSubscribedStocks().first()
 
@@ -57,10 +57,10 @@ class SaveAllBollingersUseCase @Inject constructor(
                 roomDatabaseRepository.insertAllBollingers(result)
             }
 
-            return@supervisorScope true
+            return@coroutineScope true
         } catch (e: Exception) {
             Log.e("[LeeCoder]", "Insert Error -> ${e.message}")
-            return@supervisorScope false
+            return@coroutineScope false
         }
     }
 }
