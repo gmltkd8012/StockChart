@@ -51,6 +51,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -130,26 +131,22 @@ class MainViewModel @Inject constructor(
                         return@flatMapLatest emptyFlow()
                     }
 
-                    val bollingerLowerList = roomDatabaseRepository.getAllBollingers().first()
+                    //val bollingerLowerList = roomDatabaseRepository.getAllBollingers().first()
 
-                    val codeToName = subscribedStocks.associate { it.code to it.name }
-
-                    val removeList = _subscribedMap.keys.filter { it !in codeToName.keys }
-                    removeList.forEach { key ->
-                        _subscribedMap.remove(key)
-                    }
-
-                    val addList = codeToName.keys.filter { it !in _subscribedMap.keys }
-                    addList.forEach { key ->
-                        _subscribedMap[key] = StockUiData()
-                        _subscribedLiveBollingerMap.putAll(addLiveBollingersUseCase(key))
-                    }
+                    // Tick 데이터 맞는 이름 조회 시 빠른 탐색을 위한 Map 변환
+                    val codeToNameMap = subscribedStocks.associateBy { it.code }
+                    updateSubscribeStocks(subscribedStocks)
 
                     stockTickFlow
                         .filter { it.mkscShrnIscd in _subscribedMap.keys }
+                        .onStart {
+                            reduceState {
+                                copy(
+                                    stockTickMap = _subscribedMap.toMap()
+                                )
+                            }
+                        }
                         .onEach { tick ->
-
-
                             if (curBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
                                 checkLiveBollinger(tick)
                             } else {
@@ -167,7 +164,7 @@ class MainViewModel @Inject constructor(
 
                             val stockUiData = StockUiData(
                                 code = tick.mkscShrnIscd,
-                                name = codeToName[tick.mkscShrnIscd],
+                                name = codeToNameMap[tick.mkscShrnIscd]?.name,
                                 tradePrice = tick.stckPrpr?.toInt(),
                                 priceDiff = tick.prdyVrss?.toInt(),
                             )
@@ -200,6 +197,24 @@ class MainViewModel @Inject constructor(
         launch(Dispatchers.IO) {
             roomDatabaseRepository.unSubscribeStock(SubscribedStockData(code, name))
             webSocketRepository.unSubscribe(code)
+        }
+    }
+
+    // Room DB 데이터 변경 시, Ui 표시를 위한 맵 동기화
+    private suspend fun updateSubscribeStocks(subscribedStocks: List<SubscribedStockData>) {
+        val removeList = _subscribedMap.keys.filter { key -> subscribedStocks.none { it.code == key } }
+        removeList.forEach { key -> _subscribedMap.remove(key) }
+
+        val addList = subscribedStocks.filter { it.code !in _subscribedMap.keys }
+        addList.forEach { subscribedStock ->
+
+            _subscribedMap[subscribedStock.code] = StockUiData(
+                code = subscribedStock.code,
+                name = subscribedStock.name,
+                tradePrice = subscribedStock.price,
+                priceDiff = 0
+            )
+            _subscribedLiveBollingerMap.putAll(addLiveBollingersUseCase(subscribedStock.code))
         }
     }
 
@@ -241,9 +256,11 @@ class MainViewModel @Inject constructor(
                     _bollingerLowers.add(v)
                 }
             }
+
+            Log.i("lynn", "result -> $result")
         }
 
-        Log.i("lynn", "result -> $result")
+
     }
 
     private suspend fun checkDailyBollinger(tick: StockTick) {
