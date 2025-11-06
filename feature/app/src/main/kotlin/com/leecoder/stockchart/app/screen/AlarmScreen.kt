@@ -21,10 +21,11 @@ import androidx.compose.ui.unit.sp
 import com.leecoder.stockchart.design_system.component.BaseAlarmBox
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
 import com.leecoder.stockchart.model.room.BollingerData
+import com.leecoder.stockchart.model.ui.BollingerUiData
 
 @Composable
 fun AlarmScreen(
-    bollingers: List<BollingerData>,
+    bollingers: List<BollingerUiData>,
     maxCount: Int,
     onDeletedAlarm: (String, String) -> Unit,
 ) {
@@ -62,6 +63,7 @@ fun AlarmScreen(
                     BaseAlarmBox(
                         name = bollinger.name,
                         code = bollinger.code,
+                        cntgHour = bollinger.cntgHour,
                         onDelete = { code, name ->
                             onDeletedAlarm(code, name)
                         }

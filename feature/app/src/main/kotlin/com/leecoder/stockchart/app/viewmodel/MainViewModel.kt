@@ -12,6 +12,7 @@ import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.network.util.NetworkResult
+import com.leecoder.network.util.NetworkStateObserver
 import com.leecoder.stockchart.datastore.const.DataStoreConst
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.AddLiveBollingersUseCase
@@ -24,11 +25,13 @@ import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribedStockData
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
 import com.leecoder.stockchart.model.token.TokenError
+import com.leecoder.stockchart.model.ui.BollingerUiData
 import com.leecoder.stockchart.model.ui.StockUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
 import com.leecoder.stockchart.util.calculator.BollingerAggregator
 import com.leecoder.stockchart.util.calculator.BollingerCalculator
 import com.leecoder.stockchart.util.calculator.MinuteAggregator
+import com.leecoder.stockchart.util.extension.toDateTimeString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -78,7 +81,7 @@ class MainViewModel @Inject constructor(
 ): StateViewModel<MainState, Nothing>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
-    private val _bollingerLowers = mutableSetOf<BollingerData>()
+    private val _bollingerLowersMap = mutableStateMapOf<String, BollingerUiData>()
     private val _subscribedLiveBollingerMap = mutableStateMapOf<String, MinuteAggregator>()
 
     private var curBollingerSetting = ""
@@ -168,7 +171,7 @@ class MainViewModel @Inject constructor(
                             reduceState {
                                 copy(
                                     stockTickMap = _subscribedMap.toMap(),
-                                    bollingerLowers = _bollingerLowers.toList()
+                                    bollingerLowers = _bollingerLowersMap.toMap()
                                 )
                             }
                         }
@@ -217,15 +220,12 @@ class MainViewModel @Inject constructor(
 
                 if (currentBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
                     // 실시간 데이터 Map 저장
-                    Log.e("lynn", "실시간 볼린저 설정")
                     if (_subscribedLiveBollingerMap.isNotEmpty()) _subscribedLiveBollingerMap.clear()
                     _subscribedLiveBollingerMap.putAll(initLiveBollingersUseCase(subscribeStocks))
-
-                } else {
-                    Log.d("lynn", "데일리 볼린저 설정")
-
                 }
 
+                // 설정 옵션 변경 시, 기존 알림 목록 제거
+                if (_bollingerLowersMap.isNotEmpty()) _subscribedLiveBollingerMap.clear()
                 curBollingerSetting = currentBollingerSetting
             }
         }
@@ -249,7 +249,14 @@ class MainViewModel @Inject constructor(
 
                 if (lowerPrice > currentPrice && currentPrice > 0) {
                     Log.d("[LeeCoder]", "Live Bollinger Calculator Result -> $result")
-                    _bollingerLowers.add(v)
+                    _bollingerLowersMap[v.code] = BollingerUiData(
+                        code = v.code,
+                        name = v.name,
+                        upper = v.upper,
+                        middle = v.middle,
+                        lower = v.lower,
+                        cntgHour = System.currentTimeMillis().toDateTimeString()
+                    )
                 }
             }
         }
@@ -263,7 +270,14 @@ class MainViewModel @Inject constructor(
 
             if (currentBollingerData.lower > currentPrice && currentPrice > 0) {
                 Log.d("[LeeCoder]", "Daily Bollinger Calculator Result -> $currentBollingerData")
-                _bollingerLowers.add(v)
+                _bollingerLowersMap[v.code] = BollingerUiData(
+                    code = v.code,
+                    name = v.name,
+                    upper = v.upper,
+                    middle = v.middle,
+                    lower = v.lower,
+                    cntgHour = System.currentTimeMillis().toDateTimeString()
+                )
             }
         }
     }
@@ -274,7 +288,7 @@ data class MainState(
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
-    val bollingerLowers: List<BollingerData> = emptyList()
+    val bollingerLowers: Map<String, BollingerUiData> = emptyMap()
 )
 
 sealed interface MainSideEffect {

@@ -7,11 +7,6 @@ data class TimeItemChartPriceData(
     val stckPrpr: String, // 체결가
 )
 
-data class TimeItemChartPriceWithCode(
-    val code: String,
-    val prices: List<TimeItemChartPriceData>
-)
-
 data class MinuteBollingerResult(
     val code: String,
     val recentTime: String?,

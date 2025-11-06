@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 fun BaseAlarmBox(
     name: String,
     code: String,
+    cntgHour: String, // 체결 시간
     onDelete: (String, String) -> Unit,
 ) {
     Row(
@@ -62,14 +63,32 @@ fun BaseAlarmBox(
             )
         }
 
-        Icon(
-            imageVector = Icons.Default.Close,
-            contentDescription = "삭제",
-            tint = Color.Red,
-            modifier = Modifier.clickable {
-                onDelete(code, name)
-            }
-        )
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = cntgHour,
+                style = TextStyle(
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = Color.White
+            )
+
+            Spacer(Modifier.width(12.dp))
+
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "삭제",
+                tint = Color.Red,
+                modifier = Modifier.clickable {
+                    onDelete(code, name)
+                }
+            )
+        }
+
+
 
         Spacer(Modifier.width(12.dp))
     }

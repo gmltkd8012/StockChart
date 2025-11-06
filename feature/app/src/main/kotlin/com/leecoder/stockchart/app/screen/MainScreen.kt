@@ -141,7 +141,7 @@ fun MainScreen(
             }
             composable(Screen.Alarm.route) {
                 AlarmScreen(
-                    bollingers = state.bollingerLowers,
+                    bollingers = state.bollingerLowers.values.toList(),
                     maxCount = state.stockTickMap?.size ?: 0,
                     onDeletedAlarm = {_,_ -> }
                 )
