@@ -26,6 +26,7 @@ import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribedStockData
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
+import com.leecoder.stockchart.model.symbol.NasSymbolData
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.model.ui.BollingerUiData
 import com.leecoder.stockchart.model.ui.StockUiData
@@ -108,7 +109,7 @@ class MainViewModel @Inject constructor(
                         copy(searchResultList = emptyList())
                     }
                 } else {
-                    val result = searchKrxSymbolUseCase(query).first()
+                    val result = roomDatabaseRepository.searchNasSymbol(query).first()
                     reduceState {
                         copy(searchResultList = result)
                     }
@@ -125,7 +126,7 @@ class MainViewModel @Inject constructor(
                     val session = webSocketRepository.connectedWebSocketSession.first()
 
                     if (session is WebSocketState.Disconnected || session is WebSocketState.Error) {
-                        reconnectWebSocketUseCase()
+                      //  reconnectWebSocketUseCase()
                     }
                 }
             }
@@ -307,7 +308,7 @@ data class MainState(
     val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
-    val searchResultList: List<KrxSymbolData>? = null,
+    val searchResultList: List<NasSymbolData>? = null,
     val bollingerLowers: Map<String, BollingerUiData> = emptyMap()
 )
 

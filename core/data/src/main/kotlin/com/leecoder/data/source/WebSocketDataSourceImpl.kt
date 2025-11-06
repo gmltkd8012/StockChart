@@ -2,6 +2,7 @@ package com.leecoder.data.source
 
 import android.util.Base64
 import android.util.Log
+import androidx.compose.ui.input.key.Key.Companion.D
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.network.entity.WebSocketApproval
@@ -199,6 +200,26 @@ class WebSocketDataSourceImpl @Inject constructor(
             input = WebSocketApprovalInput(
                 id = "H0STCNT0",
                 key = symbol,
+            )
+        )
+
+        webSocket?.send(Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body)))
+    }
+
+    private fun requestNas(approvalKey:String?, trType: String) {
+        if (approvalKey == null) return
+
+        val header = WebSocketApprovalHeader(
+            approvalKey = approvalKey,
+            custType = "P",
+            trType = trType,
+            contentType = "utf-8",
+        )
+
+        val body = WebSocketApprovalBody(
+            input = WebSocketApprovalInput(
+                id = "HDFSCNT0",
+                key = "DNASTSLQ",
             )
         )
 

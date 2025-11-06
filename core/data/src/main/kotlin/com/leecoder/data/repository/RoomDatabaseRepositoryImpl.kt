@@ -1,8 +1,11 @@
 package com.leecoder.data.repository
 
+import androidx.compose.runtime.key
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.SubscribedStockData
+import com.leecoder.stockchart.model.symbol.NasSymbolData
 import com.leecoder.stockchart.room.dao.BollingerDao
+import com.leecoder.stockchart.room.dao.NasSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
 import com.leecoder.stockchart.room.entity.toData
 import com.leecoder.stockchart.room.entity.toEntity
@@ -13,9 +16,13 @@ import javax.inject.Singleton
 
 @Singleton
 class RoomDatabaseRepositoryImpl @Inject constructor(
+    private val nasSymbolDao: NasSymbolDao,
     private val bollingerDao: BollingerDao,
-    private val subscribedStockDao: SubscribedStockDao
+    private val subscribedStockDao: SubscribedStockDao,
 ): RoomDatabaseRepository {
+
+    override suspend fun searchNasSymbol(keyword: String): Flow<List<NasSymbolData>> =
+        nasSymbolDao.searchNasSymbol(keyword).map { it.map { it.toData() } }
 
     override suspend fun insertAllBollingers(bollingers: List<BollingerData>) {
         bollingerDao.insertAll(bollingers.map { it.toEntity() })
