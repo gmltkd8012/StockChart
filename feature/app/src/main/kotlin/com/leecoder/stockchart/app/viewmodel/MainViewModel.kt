@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -62,6 +63,7 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -83,7 +85,7 @@ class MainViewModel @Inject constructor(
     private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
     private val networkStateObserver: NetworkStateObserver,
     private val reconnectWebSocketUseCase: ReconnectWebSocketUseCase,
-): StateViewModel<MainState, Nothing>(MainState()) {
+): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
     private val _bollingerLowersMap = mutableStateMapOf<String, BollingerUiData>()
@@ -121,15 +123,24 @@ class MainViewModel @Inject constructor(
 
     private fun observeNetworkState() {
         launch(Dispatchers.IO) {
-            networkStateObserver.isConnectedNetwork.collect { isConnected ->
-                if (isConnected) {
-                    val session = webSocketRepository.connectedWebSocketSession.first()
+            networkStateObserver.isConnectedNetwork
+                .collect { isConnected ->
+                    Log.i("lynn", "연결 상태 감지 ... -> $isConnected")
 
-                    if (session is WebSocketState.Disconnected || session is WebSocketState.Error) {
-                      //  reconnectWebSocketUseCase()
+                    if (isConnected) {
+                        showNetworkSuccessPopup()
+
+                        launch(Dispatchers.IO) {
+                            val session = webSocketRepository.connectedWebSocketSession.first()
+
+                            if (session is WebSocketState.Disconnected || session is WebSocketState.Error) {
+                                reconnectWebSocketUseCase()
+                            }
+                        }
+                    } else{
+                        showNetowrkErrorPopup()
                     }
                 }
-            }
         }
     }
 
@@ -302,6 +313,22 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    private fun showNetowrkErrorPopup() {
+        launch(Dispatchers.IO) {
+            sendSideEffect(
+                MainSideEffect.NetworkErrorToast("네트워크 연결을 확인해주세요.")
+            )
+        }
+    }
+
+    private fun showNetworkSuccessPopup() {
+        launch(Dispatchers.IO) {
+            sendSideEffect(
+                MainSideEffect.NetworkSuccessToast("네트워크에 연결 되었어요.")
+            )
+        }
+    }
 }
 
 data class MainState(
@@ -314,4 +341,6 @@ data class MainState(
 
 sealed interface MainSideEffect {
     data class TokenErrorPopup(val description: String?, val code: String?): MainSideEffect
+    data class NetworkErrorToast(val description: String): MainSideEffect
+    data class NetworkSuccessToast(val description: String): MainSideEffect
 }
