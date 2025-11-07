@@ -54,4 +54,15 @@ class DataStoreRepositoryImpl @Inject constructor(
             preference[AppDataStore.Keys.BOLLINGER_ALARM_SETTING] = value
         }
     }
+
+    override val currentMarketInfo: Flow<String>
+        get() = dataStore.data.map { preference ->
+            preference[AppDataStore.Keys.MARKET_INFO] ?: ""
+        }
+
+    override suspend fun updateMarketInfo(marketId: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.MARKET_INFO] = marketId
+        }
+    }
 }

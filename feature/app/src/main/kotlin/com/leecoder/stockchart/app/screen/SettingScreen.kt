@@ -31,6 +31,7 @@ import com.leecoder.stockchart.app.viewmodel.SettingViewModel
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
 import com.leecoder.stockchart.design_system.component.BaseSettingBox
 import com.leecoder.stockchart.model.screen.BollingerSetting
+import com.leecoder.stockchart.model.screen.MarketInfo
 import com.leecoder.stockchart.model.screen.Screen
 
 @Composable
@@ -48,15 +49,26 @@ fun SettingScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
+        Spacer(Modifier.height(20.dp))
+        Text(
+            text = "설정 메뉴",
+            style = TextStyle(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            ),
+            modifier = Modifier.padding(start = 8.dp)
+        )
+
         BollingerSettingMenu(
             bollingerValue = state.bollingerSettingValue,
             onChangedBollinger = { value ->
                 viewModel.changedBollingerSetting(value)
             }
         )
+
+        MarketInfoMenu()
     }
 }
-
 
 @Composable
 fun BollingerSettingMenu(
@@ -74,15 +86,6 @@ fun BollingerSettingMenu(
             .fillMaxWidth()
             .wrapContentHeight(),
     ) {
-        Spacer(Modifier.height(20.dp))
-        Text(
-            text = "설정 메뉴",
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            ),
-            modifier = Modifier.padding(start = 8.dp)
-        )
         Spacer(Modifier.height(32.dp))
 
         Text(
@@ -126,6 +129,43 @@ fun BollingerSettingMenu(
                 Spacer(Modifier.height(8.dp))
             }
         }
+
+        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier
+            .fillMaxWidth()
+            .height(0.5.dp)
+            .background(Color.LightGray))
+    }
+}
+
+
+@Composable
+fun MarketInfoMenu(
+
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+    ) {
+        Spacer(Modifier.height(32.dp))
+
+        Text(
+            text = "현재 시장 정보",
+            style = TextStyle(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            ),
+            color = Color.Gray,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        BaseSettingBox(
+            title = MarketInfo.Kospi.title,
+            description = MarketInfo.Kospi.description
+        )
 
         Spacer(Modifier.height(16.dp))
         Spacer(Modifier

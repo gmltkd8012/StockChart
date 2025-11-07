@@ -12,10 +12,15 @@ object DataStoreConst {
         const val KR_INVESTMENT_WEBSOCKET = "kr_investment_websocket"
 
         const val BOLLINGER_SETTING = "bollinger_setting"
+
+        const val MARKET_INFO = "market_info"
     }
 
     object ValueConst {
         const val BOLLINGER_DAILY_SETTING = "daily_bollinger"
         const val BOLLINGER_LIVE_SETTING = "live_bollinger"
+
+        const val MARKET_KOSPI = "kospi"
+        const val MARKET_NASDAQ = "nasdaq"
     }
 }

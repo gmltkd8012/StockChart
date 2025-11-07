@@ -15,4 +15,7 @@ interface DataStoreRepository {
 
     val currentBollingerSetting: Flow<String>
     suspend fun updateBollingerSetting(value: String)
+
+    val currentMarketInfo: Flow<String>
+    suspend fun updateMarketInfo(marketId: String)
 }
