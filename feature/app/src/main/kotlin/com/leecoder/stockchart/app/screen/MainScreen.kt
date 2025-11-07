@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -45,6 +47,7 @@ import com.leecoder.stockchart.app.viewmodel.MainViewModel
 import com.leecoder.stockchart.design_system.component.BaseDialog
 import com.leecoder.stockchart.design_system.component.BaseNavigationBar
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
+import com.leecoder.stockchart.design_system.component.BaseSnackBar
 import com.leecoder.stockchart.design_system.component.BaseStockBox
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
 import com.leecoder.stockchart.design_system.component.BaseTextField
@@ -63,6 +66,7 @@ fun MainScreen(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination?.route
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
     val textFieldState by viewModel.textFieldState.collectAsState()
@@ -75,7 +79,6 @@ fun MainScreen(
     }
 
     LaunchedEffect(state.bollingerLowers) {
-        Log.d("lynn", "[BollingerLowers]: ${state.bollingerLowers}")
         if (state.bollingerLowers.isNotEmpty()) {
             isShowAlarmBadge.value = true
         }
@@ -90,6 +93,21 @@ fun MainScreen(
             navController.navigate(Screen.Search.route)
         } else if (textFieldState.isEmpty() && currentDestination == Screen.Search.route) {
             navController.popBackStack()
+        }
+    }
+
+    viewModel.collectSideEffect { sideEffect ->
+        Log.e("[Leecoder]", "sideEffect -> $sideEffect")
+        when (sideEffect) {
+            is MainSideEffect.NetworkErrorToast -> {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar(sideEffect.description)
+            }
+            is MainSideEffect.NetworkSuccessToast -> {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar(sideEffect.description)
+            }
+            else -> {}
         }
     }
 
@@ -117,7 +135,15 @@ fun MainScreen(
                     isShowAlarmBadge.value = false
                 }
             )
-        }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { snackbarData ->
+                BaseSnackBar(
+                    modifier = Modifier.padding(bottom = 40.dp),
+                    message = snackbarData.visuals.message
+                )
+            }
+        },
     ) { innerPadding ->
 
         NavHost(
@@ -148,7 +174,6 @@ fun MainScreen(
             }
             composable(Screen.Search.route) {
                 SearchScreen(
-                    textFieldState = textFieldState,
                     searchResult = state.searchResultList ?: emptyList(),
                     onRegistedSymbol = { code, name ->
                         viewModel.subscribeStock(code, name)

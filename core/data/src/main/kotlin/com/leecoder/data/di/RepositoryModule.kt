@@ -17,6 +17,7 @@ import com.leecoder.network.api.WebSocketApi
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.room.dao.BollingerDao
 import com.leecoder.stockchart.room.dao.KrxSymbolDao
+import com.leecoder.stockchart.room.dao.NasSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
 import dagger.Module
 import dagger.Provides
@@ -54,7 +55,8 @@ object RepositoryModule {
 
     @Provides
     fun provideRoomDatabaseRepository(
+        nasSymbolDao: NasSymbolDao,
         bollingerDao: BollingerDao,
         subscribedStockDao: SubscribedStockDao,
-    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(bollingerDao, subscribedStockDao)
+    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(nasSymbolDao, bollingerDao, subscribedStockDao)
 }

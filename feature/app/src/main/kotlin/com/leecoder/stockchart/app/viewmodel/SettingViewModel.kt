@@ -33,5 +33,6 @@ class SettingViewModel @Inject constructor(
 }
 
 data class SettingState(
-    val bollingerSettingValue: String = ""
+    val bollingerSettingValue: String = "",
+    val marketInfo: String = "",
 )

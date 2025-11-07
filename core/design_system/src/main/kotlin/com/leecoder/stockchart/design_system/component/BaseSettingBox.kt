@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -21,15 +22,15 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun BaseSettingBox(
-    id: String,
+    id: String = "",
     title: String,
     description: String,
-    isChecked: Boolean,
-    onCheckedChanged:(String) -> Unit,
+    isChecked: Boolean = false,
+    onCheckedChanged:(String) -> Unit = {},
 ) {
     Row(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .wrapContentHeight()
             .padding(horizontal = 12.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -61,12 +62,14 @@ fun BaseSettingBox(
             )
         }
 
-        BaseToggleButton(
-            isChecked = isChecked,
-            onCheckedChanged = {
-               onCheckedChanged(id)
-            }
-        )
+        if (id.isNotEmpty()) {
+            BaseToggleButton(
+                isChecked = isChecked,
+                onCheckedChanged = {
+                    onCheckedChanged(id)
+                }
+            )
+        }
     }
 
 }

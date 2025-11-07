@@ -21,5 +21,7 @@ class AppDataStore {
         val KR_INVESTMENT_WEBSOCKET = stringPreferencesKey(DataStoreConst.KeyConst.KR_INVESTMENT_WEBSOCKET)
 
         val BOLLINGER_ALARM_SETTING = stringPreferencesKey(DataStoreConst.KeyConst.BOLLINGER_SETTING)
+
+        val MARKET_INFO = stringPreferencesKey(DataStoreConst.KeyConst.MARKET_INFO)
     }
 }

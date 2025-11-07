@@ -20,10 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
+import com.leecoder.stockchart.model.symbol.NasSymbolData
 
 @Composable
 fun SearchScreen(
-    textFieldState: String,
     searchResult: List<KrxSymbolData>,
     onRegistedSymbol: (code: String, name: String) -> Unit,
 ) {

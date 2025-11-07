@@ -24,3 +24,26 @@ sealed class BollingerSetting(
         )
     }
 }
+
+
+
+sealed class MarketInfo(
+    val menuId: String,
+    val title: String,
+    val subTitle: String, // 개장 시간 정보
+    val description: String,
+) {
+    data object Kospi: MarketInfo(
+        menuId = "kospi",
+        title = "코스피 (KOSPI)",
+        subTitle = "",
+        description = "종목 검색 및 구독 알림 등 모든 기능이 코스피 기준으로 동작해요."
+    )
+
+    data object Nasdaq: MarketInfo(
+        menuId = "nasdaq",
+        title = "나스닥 (NASDAQ)",
+        subTitle = "",
+        description = "종목 검색 및 구독 알림 등 모든 기능이 나스닥 기준으로 동작해요."
+    )
+}

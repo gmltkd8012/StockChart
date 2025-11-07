@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.leecoder.stockchart.room.entity.KrxSymbolEntity
+import com.leecoder.stockchart.room.entity.NasSymbolEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,7 @@ class AppDatabaseCallback @Inject constructor(
 
         scope.launch {
             try {
-                val iscds = mutableListOf<KrxSymbolEntity>()
+                val krxSymbols = mutableListOf<KrxSymbolEntity>()
 
                 context.assets.open("krxsymbol.csv")
                     .bufferedReader(Charset.forName("MS949"))
@@ -38,7 +39,7 @@ class AppDatabaseCallback @Inject constructor(
                                 val code = spl[0]
                                 val name = spl[1]
 
-                                iscds += KrxSymbolEntity(
+                                krxSymbols += KrxSymbolEntity(
                                     code = code.trim('"'),
                                     name = name.trim('"'),
                                 )
@@ -46,8 +47,38 @@ class AppDatabaseCallback @Inject constructor(
                         }
                     }
 
-                if (iscds.isNotEmpty()) {
-                    dbProvider.get().krxSymbolDao().insertAll(iscds)
+                if (krxSymbols.isNotEmpty()) {
+                    dbProvider.get().krxSymbolDao().insertAll(krxSymbols)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        scope.launch {
+            try {
+                val nasSymbols = mutableListOf<NasSymbolEntity>()
+
+                context.assets.open("nassymbol.csv")
+                    .bufferedReader(Charset.forName("MS949"))
+                    .useLines { lines ->
+                        lines.forEach { line ->
+                            val spl = line.split("\t".toRegex())
+
+                            if (spl.isNotEmpty()) {
+                                val code = spl[4]
+                                val name = spl[6]
+
+                                nasSymbols += NasSymbolEntity(
+                                    code = code,
+                                    name = name,
+                                )
+                            }
+                        }
+                    }
+
+                if (nasSymbols.isNotEmpty()) {
+                    dbProvider.get().nasSymbolDao().insertAll(nasSymbols)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
