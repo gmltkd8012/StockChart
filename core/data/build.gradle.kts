@@ -20,10 +20,16 @@ android {
 }
 
 dependencies {
+    ksp (libs.hilt.android.compiler)
+    ksp (libs.hilt.compiler)
+
     implementation(libs.retrofit.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+
     implementation(project(":core:model"))
     implementation(project(":core:network"))
     implementation(project(":core:datastore"))

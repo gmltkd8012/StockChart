@@ -51,6 +51,7 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         viewModel.checkToken()
         viewModel.checkAprovalKey()
+        viewModel.saveCurrentMarketInfo()
         viewModel.connectWebSocket()
     }
 
@@ -66,8 +67,15 @@ fun SplashScreen(
         }
     }
 
+    LaunchedEffect(state.hasMarketInfo) {
+        if (state.hasMarketInfo) {
+            viewModel.startMarketInfoWorker()
+        }
+    }
+
     LaunchedEffect(state.hasToken, state.connectWebSocekt, state.isCompleteBollinger) {
         if (state.hasToken &&
+            state.hasMarketInfo &&
             state.isCompleteBollinger &&
             state.connectWebSocekt is WebSocketState.Connected) {
             callMainScreen()

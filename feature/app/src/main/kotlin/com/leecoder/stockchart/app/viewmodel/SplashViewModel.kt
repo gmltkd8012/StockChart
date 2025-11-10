@@ -1,25 +1,40 @@
 package com.leecoder.stockchart.app.viewmodel
 
+import android.content.Context
+import android.util.Log
+import androidx.lifecycle.asFlow
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
+import com.leecoder.data.worker.MarketWorker
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SaveAllBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.ui.base.StateViewModel
+import com.leecoder.stockchart.util.time.ScheduleUtil
+import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
 class SplashViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val workManager: WorkManager,
     private val webSocketRepository: WebSocketRepository,
     private val tokenRepository: TokenRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
@@ -123,6 +138,57 @@ class SplashViewModel @Inject constructor(
         }
     }
 
+    internal fun saveCurrentMarketInfo() {
+        launch(Dispatchers.IO) {
+            val targetOption = ScheduleUtil.currentTargetOption()
+            dataStoreRepository.updateMarketInfo(targetOption)
+
+            reduceState {
+                copy(
+                    hasMarketInfo = true
+                )
+            }
+        }
+    }
+
+    internal fun startMarketInfoWorker() {
+        launch(Dispatchers.IO) {
+            val (targetOption, targetDelay) = ScheduleUtil.caculatorDelayMillisToNextTarget()
+            Log.e("[Leecoder]", "Worker Request -> $targetDelay")
+
+            val input = workDataOf(
+                MarketWorker.INPUT_DATA_TARGET_OPTION to targetOption
+            )
+
+            val request = OneTimeWorkRequestBuilder<MarketWorker>()
+                .setInputData(input)
+                .setInitialDelay(targetDelay, TimeUnit.MILLISECONDS)
+                .build()
+
+            workManager.enqueueUniqueWork(
+                MarketWorker.Companion.UNIQUE_WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
+
+            workManager.getWorkInfoByIdLiveData(request.id).asFlow()
+                .collect() { wi ->
+                    when (wi.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            workManager.enqueueUniqueWork(
+                                MarketWorker.UNIQUE_WORK_NAME,
+                                ExistingWorkPolicy.REPLACE,
+                                request
+                            )
+                        }
+                        else -> {
+                            //TODO - 에러케이스
+                        }
+                    }
+                }
+        }
+    }
+
     private fun showErrorPopup(errorCode: String?, errorMessage: String?) {
         launch(Dispatchers.IO) {
             sendSideEffect(SplashSideEffect.ErrorPopup(
@@ -143,6 +209,7 @@ sealed interface SplashSideEffect {
 data class SplashState(
     val hasToken: Boolean = false,
     val hasApprovalKey: Boolean = false,
+    val hasMarketInfo: Boolean = false,
     val isCompleteBollinger: Boolean = false,
     val connectWebSocekt: WebSocketState = WebSocketState.Disconnected,
 )

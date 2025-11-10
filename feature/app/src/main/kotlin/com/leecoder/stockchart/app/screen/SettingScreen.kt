@@ -40,8 +40,17 @@ fun SettingScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    val isShownMarketInfo = remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         viewModel.currentBollingerSetting()
+        viewModel.currentMarketInfo()
+    }
+
+    LaunchedEffect(state.marketInfo) {
+        if (state.marketInfo.isNotEmpty()) {
+            isShownMarketInfo.value = true
+        }
     }
 
     Column(
@@ -66,7 +75,11 @@ fun SettingScreen(
             }
         )
 
-        MarketInfoMenu()
+        if (isShownMarketInfo.value) {
+            MarketInfoMenu(
+                marketOption = state.marketInfo
+            )
+        }
     }
 }
 
@@ -141,7 +154,7 @@ fun BollingerSettingMenu(
 
 @Composable
 fun MarketInfoMenu(
-
+    marketOption: String,
 ) {
     Column(
         modifier = Modifier
@@ -163,8 +176,8 @@ fun MarketInfoMenu(
         Spacer(Modifier.height(8.dp))
 
         BaseSettingBox(
-            title = MarketInfo.Kospi.title,
-            description = MarketInfo.Kospi.description
+            title = if (marketOption == MarketInfo.Kospi.menuId) MarketInfo.Kospi.title else MarketInfo.Nasdaq.title,
+            description = if (marketOption == MarketInfo.Kospi.menuId) MarketInfo.Kospi.description else MarketInfo.Nasdaq.description
         )
 
         Spacer(Modifier.height(16.dp))

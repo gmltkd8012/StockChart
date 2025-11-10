@@ -11,17 +11,20 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class DataStoreModule {
+object DataStoreModule {
 
+    @Singleton
     @Provides
     fun provideDataStore(
         application: Application
     ): DataStore<Preferences> = application.datastore
 
     @Provides
+    @Singleton
     fun provideDataStoreRepositoryImpl(
         dataStore: DataStore<Preferences>,
     ): DataStoreRepository = DataStoreRepositoryImpl(dataStore)
