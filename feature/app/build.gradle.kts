@@ -23,4 +23,7 @@ dependencies {
 
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.kotlin.serialization)
+
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
 }

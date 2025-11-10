@@ -21,6 +21,7 @@ jetbrainsKotlinJvm = "1.9.0"
 # Hilt
 hilt = "2.51.1"
 hiltNavigationCompose = "1.2.0"
+androidxHilt = "1.2.0"
 
 ## Network
 okhttp = "4.12.0"
@@ -33,7 +34,7 @@ roomVersion = "2.6.1"
 coilVersion = "2.7.0"
 
 # serialization
-kotlinSerializationJson = "1.7.3"
+kotlinxVersion= "1.7.3"
 
 # AndroidX Material
 androidMaterial = "1.11.0"
@@ -47,6 +48,9 @@ accompanistVersion = "0.30.1"
 
 # Gson
 gsonVersion = "2.10.1"
+
+# Worker
+workRuntimeKtxVersion = "2.9.0"
 
 [libraries]
 android-tools-build-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -79,6 +83,7 @@ retrofit-kotlin-serialization = { module = "com.squareup.retrofit2:converter-kot
 # hilt
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "androidxHilt"}
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 
 # Room
@@ -88,7 +93,7 @@ room-ktx = {group="androidx.room", name = "room-ktx" , version.ref = "roomVersio
 room-paging = {group="androidx.room", name = "room-paging" , version.ref = "roomVersion"}
 
 # Serialization
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerializationJson" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxVersion" }
 
 # Accompanist
 accompanist-systemUiController = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanistVersion" }
@@ -99,6 +104,14 @@ androidx-datastore-preferences = { group = "androidx.datastore", name = "datasto
 
 # Gson
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gsonVersion" }
+
+# WorkManager
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtxVersion" }
+androidx-hilt-common = { group = "androidx.hilt", name = "hilt-common", version.ref = "androidxHilt" }
+androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "androidxHilt" }
+
+# Coroutine-Guava
+kotlinx-coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version.ref = "kotlinxVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

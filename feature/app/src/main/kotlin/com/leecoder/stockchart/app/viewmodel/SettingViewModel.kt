@@ -30,6 +30,19 @@ class SettingViewModel @Inject constructor(
             dataStoreRepository.updateBollingerSetting(value)
         }
     }
+
+    internal fun currentMarketInfo() {
+        launch(Dispatchers.IO) {
+            dataStoreRepository.currentMarketInfo.collect() { marketInfo ->
+                reduceState {
+                    copy(
+                        marketInfo = marketInfo
+                    )
+                }
+            }
+        }
+    }
+
 }
 
 data class SettingState(
