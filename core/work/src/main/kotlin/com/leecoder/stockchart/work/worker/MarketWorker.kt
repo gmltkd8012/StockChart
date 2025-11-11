@@ -1,16 +1,12 @@
-package com.leecoder.data.worker
+package com.leecoder.stockchart.work.worker
 
 import android.content.Context
-import android.icu.text.DateTimePatternGenerator.ZONE
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.leecoder.stockchart.datastore.const.DataStoreConst
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.time.ZonedDateTime
 
 @HiltWorker
 class MarketWorker @AssistedInject constructor(
