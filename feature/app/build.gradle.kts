@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":core:datastore"))
     implementation(project(":core:domain"))
     implementation(project(":core:util"))
+    implementation(project(":core:work"))
 
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.kotlin.serialization)

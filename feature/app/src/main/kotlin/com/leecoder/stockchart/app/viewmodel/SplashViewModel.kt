@@ -12,7 +12,7 @@ import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
-import com.leecoder.data.worker.MarketWorker
+import com.leecoder.stockchart.work.worker.MarketWorker
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SaveAllBollingersUseCase
@@ -20,7 +20,6 @@ import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.ui.base.StateViewModel
 import com.leecoder.stockchart.util.time.ScheduleUtil
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
