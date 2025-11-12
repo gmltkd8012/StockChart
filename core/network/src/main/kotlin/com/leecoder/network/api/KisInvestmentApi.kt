@@ -3,12 +3,13 @@ package com.leecoder.network.api
 import com.leecoder.network.entity.CurrentPriceResponse
 import com.leecoder.network.entity.DailyPriceResponse
 import com.leecoder.network.entity.TimeItemChartPriceResponse
+import com.leecoder.stockchart.appconfig.BuildConfig
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query
 
 interface KisInvestmentApi {
-    @GET("/uapi/domestic-stock/v1/quotations/inquire-daily-price")
+    @GET(BuildConfig.KIS_KOSPI_INQUIRE_DAILY_PRICE)
     suspend fun getDailyPrice(
         @Header("content-type") contentType: String?,
         @Header("authorization") authorization: String,
@@ -22,7 +23,7 @@ interface KisInvestmentApi {
         @Query("FID_ORG_ADJ_PRC") prc: String,
     ): DailyPriceResponse
 
-    @GET("/uapi/domestic-stock/v1/quotations/inquire-ccnl")
+    @GET(BuildConfig.KIS_KOSPI_INQUIRE_CCNL)
     suspend fun getCurrentPrice(
         @Header("content-type") contentType: String?,
         @Header("authorization") authorization: String,
@@ -34,7 +35,7 @@ interface KisInvestmentApi {
         @Query("FID_INPUT_ISCD") inputIscd: String,
     ): CurrentPriceResponse
 
-    @GET("/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice")
+    @GET(BuildConfig.KIS_KOSPI_INQUIRE_TIME_ITEMCHARTPRICE)
     suspend fun getTimeItemChartPrice(
         @Header("content-type") contentType: String?,
         @Header("authorization") authorization: String,

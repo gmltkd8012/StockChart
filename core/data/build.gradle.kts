@@ -9,14 +9,6 @@ plugins {
 
 android {
     namespace = "com.leecoder.stockchart.data"
-
-    val appKey: String = System.getenv("APP_KEY") ?: gradleLocalProperties(rootDir, providers).getProperty("app_key")
-    val appSecret: String = System.getenv("APP_SECRET") ?: gradleLocalProperties(rootDir, providers).getProperty("app_secret")
-
-    defaultConfig {
-        buildConfigField("String", "AppKey", appKey)
-        buildConfigField("String", "AppSecret", appSecret)
-    }
 }
 
 dependencies {
@@ -35,4 +27,5 @@ dependencies {
     implementation(project(":core:datastore"))
     implementation(project(":core:util"))
     implementation(project(":core:room"))
+    implementation(project(":core:app-config"))
 }

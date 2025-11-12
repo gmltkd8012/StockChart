@@ -25,4 +25,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp.logging)
     implementation(project(":core:model"))
+    implementation(project(":core:app-config"))
 }
