@@ -14,6 +14,7 @@ import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.stockchart.work.worker.MarketWorker
 import com.leecoder.network.const.Credential
+import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SaveAllBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
@@ -34,6 +35,7 @@ import javax.inject.Inject
 class SplashViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val workManager: WorkManager,
+    private val appConfig: AppConfig,
     private val webSocketRepository: WebSocketRepository,
     private val tokenRepository: TokenRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
@@ -98,9 +100,7 @@ class SplashViewModel @Inject constructor(
 
     internal fun connectWebSocket() {
         launch(Dispatchers.IO) {
-            webSocketRepository.connect(
-                "ws://ops.koreainvestment.com:21000/H0GSCNI0",
-            )
+            webSocketRepository.connect(appConfig.webSocketUrl + appConfig.kospiUrl)
 
             webSocketRepository.connectedWebSocketSession
                 .onEach { state ->

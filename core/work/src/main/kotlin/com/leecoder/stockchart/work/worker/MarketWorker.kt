@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
+import com.leecoder.stockchart.domain.usecase.UpdateMarketInfoUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -13,6 +14,7 @@ class MarketWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val dataStoreRepository: DataStoreRepository,
+    private val updateMarketInfoUseCase: UpdateMarketInfoUseCase,
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {

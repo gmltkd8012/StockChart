@@ -10,6 +10,7 @@ import com.leecoder.network.entity.WebSocketApprovalBody
 import com.leecoder.network.entity.WebSocketApprovalHeader
 import com.leecoder.network.entity.WebSocketApprovalInput
 import com.leecoder.network.entity.WebSocketRequest
+import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.stock.HeartBeatResponse
@@ -54,6 +55,7 @@ import javax.inject.Singleton
 @Singleton
 class WebSocketDataSourceImpl @Inject constructor(
     @Named("websocket") private val client: OkHttpClient,
+    private val appConfig: AppConfig,
     private val webSocketApi: WebSocketApi,
     private val dataStoreRepository: DataStoreRepository,
 ): WebSocketDataSource {
@@ -62,7 +64,6 @@ class WebSocketDataSourceImpl @Inject constructor(
         const val PING_PONG = "PINGPONG" // 웹소켓 하트비트 체크
         const val SUBSCRIBE_CODE = "1" // 등록: "1"
         const val UNSUBSCRIBE_CODE = "2" // 해제: "2"
-
     }
 
     private var webSocket: WebSocket? = null
@@ -198,7 +199,7 @@ class WebSocketDataSourceImpl @Inject constructor(
 
         val body = WebSocketApprovalBody(
             input = WebSocketApprovalInput(
-                id = "H0STCNT0",
+                id = appConfig.kospiCode,
                 key = symbol,
             )
         )
@@ -218,30 +219,11 @@ class WebSocketDataSourceImpl @Inject constructor(
 
         val body = WebSocketApprovalBody(
             input = WebSocketApprovalInput(
-                id = "HDFSCNT0",
+                id = appConfig.nasdaqCode,
                 key = "DNASTSLQ",
             )
         )
 
         webSocket?.send(Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body)))
-    }
-
-    fun decryptAES256(encryptedBase64: String, keyString: String, ivString: String): String {
-        // 1. Base64 -> ByteArray
-        val encryptedBytes = Base64.decode(encryptedBase64, Base64.DEFAULT)
-        val keyBytes = keyString.toByteArray(Charsets.UTF_8)   // 서버 제공 Key
-        val ivBytes = ivString.toByteArray(Charsets.UTF_8)     // 서버 제공 IV
-
-        // 2. SecretKeySpec & IvParameterSpec
-        val keySpec = SecretKeySpec(keyBytes, "AES")
-        val ivSpec = IvParameterSpec(ivBytes)
-
-        // 3. Cipher 초기화
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding") // AES256 + CBC + 패딩
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
-
-        // 4. 복호화
-        val decryptedBytes = cipher.doFinal(encryptedBytes)
-        return String(decryptedBytes, Charsets.UTF_8)
     }
 }

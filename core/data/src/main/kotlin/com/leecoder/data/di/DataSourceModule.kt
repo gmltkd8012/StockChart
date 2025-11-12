@@ -6,6 +6,7 @@ import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.data.source.WebSocketDataSourceImpl
 import com.leecoder.network.api.KisInvestmentApi
 import com.leecoder.network.api.WebSocketApi
+import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import dagger.Module
 import dagger.Provides
@@ -23,9 +24,10 @@ object DataSourceModule {
     @Singleton
     fun provideWebSocketDataSource(
         @Named("websocket") client: OkHttpClient,
+        appConfig: AppConfig,
         webSocketApi: WebSocketApi,
         dataStoreRepository: DataStoreRepository,
-    ): WebSocketDataSource = WebSocketDataSourceImpl(client, webSocketApi, dataStoreRepository)
+    ): WebSocketDataSource = WebSocketDataSourceImpl(client, appConfig, webSocketApi, dataStoreRepository)
 
     @Provides
     fun provideKrInvestmentDataSource(

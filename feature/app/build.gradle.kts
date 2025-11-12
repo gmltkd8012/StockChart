@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:util"))
     implementation(project(":core:work"))
+    implementation(project(":core:app-config"))
 
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.kotlin.serialization)

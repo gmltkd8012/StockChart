@@ -5,7 +5,7 @@ import com.leecoder.network.api.KisInvestmentApi
 import com.leecoder.network.entity.DailyPriceResponse
 import com.leecoder.network.entity.KisInvestmentRquestHeader
 import com.leecoder.network.entity.toData
-import com.leecoder.stockchart.data.BuildConfig
+import com.leecoder.stockchart.appconfig.BuildConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.stock.CurrentPriceData
 import com.leecoder.stockchart.model.stock.DailyPriceData
