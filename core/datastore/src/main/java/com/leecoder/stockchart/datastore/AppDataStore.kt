@@ -23,5 +23,7 @@ class AppDataStore {
         val BOLLINGER_ALARM_SETTING = stringPreferencesKey(DataStoreConst.KeyConst.BOLLINGER_SETTING)
 
         val MARKET_INFO = stringPreferencesKey(DataStoreConst.KeyConst.MARKET_INFO)
+
+        val EXCHANGE_RATE_SAVE_TIME = longPreferencesKey(DataStoreConst.KeyConst.EXCHANGE_RATE_SAVE_TIME)
     }
 }

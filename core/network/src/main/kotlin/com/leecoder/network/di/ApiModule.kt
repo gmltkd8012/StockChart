@@ -2,9 +2,11 @@ package com.leecoder.network.di
 
 import com.leecoder.network.StockChartNetwork
 import com.leecoder.network.api.KisInvestmentApi
+import com.leecoder.network.api.KoreaAeximApi
 import com.leecoder.network.api.TokenApi
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.network.createApi
+import com.leecoder.stockchart.appconfig.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,6 +44,16 @@ internal object ApiModule {
     ): KisInvestmentApi {
         return stockChartNetwork.createApi<KisInvestmentApi>(
             baseUrl = "https://openapi.koreainvestment.com:9443"
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideKoreaAeximApi(
+        stockChartNetwork: StockChartNetwork,
+    ): KoreaAeximApi {
+        return stockChartNetwork.createApi<KoreaAeximApi>(
+            baseUrl = BuildConfig.KOREA_AEXIM_BASE_URL
         )
     }
 }

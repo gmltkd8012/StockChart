@@ -1,9 +1,11 @@
 package com.leecoder.data.repository
 
+import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.SubscribedStockData
 import com.leecoder.stockchart.model.symbol.NasSymbolData
 import com.leecoder.stockchart.room.entity.BollingerEntity
+import com.leecoder.stockchart.room.entity.ExChangeRateEntity
 import kotlinx.coroutines.flow.Flow
 
 interface RoomDatabaseRepository {
@@ -34,4 +36,13 @@ interface RoomDatabaseRepository {
 
     // 개별 구독 종목 삭제
     suspend fun unSubscribeStock(stock: SubscribedStockData)
+
+    // 데일리 환율 저장
+    suspend fun insertAllExChangeRates(rates: List<ExchangeRateData>)
+
+    // 데일리 환율 조회
+    suspend fun getAllExChangeRates(): Flow<List<ExchangeRateData>>
+
+    // 데일리 환율 전체 삭제
+    suspend fun deleteAllExChangeRates(rates: List<ExchangeRateData>)
 }

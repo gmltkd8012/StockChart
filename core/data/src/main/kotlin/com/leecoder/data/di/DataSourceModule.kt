@@ -1,10 +1,13 @@
 package com.leecoder.data.di
 
+import com.leecoder.data.source.KoreaAeximDataSource
+import com.leecoder.data.source.KoreaAeximDataSourceImpl
 import com.leecoder.data.source.KsInvestmentDataSoruceImpl
 import com.leecoder.data.source.KsInvestmentDataSource
 import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.data.source.WebSocketDataSourceImpl
 import com.leecoder.network.api.KisInvestmentApi
+import com.leecoder.network.api.KoreaAeximApi
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
@@ -35,4 +38,12 @@ object DataSourceModule {
         kisInvestmentApi: KisInvestmentApi,
         dataStoreRepository: DataStoreRepository,
     ): KsInvestmentDataSource = KsInvestmentDataSoruceImpl(client, kisInvestmentApi, dataStoreRepository)
+
+    @Provides
+    @Singleton
+    fun provideKoreaAeximDataSource(
+        appConfig: AppConfig,
+        koreaAeximApi: KoreaAeximApi,
+    ): KoreaAeximDataSource = KoreaAeximDataSourceImpl(appConfig, koreaAeximApi)
+
 }

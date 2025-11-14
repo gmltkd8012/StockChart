@@ -2,6 +2,7 @@ package com.leecoder.stockchart.room.di
 
 import com.leecoder.stockchart.room.AppDatabase
 import com.leecoder.stockchart.room.dao.BollingerDao
+import com.leecoder.stockchart.room.dao.ExChangeRateDao
 import com.leecoder.stockchart.room.dao.KrxSymbolDao
 import com.leecoder.stockchart.room.dao.NasSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
@@ -33,4 +34,9 @@ object DaoModule {
     fun provideBollingerDao(
         database: AppDatabase
     ): BollingerDao = database.bollingerDao()
+
+    @Provides
+    fun provideExChangeRateDao(
+        database: AppDatabase
+    ): ExChangeRateDao = database.exChangeRateDao()
 }

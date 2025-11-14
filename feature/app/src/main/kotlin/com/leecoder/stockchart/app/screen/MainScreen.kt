@@ -75,6 +75,7 @@ fun MainScreen(
 
     LaunchedEffect(Unit) {
         viewModel.collectStockTick()
+        viewModel.getCurrentExchangeRate()
         viewModel.initBollingerData()
     }
 
@@ -159,6 +160,7 @@ fun MainScreen(
             composable(Screen.Subscribe.route) {
                 SubscribeScreen(
                     stockTick = state.stockTickMap?.values?.toList() ?: emptyList(),
+                    exchangeRates = state.exchangeRates,
                     onDeletedSymbol = { code, name ->
                         viewModel.unSubsctibeStock(code, name)
                     }

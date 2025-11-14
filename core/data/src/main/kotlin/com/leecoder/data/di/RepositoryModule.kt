@@ -1,5 +1,7 @@
 package com.leecoder.data.di
 
+import com.leecoder.data.repository.KoreaAeximRepository
+import com.leecoder.data.repository.KoreaAeximRepositoryImpl
 import com.leecoder.data.repository.KrxSymbolRepository
 import com.leecoder.data.repository.KrxSymbolRepositoryImpl
 import com.leecoder.data.repository.KsInvestmentRepository
@@ -10,12 +12,14 @@ import com.leecoder.data.token.TokenRepository
 import com.leecoder.data.token.TokenRepositoryImpl
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.repository.WebSocketRepositoryImpl
+import com.leecoder.data.source.KoreaAeximDataSource
 import com.leecoder.data.source.KsInvestmentDataSource
 import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.network.api.TokenApi
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.room.dao.BollingerDao
+import com.leecoder.stockchart.room.dao.ExChangeRateDao
 import com.leecoder.stockchart.room.dao.KrxSymbolDao
 import com.leecoder.stockchart.room.dao.NasSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
@@ -58,5 +62,12 @@ object RepositoryModule {
         nasSymbolDao: NasSymbolDao,
         bollingerDao: BollingerDao,
         subscribedStockDao: SubscribedStockDao,
-    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(nasSymbolDao, bollingerDao, subscribedStockDao)
+        exchangeRateDao: ExChangeRateDao,
+    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(nasSymbolDao, bollingerDao, subscribedStockDao, exchangeRateDao)
+
+    @Provides
+    @Singleton
+    fun provideKoreaAeximRepository(
+        koreaAeximDataSource: KoreaAeximDataSource,
+    ): KoreaAeximRepository = KoreaAeximRepositoryImpl(koreaAeximDataSource)
 }
