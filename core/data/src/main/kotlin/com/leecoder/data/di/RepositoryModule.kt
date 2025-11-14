@@ -19,6 +19,7 @@ import com.leecoder.network.api.TokenApi
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.room.dao.BollingerDao
+import com.leecoder.stockchart.room.dao.ExChangeRateDao
 import com.leecoder.stockchart.room.dao.KrxSymbolDao
 import com.leecoder.stockchart.room.dao.NasSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
@@ -61,7 +62,8 @@ object RepositoryModule {
         nasSymbolDao: NasSymbolDao,
         bollingerDao: BollingerDao,
         subscribedStockDao: SubscribedStockDao,
-    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(nasSymbolDao, bollingerDao, subscribedStockDao)
+        exchangeRateDao: ExChangeRateDao,
+    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(nasSymbolDao, bollingerDao, subscribedStockDao, exchangeRateDao)
 
     @Provides
     @Singleton
