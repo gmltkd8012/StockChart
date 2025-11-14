@@ -46,4 +46,7 @@ class AppConfigImpl @Inject constructor() : AppConfig {
 
     override val inquire_time_itemchartprice: String
         get() = BuildConfig.KIS_KOSPI_INQUIRE_TIME_ITEMCHARTPRICE
+
+    override val korea_aexim_api_key: String
+        get() = BuildConfig.KOREA_AEXIM_API_KEY
 }

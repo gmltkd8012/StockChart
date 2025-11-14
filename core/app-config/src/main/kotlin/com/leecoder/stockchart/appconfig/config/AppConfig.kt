@@ -28,4 +28,5 @@ interface AppConfig {
 
     val inquire_time_itemchartprice: String // 당일분봉조회 API
 
+    val korea_aexim_api_key: String // 한국수출입은행 API key
 }

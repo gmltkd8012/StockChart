@@ -28,6 +28,9 @@ android {
     val kisKospiInquireDailyPriceEntryPoint: String = System.getenv("KIS_KOSPI_INQUIRE_DAILY_PRICE_ENTRY_POINT") ?: gradleLocalProperties(rootDir, providers).getProperty("kis_kospi_inquire_daily_price")
     val kisKospiInquireTimeItemChartPriceEntryPoint: String = System.getenv("KIS_KOSPI_INQUIRE_TIME_ITEMCHARTPRICE_ENTRY_POINT") ?: gradleLocalProperties(rootDir, providers).getProperty("kis_kospi_inquire_time_itemchartprice")
 
+    val koreaAeximApiKey: String = System.getenv("KOREA_AEXIM_API_KEY") ?: gradleLocalProperties(rootDir, providers).getProperty("korea_aexim_api_key")
+    val koreaAeximBaseUrl: String = System.getenv("KOREA_AEXIM_BASE_URL") ?: gradleLocalProperties(rootDir, providers).getProperty("korea_aexim_base_url")
+    val koreaAeximExchangeEntryPoint: String = System.getenv("KOREA_AEXIM_EXCHANGE_ENTRY_POINT") ?: gradleLocalProperties(rootDir, providers).getProperty("korea_aexim_exchange_entry_point")
 
     defaultConfig {
         buildConfigField("String", "AppKey", appKey)
@@ -48,6 +51,10 @@ android {
         buildConfigField("String", "KIS_KOSPI_INQUIRE_CCNL", kisKospiInquireCcnlEntryPoint)
         buildConfigField("String", "KIS_KOSPI_INQUIRE_DAILY_PRICE", kisKospiInquireDailyPriceEntryPoint)
         buildConfigField("String", "KIS_KOSPI_INQUIRE_TIME_ITEMCHARTPRICE", kisKospiInquireTimeItemChartPriceEntryPoint)
+
+        buildConfigField("String", "KOREA_AEXIM_API_KEY", koreaAeximApiKey)
+        buildConfigField("String", "KOREA_AEXIM_BASE_URL", koreaAeximBaseUrl)
+        buildConfigField("String", "KOREA_AEXIM_EXCHANGE_ENTRY_POINT", koreaAeximExchangeEntryPoint)
     }
 }
 
