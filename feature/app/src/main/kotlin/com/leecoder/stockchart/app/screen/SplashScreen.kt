@@ -53,6 +53,7 @@ fun SplashScreen(
         viewModel.checkAprovalKey()
         viewModel.saveCurrentMarketInfo()
         viewModel.connectWebSocket()
+        viewModel.checkCurrentExchangeRate()
     }
 
     LaunchedEffect(state.hasApprovalKey, state.connectWebSocekt) {

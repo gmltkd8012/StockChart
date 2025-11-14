@@ -8,7 +8,7 @@ data class ExchangeInfoData(
     val curNm: String,
     val ttb: String,
     val tts: String,
-    val dealBasR: String,       // 매매 기준율
+    val dealBasR: String,       // 대표 환율
     val bkpr: String,           // 장부 가격
     val yyEfeeR: String,        // 년환가료율
     val tenDdEffeR: String,     // 10일환가료율
