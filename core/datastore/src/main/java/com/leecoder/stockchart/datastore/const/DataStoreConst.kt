@@ -14,6 +14,8 @@ object DataStoreConst {
         const val BOLLINGER_SETTING = "bollinger_setting"
 
         const val MARKET_INFO = "market_info"
+
+        const val EXCHANGE_RATE_SAVE_TIME = "exchange_rate_save_time"
     }
 
     object ValueConst {

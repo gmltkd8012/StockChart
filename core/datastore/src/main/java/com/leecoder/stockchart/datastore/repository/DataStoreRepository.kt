@@ -18,4 +18,7 @@ interface DataStoreRepository {
 
     val currentMarketInfo: Flow<String>
     suspend fun updateMarketInfo(marketId: String)
+
+    val currentExchangeRateSaveTime: Flow<Long>
+    suspend fun updateExchangeRateSaveTime(saveTime: Long)
 }

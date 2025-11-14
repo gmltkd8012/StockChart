@@ -65,4 +65,15 @@ class DataStoreRepositoryImpl @Inject constructor(
             preference[AppDataStore.Keys.MARKET_INFO] = marketId
         }
     }
+
+    override val currentExchangeRateSaveTime: Flow<Long>
+        get() = dataStore.data.map { preference ->
+            preference[AppDataStore.Keys.EXCHANGE_RATE_SAVE_TIME] ?: 0L
+        }
+
+    override suspend fun updateExchangeRateSaveTime(saveTime: Long) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.EXCHANGE_RATE_SAVE_TIME] = saveTime
+        }
+    }
 }
