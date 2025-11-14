@@ -21,6 +21,7 @@ import com.leecoder.stockchart.domain.usecase.ReconnectWebSocketUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
 import com.leecoder.stockchart.model.bollinger.LiveBollingerData
+import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.StockTick
@@ -263,6 +264,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    internal fun getCurrentExchangeRate() {
+        launch(Dispatchers.IO) {
+            val exchangeRates = roomDatabaseRepository.getAllExChangeRates().first()
+                .filterNot { it.curUnit == "KRW" } // 원화는 필터링 고정 값 1이라서
+                .sortedBy { // 달러 > 엔화 > 유로 > 위안 순
+                    when (it.curUnit) {
+                        "USD" -> 0
+                        "JPY" -> 1
+                        "EUR" -> 2
+                        "CNH" -> 3
+                        else -> 4
+                    }
+                }
+
+            reduceState {
+                copy(exchangeRates = exchangeRates)
+            }
+        }
+    }
+
 
     private suspend fun checkLiveBollinger(tick: StockTick, stockName: String?) {
         val agg = _subscribedLiveBollingerMap[tick.mkscShrnIscd]
@@ -336,7 +357,8 @@ data class MainState(
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
     val searchResultList: List<KrxSymbolData>? = null,
-    val bollingerLowers: Map<String, BollingerUiData> = emptyMap()
+    val bollingerLowers: Map<String, BollingerUiData> = emptyMap(),
+    val exchangeRates: List<ExchangeRateData> = emptyList()
 )
 
 sealed interface MainSideEffect {
