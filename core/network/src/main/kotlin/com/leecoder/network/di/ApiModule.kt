@@ -2,6 +2,7 @@ package com.leecoder.network.di
 
 import com.leecoder.network.StockChartNetwork
 import com.leecoder.network.api.KisInvestmentApi
+import com.leecoder.network.api.KisInvestmentOverseasApi
 import com.leecoder.network.api.KoreaAeximApi
 import com.leecoder.network.api.TokenApi
 import com.leecoder.network.api.WebSocketApi
@@ -54,6 +55,16 @@ internal object ApiModule {
     ): KoreaAeximApi {
         return stockChartNetwork.createApi<KoreaAeximApi>(
             baseUrl = BuildConfig.KOREA_AEXIM_BASE_URL
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideKisInvestmentOverseasApi(
+        stockChartNetwork: StockChartNetwork,
+    ): KisInvestmentOverseasApi {
+        return stockChartNetwork.createApi<KisInvestmentOverseasApi>(
+            baseUrl = BuildConfig.KIS_BaseUrl
         )
     }
 }

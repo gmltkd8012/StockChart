@@ -32,6 +32,9 @@ android {
     val koreaAeximBaseUrl: String = System.getenv("KOREA_AEXIM_BASE_URL") ?: gradleLocalProperties(rootDir, providers).getProperty("korea_aexim_base_url")
     val koreaAeximExchangeEntryPoint: String = System.getenv("KOREA_AEXIM_EXCHANGE_ENTRY_POINT") ?: gradleLocalProperties(rootDir, providers).getProperty("korea_aexim_exchange_entry_point")
 
+    val kisNasdaqInquireCcnlEntryPoint: String = System.getenv("KIS_NASDAQ_INQUIRE_CCNL_ENTRY_POINT") ?: gradleLocalProperties(rootDir, providers).getProperty("kis_nasdaq_inquire_ccnl")
+    val kisNasdaqInquireTimeItemChartPriceEntryPoint: String = System.getenv("KIS_NASDAQ_INQUIRE_TIME_ITEMCHARTPRICE_ENTRY_POINT") ?: gradleLocalProperties(rootDir, providers).getProperty("kis_nasdaq_inquire_time_itemchartprice")
+
     defaultConfig {
         buildConfigField("String", "AppKey", appKey)
         buildConfigField("String", "AppSecret", appSecret)
@@ -55,6 +58,9 @@ android {
         buildConfigField("String", "KOREA_AEXIM_API_KEY", koreaAeximApiKey)
         buildConfigField("String", "KOREA_AEXIM_BASE_URL", koreaAeximBaseUrl)
         buildConfigField("String", "KOREA_AEXIM_EXCHANGE_ENTRY_POINT", koreaAeximExchangeEntryPoint)
+
+        buildConfigField("String", "KIS_NASDAQ_INQUIRE_CCNL", kisNasdaqInquireCcnlEntryPoint)
+        buildConfigField("String", "KIS_NASDAQ_INQUIRE_TIME_ITEMCHARTPRICE", kisNasdaqInquireTimeItemChartPriceEntryPoint)
     }
 }
 

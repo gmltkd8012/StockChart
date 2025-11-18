@@ -19,6 +19,7 @@ import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SaveAllBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.domain.usecase.exchage.CheckExChangeRateUseCase
+import com.leecoder.stockchart.domain.usecase.overseas.SaveOverseasStockCurrentPriceUseCase
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.ui.base.StateViewModel
 import com.leecoder.stockchart.util.time.ScheduleUtil
@@ -45,7 +46,14 @@ class SplashViewModel @Inject constructor(
     private val saveAllBollingersUseCase: SaveAllBollingersUseCase,
     private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
     private val checkExChangeRateUseCase: CheckExChangeRateUseCase,
+    private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
 ): StateViewModel<SplashState, SplashSideEffect>(SplashState()) {
+
+    init {
+        launch(Dispatchers.IO) {
+            saveOverseasStockCurrentPriceUseCase()
+        }
+    }
 
     internal fun checkToken(){
         launch(Dispatchers.IO) {
