@@ -1,5 +1,7 @@
 package com.leecoder.data.di
 
+import com.leecoder.data.repository.KisInvestmentOverseasRepository
+import com.leecoder.data.repository.KisInvestmentOverseasRepositoryImpl
 import com.leecoder.data.repository.KoreaAeximRepository
 import com.leecoder.data.repository.KoreaAeximRepositoryImpl
 import com.leecoder.data.repository.KrxSymbolRepository
@@ -12,6 +14,7 @@ import com.leecoder.data.token.TokenRepository
 import com.leecoder.data.token.TokenRepositoryImpl
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.repository.WebSocketRepositoryImpl
+import com.leecoder.data.source.KisInvestmentOverseasDataSource
 import com.leecoder.data.source.KoreaAeximDataSource
 import com.leecoder.data.source.KsInvestmentDataSource
 import com.leecoder.data.source.WebSocketDataSource
@@ -70,4 +73,10 @@ object RepositoryModule {
     fun provideKoreaAeximRepository(
         koreaAeximDataSource: KoreaAeximDataSource,
     ): KoreaAeximRepository = KoreaAeximRepositoryImpl(koreaAeximDataSource)
+
+    @Provides
+    @Singleton
+    fun provideKisInvestmentOverseasRepository(
+        kisInvestmentOverseasDataSource: KisInvestmentOverseasDataSource,
+    ): KisInvestmentOverseasRepository = KisInvestmentOverseasRepositoryImpl(kisInvestmentOverseasDataSource)
 }

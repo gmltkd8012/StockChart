@@ -49,4 +49,10 @@ class AppConfigImpl @Inject constructor() : AppConfig {
 
     override val korea_aexim_api_key: String
         get() = BuildConfig.KOREA_AEXIM_API_KEY
+
+    override val inquire_ccnl_nas: String
+        get() = BuildConfig.KIS_NASDAQ_INQUIRE_CCNL
+
+    override val inquire_time_itemchartprice_nas: String
+        get() = BuildConfig.KIS_NASDAQ_INQUIRE_TIME_ITEMCHARTPRICE
 }

@@ -29,4 +29,8 @@ interface AppConfig {
     val inquire_time_itemchartprice: String // 당일분봉조회 API
 
     val korea_aexim_api_key: String // 한국수출입은행 API key
+
+    val inquire_ccnl_nas: String // 나스닥 현재체결가 API
+
+    val inquire_time_itemchartprice_nas: String // 나스닥 해외주식분봉조회 API
 }
