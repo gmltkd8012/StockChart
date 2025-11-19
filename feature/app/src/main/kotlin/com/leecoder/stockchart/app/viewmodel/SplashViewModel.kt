@@ -49,12 +49,6 @@ class SplashViewModel @Inject constructor(
     private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
 ): StateViewModel<SplashState, SplashSideEffect>(SplashState()) {
 
-    init {
-        launch(Dispatchers.IO) {
-            saveOverseasStockCurrentPriceUseCase()
-        }
-    }
-
     internal fun checkToken(){
         launch(Dispatchers.IO) {
             val tokenExpiredTime = dataStoreRepository.currentKrInvestmentTokenExpired.first() ?: 0L
@@ -141,7 +135,6 @@ class SplashViewModel @Inject constructor(
     internal fun initSubcribeStock() {
         launch(Dispatchers.IO) {
             val subscribedStocks = roomDatabaseRepository.getAllSubscribedStocks().first()
-
             saveStockWithCurrentPriceUseCase(*subscribedStocks.toTypedArray()) // 서버로부터 DB 저장 목록에 대해 현재가 저장
             webSocketRepository.initSubscribe(subscribedStocks.map { it.code }) // DB 저장 목록으로 WebSocket 세션 연결.
         }

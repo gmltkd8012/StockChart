@@ -164,7 +164,6 @@ fun MainScreen(
                     onDeletedSymbol = { code, name ->
                         viewModel.unSubsctibeStock(code, name)
                     }
-
                 )
             }
             composable(Screen.Alarm.route) {

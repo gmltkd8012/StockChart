@@ -11,7 +11,7 @@ data class SubscribedStockEntity(
     @PrimaryKey
     val code: String,
     val name: String,
-    val price: Int,
+    val price: String,
 )
 
 fun SubscribedStockEntity.toData() =

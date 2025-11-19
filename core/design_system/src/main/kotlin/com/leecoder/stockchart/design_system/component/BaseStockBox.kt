@@ -29,8 +29,8 @@ import com.leecoder.stockchart.util.extension.toCurrency
 fun BaseStockBox(
     name: String?,
     code: String?,
-    tradePrice: Int?, // 현재 체결가
-    priceDiff: Int?, // 전일 대비 상승가
+    tradePrice: Double?, // 현재 체결가
+    priceDiff: Double?, // 전일 대비 상승가
     onDelete: (String, String) -> Unit,
 ) {
     Row(
@@ -100,8 +100,8 @@ fun BaseStockBoxPreview() {
     BaseStockBox(
         name = "주식 종목",
         code = "EX00011",
-        tradePrice = 10000,
-        priceDiff = 300,
+        tradePrice = 10000.0,
+        priceDiff = 300.0,
         onDelete = { _, _ -> }
     )
 }
