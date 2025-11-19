@@ -20,6 +20,7 @@ import com.leecoder.stockchart.domain.usecase.InitLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.ReconnectWebSocketUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
+import com.leecoder.stockchart.domain.usecase.overseas.SaveOverseasStockCurrentPriceUseCase
 import com.leecoder.stockchart.model.bollinger.LiveBollingerData
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.network.WebSocketState
@@ -86,6 +87,7 @@ class MainViewModel @Inject constructor(
     private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
     private val networkStateObserver: NetworkStateObserver,
     private val reconnectWebSocketUseCase: ReconnectWebSocketUseCase,
+    private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
@@ -102,7 +104,7 @@ class MainViewModel @Inject constructor(
         .map { it }
         .distinctUntilChanged()
         .debounce(200)
-        .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
+        .shareIn(this@MainViewModel, SharingStarted.Lazily, replay = 1)
 
     init {
         debouncedSearchQuery
@@ -112,7 +114,7 @@ class MainViewModel @Inject constructor(
                         copy(searchResultList = emptyList())
                     }
                 } else {
-                    val result = searchKrxSymbolUseCase(query).first()
+                    val result = roomDatabaseRepository.searchNasSymbol(query).first()
                     reduceState {
                         copy(searchResultList = result)
                     }
@@ -192,8 +194,8 @@ class MainViewModel @Inject constructor(
                             val stockUiData = StockUiData(
                                 code = tick.mkscShrnIscd,
                                 name = codeToNameMap[tick.mkscShrnIscd]?.name,
-                                tradePrice = tick.stckPrpr?.toInt(),
-                                priceDiff = tick.prdyVrss?.toInt(),
+                                tradePrice = tick.stckPrpr?.toDouble(),
+                                priceDiff = tick.prdyVrss?.toDouble(),
                             )
 
                             _subscribedMap.put(
@@ -214,8 +216,7 @@ class MainViewModel @Inject constructor(
 
     fun subscribeStock(code: String, name: String) {
         launch(Dispatchers.IO) {
-            Log.i("lynn", "[MainViewModel] -> ${this@launch.coroutineContext}")
-            saveStockWithCurrentPriceUseCase(SubscribedStockData(code, name))
+            saveOverseasStockCurrentPriceUseCase(SubscribedStockData(code, name))
             webSocketRepository.subscribe(code)
         }
     }
@@ -238,8 +239,8 @@ class MainViewModel @Inject constructor(
             _subscribedMap[subscribedStock.code] = StockUiData(
                 code = subscribedStock.code,
                 name = subscribedStock.name,
-                tradePrice = subscribedStock.price,
-                priceDiff = 0
+                tradePrice = subscribedStock.price.toDoubleOrNull(),
+                priceDiff = 0.0
             )
             _subscribedLiveBollingerMap.putAll(addLiveBollingersUseCase(subscribedStock.code))
         }
@@ -356,7 +357,7 @@ data class MainState(
     val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
-    val searchResultList: List<KrxSymbolData>? = null,
+    val searchResultList: List<NasSymbolData>? = null,
     val bollingerLowers: Map<String, BollingerUiData> = emptyMap(),
     val exchangeRates: List<ExchangeRateData> = emptyList()
 )

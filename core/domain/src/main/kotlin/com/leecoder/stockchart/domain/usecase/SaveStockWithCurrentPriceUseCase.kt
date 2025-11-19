@@ -18,8 +18,6 @@ class SaveStockWithCurrentPriceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(vararg params: SubscribedStockData) = coroutineScope {
-        Log.d("lynn", "[SaveStockWithCurrentPriceUseCase] -> ${this@coroutineScope.coroutineContext}")
-
         val deferred = params.map { stock ->
             async {
                 try {
@@ -28,10 +26,10 @@ class SaveStockWithCurrentPriceUseCase @Inject constructor(
                     SubscribedStockData(
                         code = stock.code,
                         name = stock.name,
-                        price = currentPrices.stckPrpr.toInt()
+                        price = currentPrices.stckPrpr
                     )
                 } catch (e: Exception) {
-                    SubscribedStockData("", "", -1)
+                    SubscribedStockData()
                 }
             }
         }
