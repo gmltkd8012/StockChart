@@ -23,6 +23,7 @@ import com.leecoder.stockchart.model.symbol.SymbolData
 
 @Composable
 fun SearchScreen(
+    keyword: String,
     searchResult: List<SymbolData>,
     onRegistedSymbol: (code: String, name: String) -> Unit,
 ) {
@@ -63,6 +64,7 @@ fun SearchScreen(
                         name = result.name,
                         code = result.code,
                         region = result.region,
+                        keyword = keyword,
                         onClick = { (code, name) ->
                             onRegistedSymbol(code, name)
                         }

@@ -28,6 +28,7 @@ fun BaseSymbolItem(
     name: String,
     code: String,
     region: String,
+    keyword: String,
     onClick: (Pair<String, String>) -> Unit,
 ) {
     Column(
@@ -48,26 +49,26 @@ fun BaseSymbolItem(
             Column(
                 modifier = Modifier.weight(1f),
             ) {
-                Text(
+                BaseHighLightText(
                     text = code,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
+                    highLight = keyword,
+                    fontSize = 20,
+                    fontWeight = FontWeight.Bold,
+                    fontColor = Color.Black,
+                    highLightColor = Color.Blue
                 )
 
                 Spacer(Modifier.height(12.dp))
 
-                Text(
+                BaseHighLightText(
                     text = name,
-                    style = TextStyle(
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Normal,
-                    ),
-                    color = Color.DarkGray,
+                    highLight = keyword,
+                    fontSize = 17,
+                    fontWeight = FontWeight.Normal,
+                    fontColor = Color.DarkGray,
+                    highLightColor = Color.Blue
                 )
             }
-
 
             Text(
                 text = region,
@@ -98,6 +99,7 @@ fun BaseSymbolItemPreview() {
         name = "종목",
         code = "코드",
         region = "지역",
+        keyword = "코",
         onClick = {}
     )
 }
