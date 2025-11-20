@@ -4,8 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.leecoder.stockchart.room.entity.KrxSymbolEntity
-import com.leecoder.stockchart.room.entity.NasSymbolEntity
+import com.leecoder.stockchart.room.entity.SymbolEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +26,7 @@ class AppDatabaseCallback @Inject constructor(
 
         scope.launch {
             try {
-                val krxSymbols = mutableListOf<KrxSymbolEntity>()
+                val krxSymbols = mutableListOf<SymbolEntity>()
 
                 context.assets.open("krxsymbol.csv")
                     .bufferedReader(Charset.forName("MS949"))
@@ -39,16 +38,17 @@ class AppDatabaseCallback @Inject constructor(
                                 val code = spl[0]
                                 val name = spl[1]
 
-                                krxSymbols += KrxSymbolEntity(
+                                krxSymbols += SymbolEntity(
                                     code = code.trim('"'),
                                     name = name.trim('"'),
+                                    region = "KOSPI"
                                 )
                             }
                         }
                     }
 
                 if (krxSymbols.isNotEmpty()) {
-                    dbProvider.get().krxSymbolDao().insertAll(krxSymbols)
+                    dbProvider.get().symbolDao().insertAll(krxSymbols)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -57,7 +57,7 @@ class AppDatabaseCallback @Inject constructor(
 
         scope.launch {
             try {
-                val nasSymbols = mutableListOf<NasSymbolEntity>()
+                val nasSymbols = mutableListOf<SymbolEntity>()
 
                 context.assets.open("nassymbol.csv")
                     .bufferedReader(Charset.forName("MS949"))
@@ -69,16 +69,17 @@ class AppDatabaseCallback @Inject constructor(
                                 val code = spl[4]
                                 val name = spl[6]
 
-                                nasSymbols += NasSymbolEntity(
+                                nasSymbols += SymbolEntity(
                                     code = code,
                                     name = name,
+                                    region = "NAS",
                                 )
                             }
                         }
                     }
 
                 if (nasSymbols.isNotEmpty()) {
-                    dbProvider.get().nasSymbolDao().insertAll(nasSymbols)
+                    dbProvider.get().symbolDao().insertAll(nasSymbols)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

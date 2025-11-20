@@ -1,17 +1,11 @@
-package com.leecoder.data.repository
+package com.leecoder.data.repository.room
 
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.SubscribedStockData
-import com.leecoder.stockchart.model.symbol.NasSymbolData
-import com.leecoder.stockchart.room.entity.BollingerEntity
-import com.leecoder.stockchart.room.entity.ExChangeRateEntity
 import kotlinx.coroutines.flow.Flow
 
 interface RoomDatabaseRepository {
-
-    // [NAS] 종목 검색
-    suspend fun searchNasSymbol(keyword: String): Flow<List<NasSymbolData>>
 
     // 전체 종목 볼린저 데이터 일괄 저장
     suspend fun insertAllBollingers(bollingers: List<BollingerData>)

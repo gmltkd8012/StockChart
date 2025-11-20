@@ -1,11 +1,10 @@
 package com.leecoder.stockchart.domain.usecase.exchage
 
 import com.leecoder.data.repository.KoreaAeximRepository
-import com.leecoder.data.repository.RoomDatabaseRepository
+import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.util.calculator.calculatePriceChanged
-import com.leecoder.stockchart.util.time.TimeUtils
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 

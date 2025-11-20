@@ -27,7 +27,6 @@ import com.leecoder.stockchart.design_system.component.BaseStockBox
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.stock.StockTick
-import com.leecoder.stockchart.model.symbol.KrxSymbolData
 import com.leecoder.stockchart.model.ui.StockUiData
 
 @Composable

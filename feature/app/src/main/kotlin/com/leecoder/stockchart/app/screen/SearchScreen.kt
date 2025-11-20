@@ -1,6 +1,7 @@
 package com.leecoder.stockchart.app.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,12 +20,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
-import com.leecoder.stockchart.model.symbol.KrxSymbolData
-import com.leecoder.stockchart.model.symbol.NasSymbolData
+import com.leecoder.stockchart.model.symbol.SymbolData
 
 @Composable
 fun SearchScreen(
-    searchResult: List<NasSymbolData>,
+    keyword: String,
+    searchResult: List<SymbolData>,
     onRegistedSymbol: (code: String, name: String) -> Unit,
 ) {
     if (searchResult.isEmpty()) {
@@ -44,8 +45,13 @@ fun SearchScreen(
             )
         }
     } else {
-        Column {
-            Spacer(Modifier.height(8.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(Modifier.height(20.dp))
 
             Text(
                 text = "검색된 종목 결과",
@@ -53,7 +59,9 @@ fun SearchScreen(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .align(Alignment.Start)
             )
 
             Spacer(Modifier.height(20.dp))
@@ -63,12 +71,12 @@ fun SearchScreen(
                     BaseSymbolItem(
                         name = result.name,
                         code = result.code,
+                        region = result.region,
+                        keyword = keyword,
                         onClick = { (code, name) ->
                             onRegistedSymbol(code, name)
                         }
                     )
-
-                    Spacer(Modifier.height(12.dp))
                 }
             }
         }

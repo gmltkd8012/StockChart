@@ -1,7 +1,7 @@
 package com.leecoder.stockchart.domain.usecase.exchage
 
 import com.leecoder.data.repository.KoreaAeximRepository
-import com.leecoder.data.repository.RoomDatabaseRepository
+import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import kotlinx.coroutines.flow.first

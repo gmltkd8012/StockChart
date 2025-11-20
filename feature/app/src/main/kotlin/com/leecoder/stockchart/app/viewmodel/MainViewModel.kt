@@ -1,17 +1,12 @@
 package com.leecoder.stockchart.app.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.leecoder.data.repository.KsInvestmentRepository
-import com.leecoder.data.repository.RoomDatabaseRepository
+import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.TokenRepository
-import com.leecoder.network.const.Credential
-import com.leecoder.network.util.NetworkResult
 import com.leecoder.network.util.NetworkStateObserver
 import com.leecoder.stockchart.datastore.const.DataStoreConst
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
@@ -19,60 +14,40 @@ import com.leecoder.stockchart.domain.usecase.AddLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.InitLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.ReconnectWebSocketUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
-import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
 import com.leecoder.stockchart.domain.usecase.overseas.SaveOverseasStockCurrentPriceUseCase
-import com.leecoder.stockchart.model.bollinger.LiveBollingerData
+import com.leecoder.stockchart.domain.usecase.search.SearchSymbolUseCase
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribedStockData
-import com.leecoder.stockchart.model.symbol.KrxSymbolData
-import com.leecoder.stockchart.model.symbol.NasSymbolData
-import com.leecoder.stockchart.model.token.TokenError
+import com.leecoder.stockchart.model.symbol.SymbolData
 import com.leecoder.stockchart.model.ui.BollingerUiData
 import com.leecoder.stockchart.model.ui.StockUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
-import com.leecoder.stockchart.util.calculator.BollingerAggregator
-import com.leecoder.stockchart.util.calculator.BollingerCalculator
 import com.leecoder.stockchart.util.calculator.MinuteAggregator
-import com.leecoder.stockchart.util.extension.toDateTimeString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.Response
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
-import java.net.InetAddress
-import java.nio.file.Files.find
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -81,7 +56,7 @@ class MainViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
-    private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
+    private val searchSymbolUseCase: SearchSymbolUseCase,
     private val initLiveBollingersUseCase: InitLiveBollingersUseCase,
     private val addLiveBollingersUseCase: AddLiveBollingersUseCase,
     private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
@@ -114,7 +89,7 @@ class MainViewModel @Inject constructor(
                         copy(searchResultList = emptyList())
                     }
                 } else {
-                    val result = roomDatabaseRepository.searchNasSymbol(query).first()
+                    val result = searchSymbolUseCase("NAS", query).first() // 현재 버전 나스닥 고정
                     reduceState {
                         copy(searchResultList = result)
                     }
@@ -357,7 +332,7 @@ data class MainState(
     val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
-    val searchResultList: List<NasSymbolData>? = null,
+    val searchResultList: List<SymbolData>? = null,
     val bollingerLowers: Map<String, BollingerUiData> = emptyMap(),
     val exchangeRates: List<ExchangeRateData> = emptyList()
 )

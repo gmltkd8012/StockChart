@@ -2,15 +2,13 @@ package com.leecoder.stockchart.domain.usecase.overseas
 
 import android.util.Log
 import com.leecoder.data.repository.KisInvestmentOverseasRepository
-import com.leecoder.data.repository.RoomDatabaseRepository
+import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
-import com.leecoder.stockchart.model.stock.CurrentPriceNasdaqData
 import com.leecoder.stockchart.model.stock.SubscribedStockData
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**

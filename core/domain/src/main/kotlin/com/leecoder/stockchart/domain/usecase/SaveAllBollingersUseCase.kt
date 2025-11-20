@@ -2,7 +2,7 @@ package com.leecoder.stockchart.domain.usecase
 
 import android.util.Log
 import com.leecoder.data.repository.KsInvestmentRepository
-import com.leecoder.data.repository.RoomDatabaseRepository
+import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.util.calculator.BollingerCalculator
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +10,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 

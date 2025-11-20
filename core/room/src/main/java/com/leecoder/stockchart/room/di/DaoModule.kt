@@ -3,9 +3,8 @@ package com.leecoder.stockchart.room.di
 import com.leecoder.stockchart.room.AppDatabase
 import com.leecoder.stockchart.room.dao.BollingerDao
 import com.leecoder.stockchart.room.dao.ExChangeRateDao
-import com.leecoder.stockchart.room.dao.KrxSymbolDao
-import com.leecoder.stockchart.room.dao.NasSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
+import com.leecoder.stockchart.room.dao.SymbolDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,14 +15,9 @@ import dagger.hilt.components.SingletonComponent
 object DaoModule {
 
     @Provides
-    fun provideKrxSymbolDao(
+    fun provideSymbolDao(
         database: AppDatabase
-    ): KrxSymbolDao = database.krxSymbolDao()
-
-    @Provides
-    fun provideNasSymbolDao(
-        database: AppDatabase
-    ): NasSymbolDao = database.nasSymbolDao()
+    ): SymbolDao = database.symbolDao()
 
     @Provides
     fun provideSubscribedStockDao(
