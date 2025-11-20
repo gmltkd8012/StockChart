@@ -1,6 +1,6 @@
 package com.leecoder.stockchart.model.symbol
 
-data class NasSymbolData (
+data class SymbolData(
     val code: String,
     val name: String,
 )

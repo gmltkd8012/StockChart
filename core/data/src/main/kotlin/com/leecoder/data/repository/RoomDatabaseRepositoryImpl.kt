@@ -4,10 +4,8 @@ import androidx.compose.runtime.key
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.SubscribedStockData
-import com.leecoder.stockchart.model.symbol.NasSymbolData
 import com.leecoder.stockchart.room.dao.BollingerDao
 import com.leecoder.stockchart.room.dao.ExChangeRateDao
-import com.leecoder.stockchart.room.dao.NasSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
 import com.leecoder.stockchart.room.entity.toData
 import com.leecoder.stockchart.room.entity.toDataList

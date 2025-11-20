@@ -28,7 +28,6 @@ import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribedStockData
 import com.leecoder.stockchart.model.symbol.KrxSymbolData
-import com.leecoder.stockchart.model.symbol.NasSymbolData
 import com.leecoder.stockchart.model.token.TokenError
 import com.leecoder.stockchart.model.ui.BollingerUiData
 import com.leecoder.stockchart.model.ui.StockUiData

@@ -24,7 +24,6 @@ import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.room.dao.BollingerDao
 import com.leecoder.stockchart.room.dao.ExChangeRateDao
 import com.leecoder.stockchart.room.dao.KrxSymbolDao
-import com.leecoder.stockchart.room.dao.NasSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
 import dagger.Module
 import dagger.Provides
