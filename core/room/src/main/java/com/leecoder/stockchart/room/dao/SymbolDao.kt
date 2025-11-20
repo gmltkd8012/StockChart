@@ -20,5 +20,5 @@ interface SymbolDao {
         WHERE region = :region 
         AND (code LIKE '%' || :keyword || '%' OR name LIKE '%' || :keyword || '%')
     """)
-    fun searchSymbol(region: String, name: String): Flow<List<SymbolEntity>>
+    fun searchSymbol(region: String, keyword: String): Flow<List<SymbolEntity>>
 }
