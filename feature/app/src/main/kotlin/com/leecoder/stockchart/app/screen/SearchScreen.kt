@@ -19,11 +19,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
-import com.leecoder.stockchart.model.symbol.KrxSymbolData
+import com.leecoder.stockchart.model.symbol.SymbolData
 
 @Composable
 fun SearchScreen(
-    searchResult: List<NasSymbolData>,
+    searchResult: List<SymbolData>,
     onRegistedSymbol: (code: String, name: String) -> Unit,
 ) {
     if (searchResult.isEmpty()) {

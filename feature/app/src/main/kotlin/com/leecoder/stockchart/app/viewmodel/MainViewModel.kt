@@ -14,13 +14,14 @@ import com.leecoder.stockchart.domain.usecase.AddLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.InitLiveBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.ReconnectWebSocketUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
-import com.leecoder.stockchart.domain.usecase.SearchKrxSymbolUseCase
 import com.leecoder.stockchart.domain.usecase.overseas.SaveOverseasStockCurrentPriceUseCase
+import com.leecoder.stockchart.domain.usecase.search.SearchSymbolUseCase
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribedStockData
+import com.leecoder.stockchart.model.symbol.SymbolData
 import com.leecoder.stockchart.model.ui.BollingerUiData
 import com.leecoder.stockchart.model.ui.StockUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
@@ -55,7 +56,7 @@ class MainViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
-    private val searchKrxSymbolUseCase: SearchKrxSymbolUseCase,
+    private val searchSymbolUseCase: SearchSymbolUseCase,
     private val initLiveBollingersUseCase: InitLiveBollingersUseCase,
     private val addLiveBollingersUseCase: AddLiveBollingersUseCase,
     private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
@@ -88,7 +89,7 @@ class MainViewModel @Inject constructor(
                         copy(searchResultList = emptyList())
                     }
                 } else {
-                    val result = roomDatabaseRepository.searchNasSymbol(query).first()
+                    val result = searchSymbolUseCase("NAS", query).first() // 현재 버전 나스닥 고정
                     reduceState {
                         copy(searchResultList = result)
                     }
@@ -331,7 +332,7 @@ data class MainState(
     val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
     val stockTickMap: Map<String, StockUiData>? = null,
-    val searchResultList: List<NasSymbolData>? = null,
+    val searchResultList: List<SymbolData>? = null,
     val bollingerLowers: Map<String, BollingerUiData> = emptyMap(),
     val exchangeRates: List<ExchangeRateData> = emptyList()
 )
