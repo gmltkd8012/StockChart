@@ -37,23 +37,27 @@ private fun String.setHighLight(
     highLight: String,
     highLightColor: Color,
 ): AnnotatedString {
-    val parseText = text.trim().lowercase()
-    val parseHighLight = highLight.trim().lowercase()
+    val parseText = text.replace(" ", "").lowercase()
+    val parseHighLight = highLight.replace(" ", "").lowercase()
 
     return try {
         val start = parseText.indexOf(parseHighLight)
         val end = start + parseHighLight.length
 
-        Log.d("lynn", "setHighLight Success -> $start")
-        buildAnnotatedString {
-            append(this@setHighLight.substring(0, start))
+        if (start > -1) {
+            buildAnnotatedString {
+                append(this@setHighLight.substring(0, start))
 
-            withStyle(style = SpanStyle(color = highLightColor)) {
-                append(this@setHighLight.substring(start, end))
+                withStyle(style = SpanStyle(color = highLightColor)) {
+                    append(this@setHighLight.substring(start, end))
+                }
+
+                append(this@setHighLight.substring(end, this@setHighLight.length))
             }
-
-            append(this@setHighLight.substring(end, this@setHighLight.length))
+        } else {
+            AnnotatedString(this)
         }
+
     } catch (e: Exception) {
         Log.e("lynn", "setHighLight Error -> $e")
         AnnotatedString(this)

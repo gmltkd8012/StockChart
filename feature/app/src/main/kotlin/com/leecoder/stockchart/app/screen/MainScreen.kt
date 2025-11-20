@@ -121,7 +121,7 @@ fun MainScreen(
 
             BaseTextField(
                 textFieldValue = textFieldState,
-                hint = "검색어를 입력해주세요.",
+                hint = "종목코드 및 종목명을 입력해주세요.",
                 onTextChanged = {
                     viewModel.onQueryChanged(it)
                 }
