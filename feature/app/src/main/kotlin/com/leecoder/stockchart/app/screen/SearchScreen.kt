@@ -62,12 +62,11 @@ fun SearchScreen(
                     BaseSymbolItem(
                         name = result.name,
                         code = result.code,
+                        region = result.region,
                         onClick = { (code, name) ->
                             onRegistedSymbol(code, name)
                         }
                     )
-
-                    Spacer(Modifier.height(12.dp))
                 }
             }
         }

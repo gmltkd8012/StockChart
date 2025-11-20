@@ -19,6 +19,13 @@ interface SymbolDao {
         SELECT * FROM symbols
         WHERE region = :region 
         AND (code LIKE '%' || :keyword || '%' OR name LIKE '%' || :keyword || '%')
+        ORDER BY 
+            CASE WHEN INSTR(UPPER(code), UPPER(:keyword)) > 0 THEN INSTR(UPPER(code), UPPER(:keyword))
+                 WHEN INSTR(UPPER(name), UPPER(:keyword)) > 0 THEN INSTR(UPPER(name), UPPER(:keyword)) + 1000
+                 ELSE 9999
+            END ASC,
+            code ASC,
+            name ASC
     """)
     fun searchSymbol(region: String, keyword: String): Flow<List<SymbolEntity>>
 }

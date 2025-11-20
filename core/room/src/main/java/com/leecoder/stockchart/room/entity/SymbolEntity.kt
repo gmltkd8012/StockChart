@@ -19,4 +19,5 @@ fun SymbolEntity.toData() =
     SymbolData(
         code = code,
         name = name,
+        region = region,
     )
