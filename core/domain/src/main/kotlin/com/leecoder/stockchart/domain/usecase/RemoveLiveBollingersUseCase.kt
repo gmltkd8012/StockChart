@@ -1,7 +1,7 @@
 package com.leecoder.stockchart.domain.usecase
 
 import com.leecoder.data.repository.KsInvestmentRepository
-import com.leecoder.data.repository.RoomDatabaseRepository
+import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.stockchart.model.stock.TimeItemChartPriceData
 import com.leecoder.stockchart.util.calculator.BollingerCalculator
 import com.leecoder.stockchart.util.calculator.MinuteAggregator

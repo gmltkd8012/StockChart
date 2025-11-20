@@ -1,6 +1,6 @@
 package com.leecoder.stockchart.domain.usecase
 
-import com.leecoder.data.repository.RoomDatabaseRepository
+import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.stockchart.model.network.WebSocketState
 import kotlinx.coroutines.coroutineScope

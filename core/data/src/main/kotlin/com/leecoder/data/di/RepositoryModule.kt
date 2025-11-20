@@ -4,16 +4,16 @@ import com.leecoder.data.repository.KisInvestmentOverseasRepository
 import com.leecoder.data.repository.KisInvestmentOverseasRepositoryImpl
 import com.leecoder.data.repository.KoreaAeximRepository
 import com.leecoder.data.repository.KoreaAeximRepositoryImpl
-import com.leecoder.data.repository.KrxSymbolRepository
-import com.leecoder.data.repository.KrxSymbolRepositoryImpl
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.KsInvestmentRepositoryImpl
-import com.leecoder.data.repository.RoomDatabaseRepository
-import com.leecoder.data.repository.RoomDatabaseRepositoryImpl
+import com.leecoder.data.repository.room.RoomDatabaseRepository
+import com.leecoder.data.repository.room.RoomDatabaseRepositoryImpl
 import com.leecoder.data.token.TokenRepository
 import com.leecoder.data.token.TokenRepositoryImpl
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.repository.WebSocketRepositoryImpl
+import com.leecoder.data.repository.symbol.SymbolRepository
+import com.leecoder.data.repository.symbol.SymbolRepositoryImpl
 import com.leecoder.data.source.KisInvestmentOverseasDataSource
 import com.leecoder.data.source.KoreaAeximDataSource
 import com.leecoder.data.source.KsInvestmentDataSource
@@ -23,8 +23,8 @@ import com.leecoder.network.api.WebSocketApi
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.room.dao.BollingerDao
 import com.leecoder.stockchart.room.dao.ExChangeRateDao
-import com.leecoder.stockchart.room.dao.KrxSymbolDao
 import com.leecoder.stockchart.room.dao.SubscribedStockDao
+import com.leecoder.stockchart.room.dao.SymbolDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,9 +50,9 @@ object RepositoryModule {
     ): WebSocketRepository = WebSocketRepositoryImpl(webSocketApi, webSocketDataSource, dataStoreRepository)
 
     @Provides
-    fun provideKrxSymbolRepository(
-        krxSymbolDao: KrxSymbolDao,
-    ): KrxSymbolRepository = KrxSymbolRepositoryImpl(krxSymbolDao)
+    fun provideSymbolRepository(
+        symbolDao: SymbolDao,
+    ): SymbolRepository = SymbolRepositoryImpl(symbolDao)
 
     @Provides
     fun provideKsInvestmentRepository(
@@ -61,11 +61,10 @@ object RepositoryModule {
 
     @Provides
     fun provideRoomDatabaseRepository(
-        nasSymbolDao: NasSymbolDao,
         bollingerDao: BollingerDao,
         subscribedStockDao: SubscribedStockDao,
         exchangeRateDao: ExChangeRateDao,
-    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(nasSymbolDao, bollingerDao, subscribedStockDao, exchangeRateDao)
+    ): RoomDatabaseRepository = RoomDatabaseRepositoryImpl(bollingerDao, subscribedStockDao, exchangeRateDao)
 
     @Provides
     @Singleton

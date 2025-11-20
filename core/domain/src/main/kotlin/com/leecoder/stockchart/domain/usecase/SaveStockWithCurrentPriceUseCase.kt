@@ -1,15 +1,12 @@
 package com.leecoder.stockchart.domain.usecase
 
-import android.util.Log
 import com.leecoder.data.repository.KsInvestmentRepository
-import com.leecoder.data.repository.RoomDatabaseRepository
-import com.leecoder.stockchart.model.stock.CurrentPriceData
+import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.stockchart.model.stock.SubscribedStockData
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 
 class SaveStockWithCurrentPriceUseCase @Inject constructor(
