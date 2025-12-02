@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +43,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
+import com.leecoder.stockchart.app.navigate.featureAlarmScreen
+import com.leecoder.stockchart.app.navigate.featureSearchScreen
+import com.leecoder.stockchart.app.navigate.featureSettingScreen
+import com.leecoder.stockchart.app.navigate.featureSubscribeScreen
 import com.leecoder.stockchart.app.viewmodel.MainSideEffect
 import com.leecoder.stockchart.app.viewmodel.MainViewModel
 import com.leecoder.stockchart.design_system.component.BaseDialog
@@ -52,24 +59,66 @@ import com.leecoder.stockchart.design_system.component.BaseStockBox
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
 import com.leecoder.stockchart.design_system.component.BaseTextField
 import com.leecoder.stockchart.model.screen.Screen
+import com.leecoder.stockchart.model.screen.Screen.Alarm
+import com.leecoder.stockchart.model.screen.Screen.Setting
+import com.leecoder.stockchart.model.screen.Screen.Subscribe
 import com.leecoder.stockchart.ui.extension.hide
 import com.leecoder.stockchart.ui.extension.isShown
 import com.leecoder.stockchart.ui.extension.rememberErrorDialogState
 import com.leecoder.stockchart.ui.extension.rememberKeyBoardState
 import com.leecoder.stockchart.ui.extension.show
+import com.leecoder.stockchart.ui.navigate.Navigator
+import com.leecoder.stockchart.ui.navigate.rememberNavigationState
+import com.leecoder.stockchart.ui.navigate.toEntries
 
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onFinish: () -> Unit,
 ) {
-    val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination?.route
-    val snackbarHostState = remember { SnackbarHostState() }
-
     val state by viewModel.state.collectAsStateWithLifecycle()
     val textFieldState by viewModel.textFieldState.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val navScreen = listOf(Subscribe, Alarm, Setting)
+
+    val navigationState = rememberNavigationState(
+        startRoute = Screen.Subscribe,
+        topLevelRoutes = setOf(
+            Screen.Subscribe,
+            Screen.Alarm,
+            Screen.Setting,
+            Screen.Search,
+        )
+    )
+
+    val navigator = remember { Navigator(navigationState) }
+
+    val entryProvider = entryProvider {
+        featureSubscribeScreen(
+            state = derivedStateOf { state },
+            onDeletedSymbol = { code, name ->
+                viewModel.unSubsctibeStock(code, name)
+            }
+        )
+
+        featureAlarmScreen(
+            state = derivedStateOf { state },
+            onDeletedAlarm = { _, _ -> },
+        )
+
+        featureSettingScreen()
+
+        featureSearchScreen(
+            state = derivedStateOf { state },
+            textFieldState = textFieldState,
+            onRegistedSymbol = { code, name ->
+                viewModel.subscribeStock(code, name)
+                viewModel.onQueryChanged("")
+            }
+        )
+    }
 
     val isShowAlarmBadge = remember { mutableStateOf(false) }
 
@@ -89,11 +138,11 @@ fun MainScreen(
         onFinish()
     }
 
-    LaunchedEffect(textFieldState, currentDestination) {
-        if (textFieldState.isNotEmpty() && currentDestination != Screen.Search.route) {
-            navController.navigate(Screen.Search.route)
-        } else if (textFieldState.isEmpty() && currentDestination == Screen.Search.route) {
-            navController.popBackStack()
+    LaunchedEffect(textFieldState) {
+        if (textFieldState.isNotEmpty() && navigationState.topLevelRoute != Screen.Search) {
+            navigator.navigate(Screen.Search)
+        } else if (textFieldState.isEmpty() && navigationState.topLevelRoute == Screen.Search) {
+            navigator.goBack()
         }
     }
 
@@ -129,11 +178,12 @@ fun MainScreen(
         },
         bottomBar = {
             BaseNavigationBar(
-                navController = navController,
-                items = Screen.navScreen,
+                currentTopLevel = navigationState.topLevelRoute as? Screen,
+                items = navScreen,
                 hasAlarm = isShowAlarmBadge.value,
-                onClickNav = {
+                onClickNav = { key ->
                     isShowAlarmBadge.value = false
+                    navigator.navigate(key)
                 }
             )
         },
@@ -147,45 +197,13 @@ fun MainScreen(
         },
     ) { innerPadding ->
 
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Subscribe.route,
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None },
+        NavDisplay(
+            entries = navigationState.toEntries(entryProvider),
+            onBack = onFinish,
             modifier = Modifier
                 .background(Color.White)
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp),
-        ) {
-            composable(Screen.Subscribe.route) {
-                SubscribeScreen(
-                    stockTick = state.stockTickMap?.values?.toList() ?: emptyList(),
-                    exchangeRates = state.exchangeRates,
-                    onDeletedSymbol = { code, name ->
-                        viewModel.unSubsctibeStock(code, name)
-                    }
-                )
-            }
-            composable(Screen.Alarm.route) {
-                AlarmScreen(
-                    bollingers = state.bollingerLowers.values.toList(),
-                    maxCount = state.stockTickMap?.size ?: 0,
-                    onDeletedAlarm = {_,_ -> }
-                )
-            }
-            composable(Screen.Search.route) {
-                SearchScreen(
-                    keyword = textFieldState,
-                    searchResult = state.searchResultList ?: emptyList(),
-                    onRegistedSymbol = { code, name ->
-                        viewModel.subscribeStock(code, name)
-                        viewModel.onQueryChanged("")
-                    },
-                )
-            }
-            composable(Screen.Setting.route) {
-                SettingScreen()
-            }
-        }
+        )
     }
 }

@@ -1,15 +1,15 @@
 package com.leecoder.stockchart.model.screen
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
 
-sealed class AppIntro(
-    val route: String,
-) {
-    data object Splash: AppIntro(
-        route = "splash",
-    )
+@Serializable
+sealed class AppIntro(): NavKey {
 
-    data object Main: AppIntro(
-        route = "main",
-    )
+    @Serializable
+    data object Splash: AppIntro()
+
+    @Serializable
+    data object Main: AppIntro()
 }

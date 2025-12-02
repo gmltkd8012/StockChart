@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.runtime.Composable
@@ -23,7 +25,7 @@ import com.leecoder.stockchart.model.screen.Screen
 
 @Composable
 fun BaseNavigationBar(
-    navController: NavController,
+    currentTopLevel: Screen?,
     items: List<Screen>,
     hasAlarm: Boolean,
     onClickNav: (Screen) -> Unit,
@@ -31,33 +33,22 @@ fun BaseNavigationBar(
     NavigationBar(
         containerColor = Color.Gray,
     ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination: NavDestination? = navBackStackEntry?.destination
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
-                val selected = currentDestination?.route == item.route
+                val isSelected = item == currentTopLevel
 
                 NavButton (
-                    icon = item.icon,
+                    icon = Icons.Default.Settings,
                     title = item.label,
                     screen = item,
-                    isSelected = selected,
+                    isSelected = isSelected,
                     isShownBadge = hasAlarm
                 ) {
                     onClickNav(item)
-
-                    navController.navigate(item.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
                 }
             }
         }
