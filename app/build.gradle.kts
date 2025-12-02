@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:model"))
     implementation(project(":core:util"))
+    implementation(project(":core:ui"))
     implementation(project(":feature:app"))
 
     implementation(libs.retrofit.core)
@@ -53,4 +54,9 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
+
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 }

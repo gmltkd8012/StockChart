@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.lib.flavor)
     alias(libs.plugins.all.hilt)
     alias(libs.plugins.lib.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -28,4 +29,10 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
+
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.material3.windowsizeclass)
 }
