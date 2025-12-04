@@ -160,7 +160,7 @@ fun MainScreen(
         ) {
             composable(Screen.Subscribe.route) {
                 SubscribeScreen(
-                    stockTick = state.testUiData ?: emptyList<NasdaqUiData>(),
+                    stockTick = state.stockTickMap?.values?.toList() ?: emptyList(),
                     exchangeRates = state.exchangeRates,
                     onDeletedSymbol = { code, name ->
                         viewModel.unSubsctibeStock(code, name)

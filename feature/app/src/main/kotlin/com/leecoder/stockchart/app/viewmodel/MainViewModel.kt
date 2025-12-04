@@ -66,7 +66,7 @@ class MainViewModel @Inject constructor(
     private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
-    private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
+    private val _subscribedMap = mutableStateMapOf<String, NasdaqUiData>()
     private val _bollingerLowersMap = mutableStateMapOf<String, BollingerUiData>()
     private val _subscribedLiveBollingerMap = mutableStateMapOf<String, MinuteAggregator>()
 
@@ -171,19 +171,19 @@ class MainViewModel @Inject constructor(
 //
                             val uiData = NasdaqUiData(
                                 code = tick.symb,
-                                name = "짱슬라",
+                                name = codeToNameMap[tick.symb]?.name,
                                 last = tick.last?.toDouble(),
                                 diff = tick.diff?.toDouble(),
                             )
-//
-//                            _subscribedMap.put(
-//                                key = tick.mkscShrnIscd ?: "",
-//                                value = stockUiData
-//                            )
-//
+
+                            _subscribedMap.put(
+                                key = tick.symb ?: "",
+                                value = uiData
+                            )
+
                             reduceState {
                                 copy(
-                                    testUiData = listOf(uiData)
+                                    stockTickMap = _subscribedMap
                                 )
                             }
                         }
@@ -213,11 +213,11 @@ class MainViewModel @Inject constructor(
         val addList = subscribedStocks.filter { it.code !in _subscribedMap.keys }
         addList.forEach { subscribedStock ->
 
-            _subscribedMap[subscribedStock.code] = StockUiData(
+            _subscribedMap[subscribedStock.code] = NasdaqUiData(
                 code = subscribedStock.code,
                 name = subscribedStock.name,
-                tradePrice = subscribedStock.price.toDoubleOrNull(),
-                priceDiff = 0.0
+                last = subscribedStock.price.toDoubleOrNull(),
+                diff = 0.0
             )
             _subscribedLiveBollingerMap.putAll(addLiveBollingersUseCase(subscribedStock.code))
         }
@@ -333,8 +333,7 @@ class MainViewModel @Inject constructor(
 data class MainState(
     val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
-    val testUiData: List<NasdaqUiData>? = null,
-    val stockTickMap: Map<String, StockUiData>? = null,
+    val stockTickMap: Map<String, NasdaqUiData>? = null,
     val searchResultList: List<SymbolData>? = null,
     val bollingerLowers: Map<String, BollingerUiData> = emptyMap(),
     val exchangeRates: List<ExchangeRateData> = emptyList()
