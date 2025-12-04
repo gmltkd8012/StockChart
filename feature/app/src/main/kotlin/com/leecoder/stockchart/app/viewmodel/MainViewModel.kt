@@ -23,6 +23,7 @@ import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribedStockData
 import com.leecoder.stockchart.model.symbol.SymbolData
 import com.leecoder.stockchart.model.ui.BollingerUiData
+import com.leecoder.stockchart.model.ui.NasdaqUiData
 import com.leecoder.stockchart.model.ui.StockUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
 import com.leecoder.stockchart.util.calculator.MinuteAggregator
@@ -65,7 +66,7 @@ class MainViewModel @Inject constructor(
     private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
-    private val _subscribedMap = mutableStateMapOf<String, StockUiData>()
+    private val _subscribedMap = mutableStateMapOf<String, NasdaqUiData>()
     private val _bollingerLowersMap = mutableStateMapOf<String, BollingerUiData>()
     private val _subscribedLiveBollingerMap = mutableStateMapOf<String, MinuteAggregator>()
 
@@ -151,37 +152,38 @@ class MainViewModel @Inject constructor(
                     updateSubscribeStocks(subscribedStocks)
 
                     stockTickFlow
-                        .filter { it.mkscShrnIscd in _subscribedMap.keys }
-                        .onStart {
-                            reduceState {
-                                copy(
-                                    stockTickMap = _subscribedMap.toMap()
-                                )
-                            }
-                        }
+//                        .filter { it.mkscShrnIscd in _subscribedMap.keys }
+//                        .onStart {
+//                            reduceState {
+//                                copy(
+//                                    stockTickMap = _subscribedMap.toMap()
+//                                )
+//                            }
+//                        }
                         .onEach { tick ->
-                            if (curBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
-                                checkLiveBollinger(tick, codeToNameMap[tick.mkscShrnIscd]?.name)
-                            } else {
-                                checkDailyBollinger(tick, bollingerLowerList)
-                            }
 
-                            val stockUiData = StockUiData(
-                                code = tick.mkscShrnIscd,
-                                name = codeToNameMap[tick.mkscShrnIscd]?.name,
-                                tradePrice = tick.stckPrpr?.toDouble(),
-                                priceDiff = tick.prdyVrss?.toDouble(),
+                            Log.d("heesang", "[Tikc] -> $tick")
+//                            if (curBollingerSetting == DataStoreConst.ValueConst.BOLLINGER_LIVE_SETTING) {
+//                                checkLiveBollinger(tick, codeToNameMap[tick.mkscShrnIscd]?.name)
+//                            } else {
+//                                checkDailyBollinger(tick, bollingerLowerList)
+//                            }
+//
+                            val uiData = NasdaqUiData(
+                                code = tick.symb,
+                                name = codeToNameMap[tick.symb]?.name,
+                                last = tick.last?.toDouble(),
+                                diff = tick.diff?.toDouble(),
                             )
 
                             _subscribedMap.put(
-                                key = tick.mkscShrnIscd ?: "",
-                                value = stockUiData
+                                key = tick.symb ?: "",
+                                value = uiData
                             )
 
                             reduceState {
                                 copy(
-                                    stockTickMap = _subscribedMap.toMap(),
-                                    bollingerLowers = _bollingerLowersMap.toMap()
+                                    stockTickMap = _subscribedMap
                                 )
                             }
                         }
@@ -211,11 +213,11 @@ class MainViewModel @Inject constructor(
         val addList = subscribedStocks.filter { it.code !in _subscribedMap.keys }
         addList.forEach { subscribedStock ->
 
-            _subscribedMap[subscribedStock.code] = StockUiData(
+            _subscribedMap[subscribedStock.code] = NasdaqUiData(
                 code = subscribedStock.code,
                 name = subscribedStock.name,
-                tradePrice = subscribedStock.price.toDoubleOrNull(),
-                priceDiff = 0.0
+                last = subscribedStock.price.toDoubleOrNull(),
+                diff = 0.0
             )
             _subscribedLiveBollingerMap.putAll(addLiveBollingersUseCase(subscribedStock.code))
         }
@@ -331,7 +333,7 @@ class MainViewModel @Inject constructor(
 data class MainState(
     val isConnected: Boolean = false,
     val krInvestTokenExpired: String? = null,
-    val stockTickMap: Map<String, StockUiData>? = null,
+    val stockTickMap: Map<String, NasdaqUiData>? = null,
     val searchResultList: List<SymbolData>? = null,
     val bollingerLowers: Map<String, BollingerUiData> = emptyMap(),
     val exchangeRates: List<ExchangeRateData> = emptyList()

@@ -15,9 +15,7 @@ class ReconnectWebSocketUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke() = coroutineScope {
-        webSocketRepository.connect(
-            "ws://ops.koreainvestment.com:21000/tryitout/H0STCNT0",
-        )
+        webSocketRepository.connect()
 
         webSocketRepository.connectedWebSocketSession
             .onEach { state ->
