@@ -31,6 +31,7 @@ fun BaseStockBox(
     code: String?,
     tradePrice: Double?, // 현재 체결가
     priceDiff: Double?, // 전일 대비 상승가
+    currencyUSD: Double,
     onDelete: (String, String) -> Unit,
 ) {
     Row(
@@ -60,7 +61,7 @@ fun BaseStockBox(
                 Spacer(Modifier.width(12.dp))
 
                 Text(
-                    text = "${tradePrice} (${priceDiff})",
+                    text = "${(tradePrice * currencyUSD).toCurrency()} (${(priceDiff * currencyUSD).toCurrency()})",
                     style = TextStyle(
                         fontSize = 30.sp,
                         color = when {
@@ -102,6 +103,7 @@ fun BaseStockBoxPreview() {
         code = "EX00011",
         tradePrice = 10000.0,
         priceDiff = 300.0,
+        currencyUSD = 1465.0,
         onDelete = { _, _ -> }
     )
 }

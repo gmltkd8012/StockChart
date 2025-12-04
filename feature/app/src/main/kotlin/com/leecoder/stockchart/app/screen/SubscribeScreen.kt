@@ -1,5 +1,6 @@
 package com.leecoder.stockchart.app.screen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.ui.NasdaqUiData
 import com.leecoder.stockchart.model.ui.StockUiData
+import com.leecoder.stockchart.util.extension.convertToDouble
 
 @Composable
 fun SubscribeScreen(
@@ -92,6 +94,8 @@ fun SubscribeScreen(
                     )
                 }
             } else {
+                val currencyUSD = exchangeRates.first().exchageRate.convertToDouble()
+
                 LazyColumn {
                     items(stockTick) { stockTick ->
                         BaseStockBox(
@@ -99,6 +103,7 @@ fun SubscribeScreen(
                             code = stockTick.code,
                             tradePrice = stockTick.last,
                             priceDiff = stockTick.diff,
+                            currencyUSD = currencyUSD,
                             onDelete = { code, name ->
                                 onDeletedSymbol(code, name)
                             }

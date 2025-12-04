@@ -4,7 +4,8 @@ import java.text.DecimalFormat
 
 fun Double.toCurrency(): String =
     try {
-        DecimalFormat("#,###").format(this)
+        DecimalFormat("#,###").format(this.toInt())
     } catch (e: NumberFormatException) {
-        this.toString()
+        this.toInt().toString()
     }
+
