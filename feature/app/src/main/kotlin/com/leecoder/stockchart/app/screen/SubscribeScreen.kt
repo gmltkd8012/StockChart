@@ -27,11 +27,12 @@ import com.leecoder.stockchart.design_system.component.BaseStockBox
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.stock.StockTick
+import com.leecoder.stockchart.model.ui.NasdaqUiData
 import com.leecoder.stockchart.model.ui.StockUiData
 
 @Composable
 fun SubscribeScreen(
-    stockTick: List<StockUiData>,
+    stockTick: List<NasdaqUiData>,
     exchangeRates: List<ExchangeRateData>,
     onDeletedSymbol: (code: String, name: String) -> Unit,
 ) {
@@ -96,8 +97,8 @@ fun SubscribeScreen(
                         BaseStockBox(
                             name =  stockTick.name,
                             code = stockTick.code,
-                            tradePrice = stockTick.tradePrice,
-                            priceDiff = stockTick.priceDiff,
+                            tradePrice = stockTick.last,
+                            priceDiff = stockTick.diff,
                             onDelete = { code, name ->
                                 onDeletedSymbol(code, name)
                             }

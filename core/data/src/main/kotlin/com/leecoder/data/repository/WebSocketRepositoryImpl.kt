@@ -4,8 +4,10 @@ import android.util.Log
 import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.network.api.WebSocketApi
 import com.leecoder.network.entity.WebSocketRequest
+import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.network.WebSocketState
+import com.leecoder.stockchart.model.stock.NasdaqTick
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.token.TokenError
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -17,19 +19,20 @@ import javax.inject.Singleton
 
 @Singleton
 class WebSocketRepositoryImpl @Inject constructor(
+    private val appConfig: AppConfig,
     private val webSocketApi: WebSocketApi,
     private val webSocketDataSource: WebSocketDataSource,
     private val dataStoreRepository: DataStoreRepository,
 ): WebSocketRepository {
 
-    override val channelStockTick: ReceiveChannel<StockTick>
+    override val channelStockTick: ReceiveChannel<NasdaqTick>
         get() = webSocketDataSource.channelStockTick
 
     override val connectedWebSocketSession: Flow<WebSocketState>
         get() = webSocketDataSource.connectedWebSocketSession
 
-    override fun connect(url: String) {
-        webSocketDataSource.connect(url)
+    override fun connect() {
+        webSocketDataSource.connect(appConfig.webSocketUrl + appConfig.nasdaqUrl)
     }
 
     override fun disconnect() {

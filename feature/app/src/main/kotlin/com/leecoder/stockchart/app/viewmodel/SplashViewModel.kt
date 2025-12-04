@@ -104,7 +104,7 @@ class SplashViewModel @Inject constructor(
 
     internal fun connectWebSocket() {
         launch(Dispatchers.IO) {
-            webSocketRepository.connect(appConfig.webSocketUrl + appConfig.kospiUrl)
+            webSocketRepository.connect()
 
             webSocketRepository.connectedWebSocketSession
                 .onEach { state ->

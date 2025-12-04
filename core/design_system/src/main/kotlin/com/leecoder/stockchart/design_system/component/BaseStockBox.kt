@@ -60,7 +60,7 @@ fun BaseStockBox(
                 Spacer(Modifier.width(12.dp))
 
                 Text(
-                    text = "${tradePrice.toCurrency()} (${priceDiff.toCurrency()})",
+                    text = "${tradePrice} (${priceDiff})",
                     style = TextStyle(
                         fontSize = 30.sp,
                         color = when {

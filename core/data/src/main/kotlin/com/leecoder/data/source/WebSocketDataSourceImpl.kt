@@ -14,6 +14,7 @@ import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.stock.HeartBeatResponse
+import com.leecoder.stockchart.model.stock.NasdaqTick
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.stock.SubscribeResponse
 import com.leecoder.stockchart.util.extension.isJsonHuristic
@@ -69,8 +70,8 @@ class WebSocketDataSourceImpl @Inject constructor(
     private var webSocket: WebSocket? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val _channelStockTick: Channel<StockTick> = Channel<StockTick>(Channel.UNLIMITED)
-    override val channelStockTick: ReceiveChannel<StockTick>
+    private val _channelStockTick: Channel<NasdaqTick> = Channel<NasdaqTick>(Channel.UNLIMITED)
+    override val channelStockTick: ReceiveChannel<NasdaqTick>
         get() = _channelStockTick
 
     private val _connectedWebSocketSession: MutableStateFlow<WebSocketState> = MutableStateFlow(WebSocketState.Disconnected)
@@ -132,7 +133,7 @@ class WebSocketDataSourceImpl @Inject constructor(
                     val parts = text.split("\\|".toRegex())
                     require(parts.size >= 4)
 
-                    StockTickParser.parse(parts[parts.lastIndex])
+                    StockTickParser.parseNasdaq(parts[parts.lastIndex])
                         .forEach { stockTick ->
                             _channelStockTick.send(stockTick)
                         }
@@ -199,28 +200,8 @@ class WebSocketDataSourceImpl @Inject constructor(
 
         val body = WebSocketApprovalBody(
             input = WebSocketApprovalInput(
-                id = appConfig.kospiCode,
-                key = symbol,
-            )
-        )
-
-        webSocket?.send(Json.encodeToString(WebSocketApproval.serializer(), WebSocketApproval(header, body)))
-    }
-
-    private fun requestNas(approvalKey:String?, trType: String) {
-        if (approvalKey == null) return
-
-        val header = WebSocketApprovalHeader(
-            approvalKey = approvalKey,
-            custType = "P",
-            trType = trType,
-            contentType = "utf-8",
-        )
-
-        val body = WebSocketApprovalBody(
-            input = WebSocketApprovalInput(
                 id = appConfig.nasdaqCode,
-                key = "DNASTSLQ",
+                key = "RBAQ" + symbol,
             )
         )
 

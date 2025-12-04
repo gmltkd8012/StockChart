@@ -52,6 +52,7 @@ import com.leecoder.stockchart.design_system.component.BaseStockBox
 import com.leecoder.stockchart.design_system.component.BaseSymbolItem
 import com.leecoder.stockchart.design_system.component.BaseTextField
 import com.leecoder.stockchart.model.screen.Screen
+import com.leecoder.stockchart.model.ui.NasdaqUiData
 import com.leecoder.stockchart.ui.extension.hide
 import com.leecoder.stockchart.ui.extension.isShown
 import com.leecoder.stockchart.ui.extension.rememberErrorDialogState
@@ -159,7 +160,7 @@ fun MainScreen(
         ) {
             composable(Screen.Subscribe.route) {
                 SubscribeScreen(
-                    stockTick = state.stockTickMap?.values?.toList() ?: emptyList(),
+                    stockTick = state.testUiData ?: emptyList<NasdaqUiData>(),
                     exchangeRates = state.exchangeRates,
                     onDeletedSymbol = { code, name ->
                         viewModel.unSubsctibeStock(code, name)

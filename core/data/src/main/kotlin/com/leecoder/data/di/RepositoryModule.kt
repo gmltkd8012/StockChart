@@ -20,6 +20,7 @@ import com.leecoder.data.source.KsInvestmentDataSource
 import com.leecoder.data.source.WebSocketDataSource
 import com.leecoder.network.api.TokenApi
 import com.leecoder.network.api.WebSocketApi
+import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.room.dao.BollingerDao
 import com.leecoder.stockchart.room.dao.ExChangeRateDao
@@ -44,10 +45,11 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideWebSocketRepository(
+        appConfig: AppConfig,
         webSocketApi: WebSocketApi,
         webSocketDataSource: WebSocketDataSource,
         dataStoreRepository: DataStoreRepository,
-    ): WebSocketRepository = WebSocketRepositoryImpl(webSocketApi, webSocketDataSource, dataStoreRepository)
+    ): WebSocketRepository = WebSocketRepositoryImpl(appConfig, webSocketApi, webSocketDataSource, dataStoreRepository)
 
     @Provides
     fun provideSymbolRepository(
