@@ -9,3 +9,10 @@ fun Double.toCurrency(): String =
         this.toInt().toString()
     }
 
+fun Int.toPlusMinus(): String =
+    when {
+        this > 0 -> "+"
+        this < 0 -> "-"
+        else -> ""
+    }
+

@@ -99,11 +99,13 @@ fun SubscribeScreen(
                 LazyColumn {
                     items(stockTick) { stockTick ->
                         BaseStockBox(
-                            name =  stockTick.name,
-                            code = stockTick.code,
-                            tradePrice = stockTick.last,
-                            priceDiff = stockTick.diff,
+                            name =  stockTick.name ?: "",
+                            code = stockTick.code ?: "",
+                            tradePrice = stockTick.last ?: 0.0,
+                            priceDiff = stockTick.diff ?: 0.0,
+                            rate = stockTick.rate ?: 0.0,
                             currencyUSD = currencyUSD,
+                            date = stockTick.kymd + stockTick.khms,
                             onDelete = { code, name ->
                                 onDeletedSymbol(code, name)
                             }
