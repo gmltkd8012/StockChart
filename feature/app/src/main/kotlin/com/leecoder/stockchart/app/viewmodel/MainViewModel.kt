@@ -172,8 +172,13 @@ class MainViewModel @Inject constructor(
                             val uiData = NasdaqUiData(
                                 code = tick.symb,
                                 name = codeToNameMap[tick.symb]?.name,
+                                kymd = tick.kymd,
+                                khms = tick.khms,
                                 last = tick.last?.toDouble(),
                                 diff = tick.diff?.toDouble(),
+                                rate = tick.rate?.toDouble(),
+                                tvol = tick.tvol,
+                                tamt = tick.tamt,
                             )
 
                             _subscribedMap.put(
@@ -217,9 +222,15 @@ class MainViewModel @Inject constructor(
                 code = subscribedStock.code,
                 name = subscribedStock.name,
                 last = subscribedStock.price.toDoubleOrNull(),
-                diff = 0.0
+                diff = 0.0,
             )
             _subscribedLiveBollingerMap.putAll(addLiveBollingersUseCase(subscribedStock.code))
+        }
+
+        reduceState {
+            copy(
+                stockTickMap = _subscribedMap
+            )
         }
     }
 
