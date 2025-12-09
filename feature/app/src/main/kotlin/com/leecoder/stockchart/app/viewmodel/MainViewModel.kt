@@ -130,9 +130,7 @@ class MainViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     internal fun collectStockTick() {
         viewModelScope.launch(Dispatchers.IO) {
-            val stockTickFlow = webSocketRepository.channelStockTick
-                .consumeAsFlow()
-                .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 0)
+            val stockTickFlow = webSocketRepository.stockTick
 
            roomDatabaseRepository.getAllSubscribedStocks()
                 .flatMapLatest { subscribedStocks ->

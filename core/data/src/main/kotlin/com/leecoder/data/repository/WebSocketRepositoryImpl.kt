@@ -2,7 +2,10 @@ package com.leecoder.data.repository
 
 import android.util.Log
 import com.leecoder.data.source.WebSocketDataSource
+import com.leecoder.network.AppDispatchers
+import com.leecoder.network.Dispatcher
 import com.leecoder.network.api.WebSocketApi
+import com.leecoder.network.di.ApplicationScope
 import com.leecoder.network.entity.WebSocketRequest
 import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
@@ -10,8 +13,16 @@ import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.stock.NasdaqTick
 import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.token.TokenError
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.serialization.json.Json
 import okhttp3.WebSocketListener
 import javax.inject.Inject
@@ -23,10 +34,19 @@ class WebSocketRepositoryImpl @Inject constructor(
     private val webSocketApi: WebSocketApi,
     private val webSocketDataSource: WebSocketDataSource,
     private val dataStoreRepository: DataStoreRepository,
+    @ApplicationScope appScope: CoroutineScope,
+    @Dispatcher(AppDispatchers.IO) ioDispatcher: CoroutineDispatcher,
 ): WebSocketRepository {
 
-    override val channelStockTick: ReceiveChannel<NasdaqTick>
-        get() = webSocketDataSource.channelStockTick
+    override val stockTick: SharedFlow<NasdaqTick> =
+        webSocketDataSource.channelStockTick
+            .receiveAsFlow()
+            .flowOn(ioDispatcher)
+            .shareIn(
+                scope = appScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                replay = 0
+            )
 
     override val connectedWebSocketSession: Flow<WebSocketState>
         get() = webSocketDataSource.connectedWebSocketSession

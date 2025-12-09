@@ -23,7 +23,7 @@ interface RoomDatabaseRepository {
     suspend fun subscribeStock(stocks: List<SubscribedStockData>)
 
     // 일괄 구독 종목 조회
-    suspend fun getAllSubscribedStocks(): Flow<List<SubscribedStockData>>
+    fun getAllSubscribedStocks(): Flow<List<SubscribedStockData>>
 
     // 개별 구독 종목 조회
     suspend fun getSubscribedStock(code: String?): SubscribedStockData
