@@ -1,5 +1,7 @@
 package com.leecoder.data.repository.room
 
+import com.leecoder.network.AppDispatchers
+import com.leecoder.network.Dispatcher
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.room.BollingerData
 import com.leecoder.stockchart.model.stock.SubscribedStockData
@@ -10,7 +12,9 @@ import com.leecoder.stockchart.room.entity.toData
 import com.leecoder.stockchart.room.entity.toDataList
 import com.leecoder.stockchart.room.entity.toEntity
 import com.leecoder.stockchart.room.entity.toEntityList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,6 +24,7 @@ class RoomDatabaseRepositoryImpl @Inject constructor(
     private val bollingerDao: BollingerDao,
     private val subscribedStockDao: SubscribedStockDao,
     private val exchangeRateDao: ExChangeRateDao,
+    @Dispatcher(AppDispatchers.IO) private val ioDispatchers: CoroutineDispatcher,
 ): RoomDatabaseRepository {
 
     override suspend fun insertAllBollingers(bollingers: List<BollingerData>) {
@@ -45,8 +50,10 @@ class RoomDatabaseRepositoryImpl @Inject constructor(
         subscribedStockDao.deleteStock(stock.toEntity())
     }
 
-    override suspend fun getAllSubscribedStocks(): Flow<List<SubscribedStockData>> =
-        subscribedStockDao.getAllSubscribedStocks().map { it.map { it.toData() } }
+    override fun getAllSubscribedStocks(): Flow<List<SubscribedStockData>> =
+        subscribedStockDao.getAllSubscribedStocks().map {
+            it.map { it.toData() }
+        }.flowOn(ioDispatchers)
 
 
     override suspend fun getSubscribedStock(code: String?): SubscribedStockData =
