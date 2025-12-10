@@ -6,8 +6,6 @@ import kotlinx.coroutines.flow.Flow
 interface KisInvestmentOverseasRepository {
 
     suspend fun getCurrentPriceNasdaq(
-        auth: String,
-        excd: String,
         symb: String,
     ): Flow<CurrentPriceNasdaqData>
 

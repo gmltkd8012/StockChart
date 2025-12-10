@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +24,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.leecoder.stockchart.app.viewmodel.SubscribeViewModel
 import com.leecoder.stockchart.design_system.component.BaseRateBox
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
 import com.leecoder.stockchart.design_system.component.BaseStockBox
@@ -34,10 +38,13 @@ import com.leecoder.stockchart.util.extension.convertToDouble
 
 @Composable
 fun SubscribeScreen(
-    stockTick: List<NasdaqUiData>,
-    exchangeRates: List<ExchangeRateData>,
+    viewModel: SubscribeViewModel = hiltViewModel<SubscribeViewModel>(),
     onDeletedSymbol: (code: String, name: String) -> Unit,
 ) {
+    val state by viewModel.state.collectAsState()
+    val stockTick = state.tick
+    val exchangeRates = state.exchangeRates
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -94,8 +101,6 @@ fun SubscribeScreen(
                     )
                 }
             } else {
-                val currencyUSD = exchangeRates.first().exchageRate.convertToDouble()
-
                 LazyColumn {
                     items(stockTick) { stockTick ->
                         BaseStockBox(
@@ -104,7 +109,7 @@ fun SubscribeScreen(
                             tradePrice = stockTick.last ?: 0.0,
                             priceDiff = stockTick.diff ?: 0.0,
                             rate = stockTick.rate ?: 0.0,
-                            currencyUSD = currencyUSD,
+                            currencyUSD = state.currency,
                             date = stockTick.kymd + stockTick.khms,
                             onDelete = { code, name ->
                                 onDeletedSymbol(code, name)
