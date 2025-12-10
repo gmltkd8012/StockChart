@@ -75,9 +75,9 @@ fun MainScreen(
     val isShowAlarmBadge = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        viewModel.collectStockTick()
-        viewModel.getCurrentExchangeRate()
-        viewModel.initBollingerData()
+//        viewModel.collectStockTick()
+//        viewModel.getCurrentExchangeRate()
+//        viewModel.initBollingerData()
     }
 
     LaunchedEffect(state.bollingerLowers) {
@@ -160,8 +160,6 @@ fun MainScreen(
         ) {
             composable(Screen.Subscribe.route) {
                 SubscribeScreen(
-                    stockTick = state.stockTickMap?.values?.toList() ?: emptyList(),
-                    exchangeRates = state.exchangeRates,
                     onDeletedSymbol = { code, name ->
                         viewModel.unSubsctibeStock(code, name)
                     }
