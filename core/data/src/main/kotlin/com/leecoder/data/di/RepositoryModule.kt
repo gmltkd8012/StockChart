@@ -1,5 +1,7 @@
 package com.leecoder.data.di
 
+import com.leecoder.data.repository.KisInvestmentOverseasRepository
+import com.leecoder.data.repository.KisInvestmentOverseasRepositoryImpl
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.repository.WebSocketRepositoryImpl
 import com.leecoder.data.repository.room.RoomDatabaseRepository
@@ -34,4 +36,10 @@ abstract class RepositoryModule {
     abstract fun bindsStockRepository(
         impl: StockRepositoryImpl
     ): StockRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindsKisInvestmentOverseasRepository(
+        impl: KisInvestmentOverseasRepositoryImpl
+    ): KisInvestmentOverseasRepository
 }

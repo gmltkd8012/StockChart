@@ -1,7 +1,7 @@
 package com.leecoder.data.di
 
-import com.leecoder.data.source.KisInvestmentOverseasDataSource
-import com.leecoder.data.source.KisInvestmentOverseasDataSourceImpl
+import com.leecoder.network.source.KisInvestmentOverseasDataSource
+import com.leecoder.network.source.KisInvestmentOverseasDataSourceImpl
 import com.leecoder.data.source.KoreaAeximDataSource
 import com.leecoder.data.source.KoreaAeximDataSourceImpl
 import com.leecoder.data.source.KsInvestmentDataSoruceImpl
@@ -48,12 +48,4 @@ object DataSourceModule {
         appConfig: AppConfig,
         koreaAeximApi: KoreaAeximApi,
     ): KoreaAeximDataSource = KoreaAeximDataSourceImpl(appConfig, koreaAeximApi)
-
-    @Provides
-    @Singleton
-    fun provideKisInvestmentOverseasDataSource(
-        kisInvestmentOverseasApi: KisInvestmentOverseasApi,
-        dataStoreRepository: DataStoreRepository,
-    ): KisInvestmentOverseasDataSource = KisInvestmentOverseasDataSourceImpl(kisInvestmentOverseasApi, dataStoreRepository)
-
 }

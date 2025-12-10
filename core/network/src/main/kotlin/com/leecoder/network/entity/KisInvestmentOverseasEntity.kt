@@ -1,6 +1,8 @@
 package com.leecoder.network.entity
 
 import com.leecoder.stockchart.model.stock.CurrentPriceNasdaqData
+import com.leecoder.stockchart.model.stock.TimeItemChartPriceData
+import com.leecoder.stockchart.model.stock.TimeItemChartPriceNasdaqInfoData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -46,7 +48,7 @@ fun CurrentPriceNasdaqResponse.Output.toData() =
 @Serializable
 data class TimeItemChartPriceNasdaqResponse (
     @SerialName("output1") val output1: TimeItemChartPriceNasdaqResponse.Output1,
-    @SerialName("output2") val output2: TimeItemChartPriceNasdaqResponse.Output2,
+    @SerialName("output2") val output2: List<TimeItemChartPriceNasdaqResponse.Output2>,
 ) {
 
     @Serializable
@@ -77,3 +79,13 @@ data class TimeItemChartPriceNasdaqResponse (
         @SerialName("eamt") val eamt: String,
     )
 }
+
+//fun TimeItemChartPriceNasdaqResponse.toData() {
+//    val output1 = this.output1
+//    val output2 = this.output2
+//
+//    return output2.map {
+//        TimeItemChartPriceData
+//    }
+//}
+
