@@ -3,7 +3,6 @@ package com.leecoder.data.token
 import android.util.Log
 import com.leecoder.network.api.TokenApi
 import com.leecoder.network.entity.TokenRequest
-import com.leecoder.network.entity.toData
 import com.leecoder.network.util.NetworkResult
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.token.TokenData

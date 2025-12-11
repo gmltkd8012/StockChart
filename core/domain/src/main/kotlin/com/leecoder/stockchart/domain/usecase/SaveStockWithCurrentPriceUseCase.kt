@@ -15,22 +15,22 @@ class SaveStockWithCurrentPriceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(vararg params: SubscribedStockData) = coroutineScope {
-        val deferred = params.map { stock ->
-            async {
-                try {
-                    val currentPrices = ksInvestmentRepository.getCurrentPrice(iscd = stock.code).first()
-
-                    SubscribedStockData(
-                        code = stock.code,
-                        name = stock.name,
-                        price = currentPrices.stckPrpr
-                    )
-                } catch (e: Exception) {
-                    SubscribedStockData()
-                }
-            }
-        }
-
-        roomDatabaseRepository.subscribeStock(deferred.awaitAll())
+//        val deferred = params.map { stock ->
+//            async {
+//                try {
+//                    val currentPrices = ksInvestmentRepository.getCurrentPrice(iscd = stock.code).first()
+//
+//                    SubscribedStockData(
+//                        code = stock.code,
+//                        name = stock.name,
+//                        price = currentPrices.stckPrpr
+//                    )
+//                } catch (e: Exception) {
+//                    SubscribedStockData()
+//                }
+//            }
+//        }
+//
+//        roomDatabaseRepository.subscribeStock(deferred.awaitAll())
     }
 }
