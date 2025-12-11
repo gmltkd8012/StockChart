@@ -72,43 +72,7 @@ class KsInvestmentDataSoruceImpl @Inject constructor(
     }
 
     override suspend fun getCurrentPrice(iscd: String): Flow<CurrentPriceData> {
-        val authorization = datsStoreRepository.currentKrInvestmentToken.first()
-
-        if (authorization == null) {
-            Log.e("[LeeCode]", "Error : Token is null")
-            return flow { emit(CurrentPriceData(stckPrpr = "-1")) }
-        }
-
-        val requestHeader = KisInvestmentRquestHeader(
-            contentType = "application/json; charset=utf-8",
-            authorization = authorization,
-            appkey = BuildConfig.AppKey,
-            appsecret = BuildConfig.AppSecret,
-            personalseckeypkey = null,
-            trId = "FHKST01010300",
-            trCont = null,
-            custtype = "P",
-            seqNo = null,
-            macAddress = null,
-            phoneNumber = null,
-            ipAddr = null,
-            gtUid = null,
-        )
-
-        return flow {
-            emit (
-                kisInvestmentApi.getCurrentPrice(
-                    contentType = requestHeader.contentType,
-                    authorization = requestHeader.authorization,
-                    appkey = requestHeader.appkey,
-                    appsecret = requestHeader.appsecret,
-                    trId = requestHeader.trId,
-                    custtype = requestHeader.custtype,
-                    mrktDivCode = "J",
-                    inputIscd = iscd,
-                ).output.first().toData()
-            )
-        }
+        TODO()
     }
 
     override suspend fun getTimeItemChartPrice(

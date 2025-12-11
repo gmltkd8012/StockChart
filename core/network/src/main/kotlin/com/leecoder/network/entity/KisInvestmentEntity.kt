@@ -121,10 +121,6 @@ fun DailyPriceResponse.Output.toData() = DailyPriceData(
     acmlVol = acmlVol
 )
 
-fun CurrentPriceResponse.Output.toData() = CurrentPriceData(
-    stckPrpr = stckPrpr
-)
-
 fun TimeItemChartPriceResponse.Output2.toData() = TimeItemChartPriceData(
     stckCntgHour = stckCntgHour,
     stckPrpr = stckPrpr

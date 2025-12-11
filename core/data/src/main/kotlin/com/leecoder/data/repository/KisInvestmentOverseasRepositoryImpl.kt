@@ -4,7 +4,10 @@ import com.leecoder.network.AppDispatchers
 import com.leecoder.network.Dispatcher
 import com.leecoder.network.source.KisInvestmentOverseasDataSource
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
-import com.leecoder.stockchart.model.stock.CurrentPriceNasdaqData
+import com.leecoder.stockchart.model.request.ChartPriceRequest
+import com.leecoder.stockchart.model.request.CurrentPriceRequest
+import com.leecoder.stockchart.model.stock.ChartPriceData
+import com.leecoder.stockchart.model.stock.CurrentPriceData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -24,30 +27,33 @@ class KisInvestmentOverseasRepositoryImpl @Inject constructor(
         dataStoreRepository.currentKrInvestmentToken.first() ?: throw Exception("Token is Null")
 
     override suspend fun getCurrentPriceNasdaq(
-        symb: String
-    ): Flow<CurrentPriceNasdaqData> {
-        val token = getAuthToken()
-
-        return kisInvestmentOverseasDataSource
-            .getCurrentPriceNasdaq(
-                token = token,
-                auth = "",
-                excd = "NAS",
-                symb
-            ).map { result -> result.getOrThrow() }
-    }
-
-    override suspend fun getTimeItemChartPriceNasdaq(
-        auth: String,
         excd: String,
         symb: String,
-        nmin: String,
-        pinc: String,
-        next: String,
-        nrec: String,
-        fill: String,
-        keyb: String
-    ): Result<Unit> {
-        TODO("Not yet implemented")
+    ): Flow<CurrentPriceData> {
+        return kisInvestmentOverseasDataSource
+            .getCurrentPriceNasdaq(
+                CurrentPriceRequest(
+                    authorization = getAuthToken(),
+                    excd = excd,
+                    symb = symb,
+                )
+            )
+            .map { result -> result.getOrThrow() }
+            .flowOn(ioDispatcher)
     }
+
+    override suspend fun getChartPriceNasdaq(
+        excd: String,
+        symb: String,
+    ): Flow<List<ChartPriceData>> =
+        kisInvestmentOverseasDataSource
+            .getChartPriceNasdaq(
+                ChartPriceRequest(
+                    authorization = getAuthToken(),
+                    excd = excd,
+                    symb = symb,
+                )
+            )
+            .map { result -> result.getOrThrow() }
+            .flowOn(ioDispatcher)
 }

@@ -25,6 +25,7 @@ class SaveOverseasStockCurrentPriceUseCase @Inject constructor(
             async() {
                 try {
                     val currentPrice = kisInvestmentOverseasRepository.getCurrentPriceNasdaq(
+                        excd = "NAS",
                         symb = stock.code,
                     ).first()
 

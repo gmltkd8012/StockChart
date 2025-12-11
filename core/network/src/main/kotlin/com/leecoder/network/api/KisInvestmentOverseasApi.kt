@@ -1,7 +1,7 @@
 package com.leecoder.network.api
 
 import com.leecoder.network.entity.CurrentPriceNasdaqResponse
-import com.leecoder.network.entity.TimeItemChartPriceNasdaqResponse
+import com.leecoder.network.entity.overseas.ChartPriceResponse
 import com.leecoder.stockchart.appconfig.BuildConfig
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -37,5 +37,5 @@ interface KisInvestmentOverseasApi {
         @Query("NREC") nrec: String,
         @Query("FILL") fill: String,
         @Query("KEYB") keyb: String,
-    ): List<TimeItemChartPriceNasdaqResponse>
+    ): ChartPriceResponse
 }
