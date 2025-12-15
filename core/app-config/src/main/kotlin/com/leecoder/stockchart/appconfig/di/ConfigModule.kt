@@ -2,6 +2,7 @@ package com.leecoder.stockchart.appconfig.di
 
 import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.appconfig.config.AppConfigImpl
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -11,9 +12,9 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object ConfigModule {
+abstract class ConfigModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideAppConfig(): AppConfig = AppConfigImpl()
+    abstract fun provideAppConfig(impl: AppConfigImpl): AppConfig
 }
