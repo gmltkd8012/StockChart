@@ -74,18 +74,6 @@ fun MainScreen(
 
     val isShowAlarmBadge = remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-//        viewModel.collectStockTick()
-//        viewModel.getCurrentExchangeRate()
-//        viewModel.initBollingerData()
-    }
-
-    LaunchedEffect(state.bollingerLowers) {
-        if (state.bollingerLowers.isNotEmpty()) {
-            isShowAlarmBadge.value = true
-        }
-    }
-
     BackHandler {
         onFinish()
     }
@@ -167,15 +155,13 @@ fun MainScreen(
             }
             composable(Screen.Alarm.route) {
                 AlarmScreen(
-                    bollingers = state.bollingerLowers.values.toList(),
-                    maxCount = state.stockTickMap?.size ?: 0,
                     onDeletedAlarm = {_,_ -> }
                 )
             }
             composable(Screen.Search.route) {
                 SearchScreen(
                     keyword = textFieldState,
-                    searchResult = state.searchResultList ?: emptyList(),
+                    searchResult = state.searchResults,
                     onRegistedSymbol = { code, name ->
                         viewModel.subscribeStock(code, name)
                         viewModel.onQueryChanged("")
