@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -60,14 +61,22 @@ class BollingerManager @Inject constructor(
     /**
      * 단일 종목 추가 및 초기화
      * 서버에서 20분봉 데이터를 가져와 MinuteAggregator를 초기화
+     *
+     * Double-Checked Locking 패턴으로 race condition 방지:
+     * 1. 첫 번째 체크 (lock 없이): 이미 존재하면 빠르게 리턴
+     * 2. mutex lock 획득 후 두 번째 체크: 다른 코루틴이 먼저 추가했는지 확인
+     * 3. 네트워크 호출은 lock 밖에서 실행 (blocking 방지)
+     * 4. putIfAbsent로 최종 저장 (원자적 연산)
      */
     suspend fun addStock(code: String) = withContext(Dispatchers.IO) {
+        // 첫 번째 체크 (lock 없이) - 대부분의 중복 호출을 빠르게 필터링
         if (aggregators.containsKey(code)) {
-            Log.d(TAG, "Stock $code already initialized")
+            Log.d(TAG, "Stock $code already initialized (fast path)")
             return@withContext
         }
 
-        try {
+        // 네트워크 호출은 lock 밖에서 실행 (다른 종목 추가를 블로킹하지 않음)
+        val aggregator = try {
             val chartPriceList = kisInvestmentOverseasRepository
                 .getChartPriceNasdaq(EXCHANGE_CODE, code)
                 .first()
@@ -76,28 +85,33 @@ class BollingerManager @Inject constructor(
                 .take(WINDOW_SIZE)
                 .map { it.toTimeItemChartPriceData() }
 
-            val aggregator = MinuteAggregator(code, calculator, WINDOW_SIZE)
-            aggregator.initWith(timeItemList)
-
-            aggregators[code] = aggregator
-            Log.d(TAG, "Stock $code initialized with ${timeItemList.size} minute data")
+            MinuteAggregator(code, calculator, WINDOW_SIZE).also {
+                it.initWith(timeItemList)
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialize stock $code: ${e.message}")
+            Log.e(TAG, "Failed to fetch chart data for $code: ${e.message}")
             // 초기화 실패해도 빈 상태로 aggregator 생성 (이후 실시간 데이터로 채움)
-            val aggregator = MinuteAggregator(code, calculator, WINDOW_SIZE)
-            aggregators[code] = aggregator
+            MinuteAggregator(code, calculator, WINDOW_SIZE)
+        }
+
+        // putIfAbsent로 원자적 저장 - 다른 코루틴이 먼저 추가했으면 기존 값 유지
+        val existing = aggregators.putIfAbsent(code, aggregator)
+        if (existing != null) {
+            Log.d(TAG, "Stock $code was already added by another coroutine")
+        } else {
+            Log.d(TAG, "Stock $code initialized successfully")
         }
     }
 
     /**
      * 종목 제거
      */
-    suspend fun removeStock(code: String) = mutex.withLock {
+    suspend fun removeStock(code: String) {
         aggregators.remove(code)
 
-        // 알림 목록에서도 제거
-        _bollingerLowerAlertCodes.value = _bollingerLowerAlertCodes.value - code
-        _bollingerLowerPrices.value = _bollingerLowerPrices.value - code
+        // 알림 목록에서도 제거 (원자적 업데이트)
+        _bollingerLowerAlertCodes.update { it - code }
+        _bollingerLowerPrices.update { it - code }
 
         Log.d(TAG, "Stock $code removed")
     }
@@ -126,7 +140,7 @@ class BollingerManager @Inject constructor(
 
             // 볼린저 하한가 정보 업데이트
             if (lowerBand > 0) {
-                _bollingerLowerPrices.value = _bollingerLowerPrices.value + (code to lowerBand)
+                _bollingerLowerPrices.update { current -> current + (code to lowerBand) }
             }
 
             // 현재가가 볼린저 하한선 이하인지 확인
@@ -134,7 +148,7 @@ class BollingerManager @Inject constructor(
                 Log.i(TAG, "[$code] Bollinger lower band reached! Price: $price, Lower: $lowerBand")
 
                 // 알림 목록에 추가
-                _bollingerLowerAlertCodes.value = _bollingerLowerAlertCodes.value + code
+                _bollingerLowerAlertCodes.update { current -> current + code }
                 return code
             }
         }
@@ -146,14 +160,14 @@ class BollingerManager @Inject constructor(
      * 특정 종목의 알림 상태 초기화 (사용자가 확인 후)
      */
     fun clearAlert(code: String) {
-        _bollingerLowerAlertCodes.value = _bollingerLowerAlertCodes.value - code
+        _bollingerLowerAlertCodes.update { it - code }
     }
 
     /**
      * 모든 알림 상태 초기화
      */
     fun clearAllAlerts() {
-        _bollingerLowerAlertCodes.value = emptySet()
+        _bollingerLowerAlertCodes.update { emptySet() }
     }
 
     /**
@@ -161,8 +175,8 @@ class BollingerManager @Inject constructor(
      */
     suspend fun clear() = mutex.withLock {
         aggregators.clear()
-        _bollingerLowerAlertCodes.value = emptySet()
-        _bollingerLowerPrices.value = emptyMap()
+        _bollingerLowerAlertCodes.update { emptySet() }
+        _bollingerLowerPrices.update { emptyMap() }
     }
 
     /**
