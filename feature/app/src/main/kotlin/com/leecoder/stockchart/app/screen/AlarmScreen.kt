@@ -26,8 +26,7 @@ import com.leecoder.stockchart.util.extension.toDateTimeString
 
 @Composable
 fun AlarmScreen(
-    bollingers: List<BollingerUiData>,
-    maxCount: Int,
+    bollingers: List<BollingerUiData> = emptyList(),
     onDeletedAlarm: (String, String) -> Unit,
 ) {
 
@@ -40,7 +39,7 @@ fun AlarmScreen(
         BaseRegistedBox(
             title = "알림",
             currentCount = bollingers.size,
-            maxCount = maxCount,
+            maxCount = 0,
         )
         Spacer(Modifier.height(16.dp))
 

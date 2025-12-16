@@ -11,6 +11,7 @@ import com.leecoder.stockchart.util.extension.convertToDouble
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,15 +34,22 @@ class StockRepositoryImpl @Inject constructor(
     @Dispatcher(AppDispatchers.Default) private val defaultDispatcher: CoroutineDispatcher,
 ): StockRepository {
 
-    private val latestTicks: StateFlow<Map<String, NasdaqTick>> =
+    /** 개별 tick을 SharedFlow로 브로드캐스트 */
+    private val _tickSharedFlow: SharedFlow<NasdaqTick> =
         webSocketDataSource.channelStockTick
             .receiveAsFlow()
             .flowOn(ioDispatcher)
-            .mapNotNull { tick ->
+            .shareIn(appScope, SharingStarted.Eagerly)
+
+    override val tickFlow: Flow<NasdaqTick> = _tickSharedFlow
+
+    private val latestTicks: StateFlow<Map<String, NasdaqTick>> =
+        _tickSharedFlow
+            .mapNotNull { tick: NasdaqTick ->
                 tick.symb?.let { code -> code to tick }
             }
-            .scan(emptyMap<String, NasdaqTick>()) { acc, (code, tick) ->
-                acc + (code to tick)
+            .scan(emptyMap<String, NasdaqTick>()) { acc: Map<String, NasdaqTick>, pair: Pair<String, NasdaqTick> ->
+                acc + (pair.first to pair.second)
             }
             .stateIn(appScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
