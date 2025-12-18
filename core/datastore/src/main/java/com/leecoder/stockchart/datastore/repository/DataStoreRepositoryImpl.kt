@@ -88,4 +88,16 @@ class DataStoreRepositoryImpl @Inject constructor(
             preference[AppDataStore.Keys.NASDAQ_TRADE_CODE] = code
         }
     }
+
+    override val currentNasdaqMarketSession: Flow<String>
+        get() = dataStore.data.map { preference ->
+            preference[AppDataStore.Keys.NASDAQ_MARKET_SESSION]
+                ?: DataStoreConst.ValueConst.SESSION_DAY_TRADING
+        }
+
+    override suspend fun updateNasdaqMarketSession(session: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.NASDAQ_MARKET_SESSION] = session
+        }
+    }
 }

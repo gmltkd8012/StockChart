@@ -28,3 +28,7 @@ fun String.convertDate(): String {
         now.format(outputFormatter)
     }
 }
+
+/**
+ * 종목 코드 확인 후, 데이 마켓 / 정규장
+ */

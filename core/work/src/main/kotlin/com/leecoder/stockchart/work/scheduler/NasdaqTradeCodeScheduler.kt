@@ -11,12 +11,19 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * 나스닥 트레이드 코드 (주간/야간) 자동 갱신 스케줄러
+ * 나스닥 트레이드 코드 및 시장 세션 자동 갱신 스케줄러
  *
- * 주간: 10:00 ~ 18:00 -> RBAQ
- * 야간: 그 외 시간 -> DNAS
+ * WebSocket 트레이드 코드:
+ * - 주간: 10:00 ~ 18:00 -> RBAQ
+ * - 야간: 그 외 시간 -> DNAS
  *
- * 매일 10:00, 18:00에 트레이드 코드를 확인하고 필요시 업데이트합니다.
+ * 시장 세션 (UI 표시용):
+ * - 주간거래: 10:00 ~ 18:00
+ * - 프리마켓: 18:00 ~ 23:30
+ * - 정규장: 23:30 ~ 06:00 (익일)
+ * - 애프터마켓: 06:00 ~ 10:00
+ *
+ * 각 시장 세션 전환 시점에 자동 갱신됩니다.
  */
 @Singleton
 class NasdaqTradeCodeScheduler @Inject constructor(
@@ -25,71 +32,110 @@ class NasdaqTradeCodeScheduler @Inject constructor(
     companion object {
         private const val TAG = "NasdaqTradeCodeScheduler"
 
-        // 주간 시작: 10:00
-        private const val DAY_START_HOUR = 10
-        private const val DAY_START_MINUTE = 0
+        // 주간거래 시작: 10:00
+        private const val DAY_TRADING_START_HOUR = 10
+        private const val DAY_TRADING_START_MINUTE = 0
 
-        // 야간 시작: 18:00
-        private const val NIGHT_START_HOUR = 18
-        private const val NIGHT_START_MINUTE = 0
+        // 프리마켓 시작: 18:00
+        private const val PRE_MARKET_START_HOUR = 18
+        private const val PRE_MARKET_START_MINUTE = 0
 
-        private const val WORK_NAME_DAY = "nasdaq_trade_code_day_work"
-        private const val WORK_NAME_NIGHT = "nasdaq_trade_code_night_work"
+        // 정규장 시작: 23:30
+        private const val REGULAR_START_HOUR = 23
+        private const val REGULAR_START_MINUTE = 30
+
+        // 애프터마켓 시작: 06:00
+        private const val AFTER_MARKET_START_HOUR = 6
+        private const val AFTER_MARKET_START_MINUTE = 0
+
+        private const val WORK_NAME_DAY_TRADING = "nasdaq_day_trading_work"
+        private const val WORK_NAME_PRE_MARKET = "nasdaq_pre_market_work"
+        private const val WORK_NAME_REGULAR = "nasdaq_regular_work"
+        private const val WORK_NAME_AFTER_MARKET = "nasdaq_after_market_work"
     }
 
     /**
-     * 주간/야간 트레이드 코드 갱신 스케줄 설정
+     * 시장 세션 전환 시점에 자동 갱신 스케줄 설정
      * 앱 시작 시 호출하여 백그라운드 작업을 예약합니다.
      */
     fun scheduleTradeCodeUpdates() {
-        Log.d(TAG, "Scheduling trade code updates")
+        Log.d(TAG, "Scheduling market session updates")
 
-        scheduleDayTimeWork()
-        scheduleNightTimeWork()
+        scheduleDayTradingWork()
+        schedulePreMarketWork()
+        scheduleRegularWork()
+        scheduleAfterMarketWork()
     }
 
     /**
-     * 주간 시작 (10:00) 스케줄링
+     * 주간거래 시작 (10:00) 스케줄링
      */
-    private fun scheduleDayTimeWork() {
-        val initialDelay = calculateDelayUntil(DAY_START_HOUR, DAY_START_MINUTE)
+    private fun scheduleDayTradingWork() {
+        schedulePeriodicWork(
+            workName = WORK_NAME_DAY_TRADING,
+            hour = DAY_TRADING_START_HOUR,
+            minute = DAY_TRADING_START_MINUTE
+        )
+    }
+
+    /**
+     * 프리마켓 시작 (18:00) 스케줄링
+     */
+    private fun schedulePreMarketWork() {
+        schedulePeriodicWork(
+            workName = WORK_NAME_PRE_MARKET,
+            hour = PRE_MARKET_START_HOUR,
+            minute = PRE_MARKET_START_MINUTE
+        )
+    }
+
+    /**
+     * 정규장 시작 (23:30) 스케줄링
+     */
+    private fun scheduleRegularWork() {
+        schedulePeriodicWork(
+            workName = WORK_NAME_REGULAR,
+            hour = REGULAR_START_HOUR,
+            minute = REGULAR_START_MINUTE
+        )
+    }
+
+    /**
+     * 애프터마켓 시작 (06:00) 스케줄링
+     */
+    private fun scheduleAfterMarketWork() {
+        schedulePeriodicWork(
+            workName = WORK_NAME_AFTER_MARKET,
+            hour = AFTER_MARKET_START_HOUR,
+            minute = AFTER_MARKET_START_MINUTE
+        )
+    }
+
+    /**
+     * 공통 주기적 작업 스케줄링
+     */
+    private fun schedulePeriodicWork(workName: String, hour: Int, minute: Int) {
+        val initialDelay = calculateDelayUntil(hour, minute)
 
         val workRequest = PeriodicWorkRequestBuilder<NasdaqTradeCodeWorker>(
             24, TimeUnit.HOURS
         )
             .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-            .addTag(WORK_NAME_DAY)
+            .addTag(workName)
             .build()
 
         workManager.enqueueUniquePeriodicWork(
-            WORK_NAME_DAY,
+            workName,
             ExistingPeriodicWorkPolicy.UPDATE,
             workRequest
         )
 
-        Log.d(TAG, "Day work scheduled - initial delay: ${initialDelay / 1000 / 60} minutes")
-    }
-
-    /**
-     * 야간 시작 (18:00) 스케줄링
-     */
-    private fun scheduleNightTimeWork() {
-        val initialDelay = calculateDelayUntil(NIGHT_START_HOUR, NIGHT_START_MINUTE)
-
-        val workRequest = PeriodicWorkRequestBuilder<NasdaqTradeCodeWorker>(
-            24, TimeUnit.HOURS
+        Log.d(
+            TAG,
+            "$workName scheduled - target: $hour:${
+                minute.toString().padStart(2, '0')
+            }, initial delay: ${initialDelay / 1000 / 60} minutes"
         )
-            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-            .addTag(WORK_NAME_NIGHT)
-            .build()
-
-        workManager.enqueueUniquePeriodicWork(
-            WORK_NAME_NIGHT,
-            ExistingPeriodicWorkPolicy.UPDATE,
-            workRequest
-        )
-
-        Log.d(TAG, "Night work scheduled - initial delay: ${initialDelay / 1000 / 60} minutes")
     }
 
     /**
@@ -117,20 +163,22 @@ class NasdaqTradeCodeScheduler @Inject constructor(
      * 스케줄된 작업 취소
      */
     fun cancelScheduledWork() {
-        workManager.cancelUniqueWork(WORK_NAME_DAY)
-        workManager.cancelUniqueWork(WORK_NAME_NIGHT)
-        Log.d(TAG, "Scheduled work cancelled")
+        workManager.cancelUniqueWork(WORK_NAME_DAY_TRADING)
+        workManager.cancelUniqueWork(WORK_NAME_PRE_MARKET)
+        workManager.cancelUniqueWork(WORK_NAME_REGULAR)
+        workManager.cancelUniqueWork(WORK_NAME_AFTER_MARKET)
+        Log.d(TAG, "All scheduled work cancelled")
     }
 
     /**
-     * 즉시 트레이드 코드 업데이트 실행
-     * 앱 시작 시 현재 시간에 맞는 코드로 즉시 동기화할 때 사용
+     * 즉시 트레이드 코드 및 시장 세션 업데이트 실행
+     * 앱 시작 시 현재 시간에 맞는 상태로 즉시 동기화할 때 사용
      */
     fun executeImmediately() {
         val workRequest = androidx.work.OneTimeWorkRequestBuilder<NasdaqTradeCodeWorker>()
             .build()
 
         workManager.enqueue(workRequest)
-        Log.d(TAG, "Immediate trade code update enqueued")
+        Log.d(TAG, "Immediate trade code and market session update enqueued")
     }
 }

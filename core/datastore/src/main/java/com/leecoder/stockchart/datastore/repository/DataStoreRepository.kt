@@ -24,4 +24,7 @@ interface DataStoreRepository {
 
     val currentNasdaqTradeCode: Flow<String>
     suspend fun updateNasdaqTradeCode(code: String)
+
+    val currentNasdaqMarketSession: Flow<String>
+    suspend fun updateNasdaqMarketSession(session: String)
 }
