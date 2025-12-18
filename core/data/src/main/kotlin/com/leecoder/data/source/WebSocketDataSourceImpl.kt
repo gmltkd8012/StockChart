@@ -70,6 +70,9 @@ class WebSocketDataSourceImpl @Inject constructor(
     private var webSocket: WebSocket? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    // 현재 구독 중인 심볼 목록 (트레이드 코드 변경 시 재구독용)
+    private val subscribedSymbols = mutableSetOf<String>()
+
     private val _channelStockTick: Channel<NasdaqTick> = Channel<NasdaqTick>(Channel.UNLIMITED)
     override val channelStockTick: ReceiveChannel<NasdaqTick>
         get() = _channelStockTick
@@ -172,23 +175,58 @@ class WebSocketDataSourceImpl @Inject constructor(
 
     override suspend fun initSubscribe(symbols: List<String>) {
         val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
+        val tradeCode = dataStoreRepository.currentNasdaqTradeCode.first()
 
         symbols.forEach { symbol ->
-            requestData(approvalKey, symbol, SUBSCRIBE_CODE)
+            subscribedSymbols.add(symbol)
+            requestData(approvalKey, tradeCode, symbol, SUBSCRIBE_CODE)
         }
     }
 
     override suspend fun subscribe(symbol: String) {
         val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
-        requestData(approvalKey, symbol, SUBSCRIBE_CODE)
+        val tradeCode = dataStoreRepository.currentNasdaqTradeCode.first()
+        subscribedSymbols.add(symbol)
+        requestData(approvalKey, tradeCode, symbol, SUBSCRIBE_CODE)
     }
 
     override suspend fun unSubscribe(symbol: String) {
         val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
-        requestData(approvalKey, symbol, UNSUBSCRIBE_CODE)
+        val tradeCode = dataStoreRepository.currentNasdaqTradeCode.first()
+        subscribedSymbols.remove(symbol)
+        requestData(approvalKey, tradeCode, symbol, UNSUBSCRIBE_CODE)
     }
 
-    private fun requestData(approvalKey:String?, symbol: String, trType: String) {
+    /**
+     * 트레이드 코드 변경 시 기존 구독을 해제하고 새 코드로 재구독
+     * @param oldCode 이전 트레이드 코드
+     * @param newCode 새로운 트레이드 코드
+     */
+    override suspend fun refreshSubscriptionsWithNewTradeCode(oldCode: String, newCode: String) {
+        val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
+
+        // 기존 구독 해제
+        subscribedSymbols.forEach { symbol ->
+            requestData(approvalKey, oldCode, symbol, UNSUBSCRIBE_CODE)
+        }
+
+        // 새 코드로 재구독
+        subscribedSymbols.forEach { symbol ->
+            requestData(approvalKey, newCode, symbol, SUBSCRIBE_CODE)
+        }
+    }
+
+    /**
+     * 현재 구독 중인 심볼 목록 반환
+     */
+    override fun getSubscribedSymbols(): Set<String> = subscribedSymbols.toSet()
+
+    private fun requestData(
+        approvalKey: String?,
+        tradeCode: String,
+        symbol: String,
+        trType: String
+    ) {
         if (approvalKey == null) return
 
         val header = WebSocketApprovalHeader(
@@ -201,7 +239,7 @@ class WebSocketDataSourceImpl @Inject constructor(
         val body = WebSocketApprovalBody(
             input = WebSocketApprovalInput(
                 id = appConfig.nasdaqCode,
-                key = "RBAQ" + symbol,
+                key = tradeCode + symbol,
             )
         )
 
