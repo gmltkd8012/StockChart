@@ -28,6 +28,24 @@ class NasdaqTradeCodeWorker @AssistedInject constructor(
         // 주간 시간대: 10:00 ~ 18:00
         const val DAY_START_HOUR = 10
         const val DAY_END_HOUR = 18
+
+        /**
+         * 주어진 시간(밀리초)에 따른 트레이드 코드 반환 (테스트용)
+         * @param timeMillis 시간 (밀리초)
+         * @return 트레이드 코드 (RBAQ 또는 DNAS)
+         */
+        fun getTradeCodeByTime(timeMillis: Long): String {
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = timeMillis
+            }
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+
+            return if (hour in DAY_START_HOUR until DAY_END_HOUR) {
+                DataStoreConst.ValueConst.NASDAQ_DAY_CODE
+            } else {
+                DataStoreConst.ValueConst.NASDAQ_NIGHT_CODE
+            }
+        }
     }
 
     override suspend fun doWork(): Result {
