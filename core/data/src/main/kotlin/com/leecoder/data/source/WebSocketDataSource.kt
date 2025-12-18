@@ -18,4 +18,14 @@ interface WebSocketDataSource {
     suspend fun initSubscribe(symbols: List<String>)
     suspend fun subscribe(symbol: String)
     suspend fun unSubscribe(symbol: String)
+
+    /**
+     * 트레이드 코드 변경 시 기존 구독을 해제하고 새 코드로 재구독
+     */
+    suspend fun refreshSubscriptionsWithNewTradeCode(oldCode: String, newCode: String)
+
+    /**
+     * 현재 구독 중인 심볼 목록 반환
+     */
+    fun getSubscribedSymbols(): Set<String>
 }

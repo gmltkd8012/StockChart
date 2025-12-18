@@ -76,4 +76,16 @@ class DataStoreRepositoryImpl @Inject constructor(
             preference[AppDataStore.Keys.EXCHANGE_RATE_SAVE_TIME] = saveTime
         }
     }
+
+    override val currentNasdaqTradeCode: Flow<String>
+        get() = dataStore.data.map { preference ->
+            preference[AppDataStore.Keys.NASDAQ_TRADE_CODE]
+                ?: DataStoreConst.ValueConst.NASDAQ_DAY_CODE
+        }
+
+    override suspend fun updateNasdaqTradeCode(code: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.NASDAQ_TRADE_CODE] = code
+        }
+    }
 }

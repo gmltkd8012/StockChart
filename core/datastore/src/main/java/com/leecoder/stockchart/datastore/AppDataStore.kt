@@ -25,5 +25,7 @@ class AppDataStore {
         val MARKET_INFO = stringPreferencesKey(DataStoreConst.KeyConst.MARKET_INFO)
 
         val EXCHANGE_RATE_SAVE_TIME = longPreferencesKey(DataStoreConst.KeyConst.EXCHANGE_RATE_SAVE_TIME)
+
+        val NASDAQ_TRADE_CODE = stringPreferencesKey(DataStoreConst.KeyConst.NASDAQ_TRADE_CODE)
     }
 }
