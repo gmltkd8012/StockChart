@@ -62,22 +62,15 @@ fun SplashScreen(
         }
     }
 
-    LaunchedEffect(state.hasToken) {
-        if (state.hasToken) {
-            viewModel.calculatorBollingers()
-        }
-    }
-
     LaunchedEffect(state.hasMarketInfo) {
         if (state.hasMarketInfo) {
             viewModel.startMarketInfoWorker()
         }
     }
 
-    LaunchedEffect(state.hasToken, state.connectWebSocekt, state.isCompleteBollinger) {
+    LaunchedEffect(state.hasToken, state.connectWebSocekt) {
         if (state.hasToken &&
             state.hasMarketInfo &&
-            state.isCompleteBollinger &&
             state.connectWebSocekt is WebSocketState.Connected) {
             callMainScreen()
         }

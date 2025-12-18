@@ -16,7 +16,6 @@ import com.leecoder.stockchart.work.worker.MarketWorker
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
-import com.leecoder.stockchart.domain.usecase.SaveAllBollingersUseCase
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
 import com.leecoder.stockchart.domain.usecase.exchage.CheckExChangeRateUseCase
 import com.leecoder.stockchart.domain.usecase.overseas.SaveOverseasStockCurrentPriceUseCase
@@ -43,7 +42,6 @@ class SplashViewModel @Inject constructor(
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val dataStoreRepository: DataStoreRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
-    private val saveAllBollingersUseCase: SaveAllBollingersUseCase,
     private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
     private val checkExChangeRateUseCase: CheckExChangeRateUseCase,
     private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
@@ -119,16 +117,6 @@ class SplashViewModel @Inject constructor(
                         copy(connectWebSocekt = state)
                     }
                 }.launchIn(this@SplashViewModel)
-        }
-    }
-
-    internal fun calculatorBollingers() {
-        launch(Dispatchers.IO) {
-            val insertComplete = saveAllBollingersUseCase()
-
-            reduceState {
-                copy(isCompleteBollinger = insertComplete)
-            }
         }
     }
 
@@ -218,6 +206,5 @@ data class SplashState(
     val hasToken: Boolean = false,
     val hasApprovalKey: Boolean = false,
     val hasMarketInfo: Boolean = false,
-    val isCompleteBollinger: Boolean = false,
     val connectWebSocekt: WebSocketState = WebSocketState.Disconnected,
 )
