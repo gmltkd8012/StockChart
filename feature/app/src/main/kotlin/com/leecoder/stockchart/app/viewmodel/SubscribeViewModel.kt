@@ -13,6 +13,7 @@ import com.leecoder.stockchart.util.extension.convertToDouble
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -32,14 +33,19 @@ class SubscribeViewModel @Inject constructor(
     }
 
     // 실시간 WebSocket 데이터 구독 (UI 표시용)
+    // bollingerLowerAlertCodes에 있는 종목은 UI 업데이트에서 제외
     private val stockTickJob: Job =
-        stockRepository.stocksUiFlow
-            .onEach { tick ->
-                Log.i(TAG, "[tick]: $tick")
-                reduceState {
-                    copy(tick = tick)
-                }
-            }.launchIn(viewModelScope)
+        combine(
+            stockRepository.stocksUiFlow,
+            bollingerManager.bollingerLowerAlertCodes
+        ) { ticks, alertCodes ->
+            // 볼린저 하한가 알림 종목은 필터링하여 UI 업데이트 제외
+            ticks.filter { tick -> tick.code !in alertCodes }
+        }.onEach { filteredTicks ->
+            reduceState {
+                copy(tick = filteredTicks)
+            }
+        }.launchIn(viewModelScope)
 
     // 실시간 tick을 볼린저 계산에 전달
     private val bollingerTickJob: Job =
