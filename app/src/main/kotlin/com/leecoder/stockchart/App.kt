@@ -5,6 +5,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.leecoder.stockchart.app.screen.LoginScreen
 import com.leecoder.stockchart.app.screen.MainScreen
 import com.leecoder.stockchart.app.screen.SplashScreen
 import com.leecoder.stockchart.model.screen.AppIntro
@@ -19,6 +20,10 @@ fun App(
         navController = navController,
         startDestination = AppIntro.Splash.route
     ) {
+        composable(AppIntro.Login.route) {
+            LoginScreen()
+        }
+
         composable(AppIntro.Splash.route) {
             SplashScreen(
                 callMainScreen = {
