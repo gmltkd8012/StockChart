@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Repository
@@ -53,7 +55,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleApiBizNormalRelease
 
-      - name: Set APK Path
+      - name: Set APK Path and Release Tag
         run: |
           echo "=== APK 파일 검색 ==="
           find app/build/outputs -name "*.apk" -type f
@@ -61,19 +63,32 @@ jobs:
           APK_FILE=$(find app/build/outputs -name "*.apk" -type f | head -n 1)
           echo "Found APK: $APK_FILE"
           echo "APK_PATH=$APK_FILE" >> $GITHUB_ENV
-          echo "APK_NAME=$(basename $APK_FILE)" >> $GITHUB_ENV
+          APK_NAME=$(basename $APK_FILE)
+          echo "APK_NAME=$APK_NAME" >> $GITHUB_ENV
+          # 릴리즈 태그 생성 (날짜 + 시간 기반)
+          RELEASE_TAG="v$(date +'%Y%m%d-%H%M%S')"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
-      - name: Upload APK to Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: ${{ env.APK_NAME }}
-          path: ${{ env.APK_PATH }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: "Release ${{ env.RELEASE_TAG }}"
+          body: |
+            ## 빌드 정보
+            - **APK**: ${{ env.APK_NAME }}
+            - **브랜치**: release
+            - **커밋**: ${{ github.sha }}
+          files: ${{ env.APK_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Send Discord Notification
         run: |
+          DOWNLOAD_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/${{ env.APK_NAME }}"
           curl -X POST \
             -H "Content-Type: application/json" \
-            -d "{\"content\": \"✅ **빌드 성공!** (release) 📦 ${{ env.APK_NAME }}\n\n📥 다운로드: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            -d "{\"content\": \"✅ **빌드 성공!** (release) 📦 ${{ env.APK_NAME }}\n\n📥 **다운로드**: ${DOWNLOAD_URL}\"}" \
             ${{ secrets.DISCORD_WEBHOOK }}
 
       - name: Notify on Failure
