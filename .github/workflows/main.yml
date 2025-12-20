@@ -55,7 +55,11 @@ jobs:
 
       - name: Set APK Path
         run: |
-          APK_FILE=$(find app/build/outputs/apk/apiBizNormal/release/ -name "*.apk" | head -n 1)
+          echo "=== APK 파일 검색 ==="
+          find app/build/outputs -name "*.apk" -type f
+          echo "====================="
+          APK_FILE=$(find app/build/outputs -name "*.apk" -type f | head -n 1)
+          echo "Found APK: $APK_FILE"
           echo "APK_PATH=$APK_FILE" >> $GITHUB_ENV
           echo "APK_NAME=$(basename $APK_FILE)" >> $GITHUB_ENV
 
