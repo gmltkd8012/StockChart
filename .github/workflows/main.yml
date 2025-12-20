@@ -1,0 +1,100 @@
+name: StockChart Application Build and Release
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > stockchart.keystore.jks
+
+      - name: Create local.properties
+        run: |
+          echo 'sdk.dir=/usr/local/lib/android/sdk' > local.properties
+          echo 'app_key_alias=${{ secrets.APP_KEY_ALIAS }}' >> local.properties
+          echo 'app_key_pw=${{ secrets.APP_KEY_PASSWORD }}' >> local.properties
+          echo 'app_key="${{ secrets.APP_KEY }}"' >> local.properties
+          echo 'app_secret="${{ secrets.APP_SECRET }}"' >> local.properties
+          echo 'korea_aexim_api_key="${{ secrets.KOREA_AEXIM_API_KEY }}"' >> local.properties
+          echo 'kis_base_url="https://openapi.koreainvestment.com:9443"' >> local.properties
+          echo 'kis_websocket_base_url="ws://ops.koreainvestment.com:21000"' >> local.properties
+          echo 'kis_websocket_kospi_entry_point="/tryitout/H0STCNT0"' >> local.properties
+          echo 'kis_websocket_nasdaq_entry_point="/tryitout/HDFSCNT0"' >> local.properties
+          echo 'kis_websocket_kospi_code="H0STCNT0"' >> local.properties
+          echo 'kis_websocket_nasdaq_code="HDFSCNT0"' >> local.properties
+          echo 'kis_auth_token_provide_entry_point="/oauth2/tokenP"' >> local.properties
+          echo 'kis_websocket_approval_key_entry_point="/oauth2/Approval"' >> local.properties
+          echo 'kis_kospi_inquire_ccnl="/uapi/domestic-stock/v1/quotations/inquire-ccnl"' >> local.properties
+          echo 'kis_kospi_inquire_daily_price="/uapi/domestic-stock/v1/quotations/inquire-daily-price"' >> local.properties
+          echo 'kis_kospi_inquire_time_itemchartprice="/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice"' >> local.properties
+          echo 'korea_aexim_base_url="https://oapi.koreaexim.go.kr/site/program/financial/"' >> local.properties
+          echo 'korea_aexim_exchange_entry_point="exchangeJSON"' >> local.properties
+          echo 'kis_nasdaq_inquire_ccnl="/uapi/overseas-price/v1/quotations/price"' >> local.properties
+          echo 'kis_nasdaq_inquire_time_itemchartprice="/uapi/overseas-price/v1/quotations/inquire-time-itemchartprice"' >> local.properties
+          cat local.properties
+
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleApiBizNormalRelease
+
+      - name: Set APK Path and Release Tag
+        run: |
+          echo "=== APK 파일 검색 ==="
+          find app/build/outputs -name "*.apk" -type f
+          echo "====================="
+          APK_FILE=$(find app/build/outputs -name "*.apk" -type f | head -n 1)
+          echo "Found APK: $APK_FILE"
+          echo "APK_PATH=$APK_FILE" >> $GITHUB_ENV
+          APK_NAME=$(basename $APK_FILE)
+          echo "APK_NAME=$APK_NAME" >> $GITHUB_ENV
+          # 릴리즈 태그 생성 (날짜 + 시간 기반)
+          RELEASE_TAG="v$(date +'%Y%m%d-%H%M%S')"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: "Release ${{ env.RELEASE_TAG }}"
+          body: |
+            ## 빌드 정보
+            - **APK**: ${{ env.APK_NAME }}
+            - **브랜치**: release
+            - **커밋**: ${{ github.sha }}
+          files: ${{ env.APK_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Discord Notification
+        run: |
+          DOWNLOAD_URL="${{ github.server_url }}/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/${{ env.APK_NAME }}"
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"content\": \"✅ **빌드 성공!** (release) 📦 ${{ env.APK_NAME }}\n\n📥 **다운로드**: ${DOWNLOAD_URL}\"}" \
+            ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"content": "❌ **빌드 실패!** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            ${{ secrets.DISCORD_WEBHOOK }}
