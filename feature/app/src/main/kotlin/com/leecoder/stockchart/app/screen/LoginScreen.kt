@@ -53,17 +53,26 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         BaseTextField(
-            textFieldValue = state.textField,
-            hint = "API KEY를 입력해주세요",
+            textFieldValue = state.appKeyField,
+            hint = "APP KEY를 입력해주세요",
             maxLength = 200,
-            onTextChanged = { viewModel.updateTextField(it) }
+            onTextChanged = { viewModel.updateAppKeyField(it) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        BaseTextField(
+            textFieldValue = state.appSecretField,
+            hint = "APP SECRET을 입력해주세요",
+            maxLength = 200,
+            onTextChanged = { viewModel.updateAppSecretField(it) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         BaseButton(
             text = "로그인",
-            enabled = state.textField.isNotEmpty(),
+            enabled = state.appKeyField.isNotEmpty() && state.appSecretField.isNotEmpty(),
             onClick = { viewModel.login() }
         )
     }
