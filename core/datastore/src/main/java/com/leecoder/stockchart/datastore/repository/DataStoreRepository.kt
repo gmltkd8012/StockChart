@@ -27,4 +27,10 @@ interface DataStoreRepository {
 
     val currentNasdaqMarketSession: Flow<String>
     suspend fun updateNasdaqMarketSession(session: String)
+
+    val currentAppKey: Flow<String?>
+    suspend fun saveAppKey(appKey: String)
+
+    val currentAppSecret: Flow<String?>
+    suspend fun saveAppSecret(appSecret: String)
 }

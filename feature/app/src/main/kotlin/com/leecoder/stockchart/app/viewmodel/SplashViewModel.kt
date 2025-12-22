@@ -11,7 +11,7 @@ import androidx.work.workDataOf
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
-import com.leecoder.data.token.TokenRepository
+import com.leecoder.data.token.AuthRepository
 import com.leecoder.stockchart.work.worker.MarketWorker
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.appconfig.config.AppConfig
@@ -37,8 +37,8 @@ class SplashViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val workManager: WorkManager,
     private val appConfig: AppConfig,
+    private val authRepository: AuthRepository,
     private val webSocketRepository: WebSocketRepository,
-    private val tokenRepository: TokenRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val dataStoreRepository: DataStoreRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
@@ -50,10 +50,9 @@ class SplashViewModel @Inject constructor(
     internal fun checkToken(){
         launch(Dispatchers.IO) {
             val tokenExpiredTime = dataStoreRepository.currentKrInvestmentTokenExpired.first() ?: 0L
-            val storeToken = dataStoreRepository.currentKrInvestmentToken.first()
 
-            if (tokenExpiredTime < System.currentTimeMillis() || storeToken == null) {
-                tokenRepository.postToken(
+            if (tokenExpiredTime < System.currentTimeMillis()) {
+                authRepository.postToken(
                     Credential.CLIENT_CREDENTIAL,
                     Credential.APP_SECRET,
                     Credential.APP_KEY,

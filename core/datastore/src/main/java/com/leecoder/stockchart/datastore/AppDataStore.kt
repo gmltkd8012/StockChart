@@ -28,5 +28,8 @@ class AppDataStore {
 
         val NASDAQ_TRADE_CODE = stringPreferencesKey(DataStoreConst.KeyConst.NASDAQ_TRADE_CODE)
         val NASDAQ_MARKET_SESSION = stringPreferencesKey(DataStoreConst.KeyConst.NASDAQ_MARKET_SESSION)
+
+        val APP_KEY = stringPreferencesKey(DataStoreConst.KeyConst.APP_KEY)
+        val APP_SECRET = stringPreferencesKey(DataStoreConst.KeyConst.APP_SECRET)
     }
 }

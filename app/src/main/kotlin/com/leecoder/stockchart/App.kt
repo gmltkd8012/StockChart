@@ -18,10 +18,18 @@ fun App(
 
     NavHost(
         navController = navController,
-        startDestination = AppIntro.Splash.route
+        startDestination = AppIntro.Login.route
     ) {
         composable(AppIntro.Login.route) {
-            LoginScreen()
+            LoginScreen(
+                onSuccessed = {
+                    navController.navigate(AppIntro.Splash.route) {
+                        popUpTo(AppIntro.Login.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
 
         composable(AppIntro.Splash.route) {

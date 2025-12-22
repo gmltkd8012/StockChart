@@ -100,4 +100,22 @@ class DataStoreRepositoryImpl @Inject constructor(
             preference[AppDataStore.Keys.NASDAQ_MARKET_SESSION] = session
         }
     }
+
+    override val currentAppKey: Flow<String?>
+        get() = dataStore.data.map { preference -> preference[AppDataStore.Keys.APP_KEY] }
+
+    override suspend fun saveAppKey(appKey: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.APP_KEY] = appKey
+        }
+    }
+
+    override val currentAppSecret: Flow<String?>
+        get() = dataStore.data.map { preference -> preference[AppDataStore.Keys.APP_SECRET] }
+
+    override suspend fun saveAppSecret(appSecret: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.APP_SECRET] = appSecret
+        }
+    }
 }

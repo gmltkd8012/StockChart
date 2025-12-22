@@ -19,6 +19,9 @@ object DataStoreConst {
 
         const val NASDAQ_TRADE_CODE = "nasdaq_trade_code"
         const val NASDAQ_MARKET_SESSION = "nasdaq_market_session"
+
+        const val APP_KEY = "app_key"
+        const val APP_SECRET = "app_secret"
     }
 
     object ValueConst {
