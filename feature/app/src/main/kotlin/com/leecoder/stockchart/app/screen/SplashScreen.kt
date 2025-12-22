@@ -32,6 +32,7 @@ import kotlinx.coroutines.delay
 fun SplashScreen(
     viewModel: SplashViewModel = hiltViewModel(),
     callMainScreen: () -> Unit,
+    callLoginScreen: () -> Unit,
     onErrorFinish: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -45,15 +46,25 @@ fun SplashScreen(
                     code = sideEffect.errorCode
                 )
             }
+
+            is SplashSideEffect.NavigateToLogin -> {
+                callLoginScreen()
+            }
         }
     }
 
     LaunchedEffect(Unit) {
-        viewModel.checkToken()
-        viewModel.checkAprovalKey()
-        viewModel.saveCurrentMarketInfo()
-        viewModel.connectWebSocket()
-        viewModel.checkCurrentExchangeRate()
+        viewModel.checkLoginStatus()
+    }
+
+    LaunchedEffect(state.isLoggedIn) {
+        if (state.isLoggedIn) {
+            viewModel.checkToken()
+            viewModel.checkAprovalKey()
+            viewModel.saveCurrentMarketInfo()
+            viewModel.connectWebSocket()
+            viewModel.checkCurrentExchangeRate()
+        }
     }
 
     LaunchedEffect(state.hasApprovalKey, state.connectWebSocekt) {

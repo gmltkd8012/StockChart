@@ -18,8 +18,28 @@ fun App(
 
     NavHost(
         navController = navController,
-        startDestination = AppIntro.Login.route
+        startDestination = AppIntro.Splash.route
     ) {
+        composable(AppIntro.Splash.route) {
+            SplashScreen(
+                callMainScreen = {
+                    navController.navigate(AppIntro.Main.route) {
+                        popUpTo(AppIntro.Splash.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                callLoginScreen = {
+                    navController.navigate(AppIntro.Login.route) {
+                        popUpTo(AppIntro.Splash.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onErrorFinish = onFinish
+            )
+        }
+
         composable(AppIntro.Login.route) {
             LoginScreen(
                 onSuccessed = {
@@ -29,15 +49,6 @@ fun App(
                         }
                     }
                 }
-            )
-        }
-
-        composable(AppIntro.Splash.route) {
-            SplashScreen(
-                callMainScreen = {
-                    navController.navigate(AppIntro.Main.route)
-                },
-                onErrorFinish = onFinish
             )
         }
 

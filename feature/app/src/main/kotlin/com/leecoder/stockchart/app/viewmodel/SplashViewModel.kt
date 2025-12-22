@@ -47,15 +47,32 @@ class SplashViewModel @Inject constructor(
     private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
 ): StateViewModel<SplashState, SplashSideEffect>(SplashState()) {
 
-    internal fun checkToken(){
+    internal fun checkLoginStatus() {
         launch(Dispatchers.IO) {
+            val appKey = dataStoreRepository.currentAppKey.first()
+            val appSecret = dataStoreRepository.currentAppSecret.first()
+
+            if (appKey.isNullOrEmpty() || appSecret.isNullOrEmpty()) {
+                sendSideEffect(SplashSideEffect.NavigateToLogin)
+            } else {
+                reduceState {
+                    copy(isLoggedIn = true)
+                }
+            }
+        }
+    }
+
+    internal fun checkToken() {
+        launch(Dispatchers.IO) {
+            val appKey = dataStoreRepository.currentAppKey.first() ?: return@launch
+            val appSecret = dataStoreRepository.currentAppSecret.first() ?: return@launch
             val tokenExpiredTime = dataStoreRepository.currentKrInvestmentTokenExpired.first() ?: 0L
 
             if (tokenExpiredTime < System.currentTimeMillis()) {
                 authRepository.postToken(
                     Credential.CLIENT_CREDENTIAL,
-                    Credential.APP_SECRET,
-                    Credential.APP_KEY,
+                    appSecret,
+                    appKey,
                 ).let { (isSuccess, errorMessage) ->
                     if (!isSuccess) {
                         showErrorPopup(
@@ -75,13 +92,15 @@ class SplashViewModel @Inject constructor(
 
     internal fun checkAprovalKey() {
         launch(Dispatchers.IO) {
+            val appKey = dataStoreRepository.currentAppKey.first() ?: return@launch
+            val appSecret = dataStoreRepository.currentAppSecret.first() ?: return@launch
             val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
 
             if (approvalKey == null) {
                 webSocketRepository.postWebSocket(
                     Credential.CLIENT_CREDENTIAL,
-                    Credential.APP_KEY,
-                    Credential.APP_SECRET,
+                    appKey,
+                    appSecret,
                 ).let { (isSuccess, errorMessage) ->
                     if (!isSuccess) {
                         showErrorPopup(
@@ -199,9 +218,12 @@ sealed interface SplashSideEffect {
         val errorCode: String?,
         val errorMessage: String?,
     ): SplashSideEffect
+
+    data object NavigateToLogin : SplashSideEffect
 }
 
 data class SplashState(
+    val isLoggedIn: Boolean = false,
     val hasToken: Boolean = false,
     val hasApprovalKey: Boolean = false,
     val hasMarketInfo: Boolean = false,
