@@ -11,20 +11,12 @@ import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.stock.NasdaqTick
-import com.leecoder.stockchart.model.stock.StockTick
 import com.leecoder.stockchart.model.token.TokenError
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.serialization.json.Json
-import okhttp3.WebSocketListener
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,15 +30,7 @@ class WebSocketRepositoryImpl @Inject constructor(
     @Dispatcher(AppDispatchers.IO) ioDispatcher: CoroutineDispatcher,
 ): WebSocketRepository {
 
-    override val stockTick: SharedFlow<NasdaqTick> =
-        webSocketDataSource.channelStockTick
-            .receiveAsFlow()
-            .flowOn(ioDispatcher)
-            .shareIn(
-                scope = appScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                replay = 0
-            )
+    override val stockTick: SharedFlow<NasdaqTick> = webSocketDataSource.stockTickFlow
 
     override val connectedWebSocketSession: Flow<WebSocketState>
         get() = webSocketDataSource.connectedWebSocketSession

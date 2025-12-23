@@ -22,11 +22,10 @@ import com.leecoder.stockchart.util.parser.StockTickParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -73,9 +72,12 @@ class WebSocketDataSourceImpl @Inject constructor(
     // 현재 구독 중인 심볼 목록 (트레이드 코드 변경 시 재구독용)
     private val subscribedSymbols = mutableSetOf<String>()
 
-    private val _channelStockTick: Channel<NasdaqTick> = Channel<NasdaqTick>(Channel.UNLIMITED)
-    override val channelStockTick: ReceiveChannel<NasdaqTick>
-        get() = _channelStockTick
+    private val _stockTickFlow: MutableSharedFlow<NasdaqTick> = MutableSharedFlow(
+        replay = 0,
+        extraBufferCapacity = 64
+    )
+    override val stockTickFlow: SharedFlow<NasdaqTick>
+        get() = _stockTickFlow
 
     private val _connectedWebSocketSession: MutableStateFlow<WebSocketState> = MutableStateFlow(WebSocketState.Disconnected)
     override val connectedWebSocketSession: Flow<WebSocketState>
@@ -138,7 +140,7 @@ class WebSocketDataSourceImpl @Inject constructor(
 
                     StockTickParser.parseNasdaq(parts[parts.lastIndex])
                         .forEach { stockTick ->
-                            _channelStockTick.send(stockTick)
+                            _stockTickFlow.emit(stockTick)
                         }
                 }
 

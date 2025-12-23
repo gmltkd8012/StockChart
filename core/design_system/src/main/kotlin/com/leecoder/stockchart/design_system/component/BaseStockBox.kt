@@ -45,7 +45,7 @@ import com.leecoder.stockchart.util.extension.toCurrency
 import com.leecoder.stockchart.util.extension.toPlusMinus
 
 // 볼린저 하한가 알림용 색상 (현재 검은 배경과 대비되는 주황색 계열)
-private val AlertColor = Color(0xFF00AFF0)
+private val AlertColor = Color(0xFF2196F3)
 
 @Composable
 fun BaseStockBox(

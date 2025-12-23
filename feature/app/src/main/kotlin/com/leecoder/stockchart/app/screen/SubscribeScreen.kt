@@ -116,7 +116,7 @@ fun SubscribeScreen(
                             onDelete = { code, name ->
                                 onDeletedSymbol(code, name)
                             },
-                            isBollingerLowerAlert = state.bollingerLowerAlertCodes.contains(stockTick.name)
+                            isBollingerLowerAlert = state.bollingerLowerAlertCodes.contains(stockTick.code)
                         )
 
                         Spacer(Modifier.height(12.dp))

@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.stock.StockRepository
 import com.leecoder.stockchart.domain.manager.BollingerManager
+import com.leecoder.stockchart.domain.manager.BollingerManager.Companion
 import com.leecoder.stockchart.domain.usecase.exchage.GetExchangeRateUsecase
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.ui.NasdaqUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
 import com.leecoder.stockchart.util.extension.convertToDouble
+import com.leecoder.stockchart.util.log.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,17 +37,12 @@ class SubscribeViewModel @Inject constructor(
     // 실시간 WebSocket 데이터 구독 (UI 표시용)
     // bollingerLowerAlertCodes에 있는 종목은 UI 업데이트에서 제외
     private val stockTickJob: Job =
-        combine(
-            stockRepository.stocksUiFlow,
-            bollingerManager.bollingerLowerAlertCodes
-        ) { ticks, alertCodes ->
-            // 볼린저 하한가 알림 종목은 필터링하여 UI 업데이트 제외
-            ticks.filter { tick -> tick.code !in alertCodes }
-        }.onEach { filteredTicks ->
-            reduceState {
-                copy(tick = filteredTicks)
-            }
-        }.launchIn(viewModelScope)
+        stockRepository.stocksUiFlow
+            .onEach { ticks ->
+                reduceState {
+                    copy(tick = ticks)
+                }
+            }.launchIn(this@SubscribeViewModel)
 
     // 실시간 tick을 볼린저 계산에 전달
     private val bollingerTickJob: Job =
@@ -53,18 +50,19 @@ class SubscribeViewModel @Inject constructor(
             .onEach { tick ->
                 val alertCode = bollingerManager.processTick(tick)
                 if (alertCode != null) {
-                    Log.i(TAG, "Bollinger lower alert: $alertCode")
+                    Logger.d("Bollinger lower alert: $alertCode")
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(this@SubscribeViewModel)
 
     // 볼린저 하한가 달성 종목 구독
     private val bollingerAlertJob: Job =
         bollingerManager.bollingerLowerAlertCodes
             .onEach { alertCodes ->
+                Logger.d("Bollinger lower alert codes: $alertCodes")
                 reduceState {
                     copy(bollingerLowerAlertCodes = alertCodes.toList())
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(this@SubscribeViewModel)
 
     /**
      *  ViewModel 초기화 작업
@@ -101,7 +99,7 @@ class SubscribeViewModel @Inject constructor(
                 val subscribedStocks = roomDatabaseRepository.getAllSubscribedStocks().first()
                 val codes = subscribedStocks.map { it.code }
 
-                Log.d(TAG, "Initializing BollingerManager with ${codes.size} stocks: $codes")
+                Logger.d("Initializing BollingerManager with ${codes.size} stocks: $codes")
 
                 bollingerManager.initializeStocks(codes)
 
@@ -109,10 +107,9 @@ class SubscribeViewModel @Inject constructor(
                     copy(isBollingerInitialized = true)
                 }
 
-                Log.d(TAG, "BollingerManager initialized successfully")
+                Logger.d("BollingerManager initialized successfully")
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to initialize BollingerManager: ${e.message}")
-            }
+                Logger.e("Failed to initialize BollingerManager: ${e.message}")           }
         }
     }
 

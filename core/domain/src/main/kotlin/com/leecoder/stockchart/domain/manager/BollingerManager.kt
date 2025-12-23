@@ -7,6 +7,7 @@ import com.leecoder.stockchart.model.stock.NasdaqTick
 import com.leecoder.stockchart.model.stock.TimeItemChartPriceData
 import com.leecoder.stockchart.util.calculator.BollingerCalculator
 import com.leecoder.stockchart.util.calculator.MinuteAggregator
+import com.leecoder.stockchart.util.log.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,8 +47,8 @@ class BollingerManager @Inject constructor(
     val bollingerLowerAlertCodes: StateFlow<Set<String>> = _bollingerLowerAlertCodes.asStateFlow()
 
     // 종목별 현재 볼린저 하한가 (UI 표시용)
-    private val _bollingerLowerPrices = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val bollingerLowerPrices: StateFlow<Map<String, Int>> = _bollingerLowerPrices.asStateFlow()
+    private val _bollingerLowerPrices = MutableStateFlow<Map<String, Double>>(emptyMap())
+    val bollingerLowerPrices: StateFlow<Map<String, Double>> = _bollingerLowerPrices.asStateFlow()
 
     /**
      * 여러 종목을 한번에 초기화
@@ -80,6 +81,10 @@ class BollingerManager @Inject constructor(
             val chartPriceList = kisInvestmentOverseasRepository
                 .getChartPriceNasdaq(EXCHANGE_CODE, code)
                 .first()
+
+            chartPriceList.take(WINDOW_SIZE).forEach {
+                Logger.d("[DATA]: $it")
+            }
 
             val timeItemList = chartPriceList
                 .take(WINDOW_SIZE)
@@ -128,15 +133,20 @@ class BollingerManager @Inject constructor(
         val priceString = tick.last ?: return null
         val name = "" // 이름은 별도 관리
 
-        // 가격을 정수로 변환 (소수점 제거)
-        val price = priceString.toDoubleOrNull()?.toInt() ?: return null
+        // 가격을 Double로 변환 (정확한 소수점 계산)
+        val price = priceString.toDoubleOrNull() ?: return null
 
         val aggregator = aggregators[code] ?: return null
+
+        Logger.i("[code]: $code / [timeString]: $timeString / [priceString]: $priceString")
+
 
         val result = aggregator.onTick(timeString, name, price)
 
         result?.bollinger?.let { bollinger ->
             val lowerBand = bollinger.lower
+
+            Logger.e("[$code] Bollinger lower band reached! Price: $price, Lower: $lowerBand, Upper: ${bollinger.upper}, Middle: {${bollinger.middle}")
 
             // 볼린저 하한가 정보 업데이트
             if (lowerBand > 0) {
@@ -145,7 +155,7 @@ class BollingerManager @Inject constructor(
 
             // 현재가가 볼린저 하한선 이하인지 확인
             if (lowerBand > 0 && price <= lowerBand) {
-                Log.i(TAG, "[$code] Bollinger lower band reached! Price: $price, Lower: $lowerBand")
+                Logger.d(TAG, "[$code] Bollinger lower band reached! Price: $price, Lower: $lowerBand")
 
                 // 알림 목록에 추가
                 _bollingerLowerAlertCodes.update { current -> current + code }
@@ -191,7 +201,7 @@ class BollingerManager @Inject constructor(
         }
         return TimeItemChartPriceData(
             stckCntgHour = timeString,
-            stckPrpr = last // 종가를 체결가로 사용
+            stckPrpr = last // 종가를 사용 (볼린저 밴드 표준)
         )
     }
 }
