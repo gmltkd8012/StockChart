@@ -12,7 +12,6 @@ import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.token.AuthRepository
-import com.leecoder.stockchart.work.worker.MarketWorker
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
@@ -162,44 +161,6 @@ class SplashViewModel @Inject constructor(
     internal fun checkCurrentExchangeRate() {
         launch(Dispatchers.IO) {
             checkExChangeRateUseCase()
-        }
-    }
-
-    internal fun startMarketInfoWorker() {
-        launch(Dispatchers.IO) {
-            val (targetOption, targetDelay) = ScheduleUtil.caculatorDelayMillisToNextTarget()
-            Log.e("[Leecoder]", "Worker Request -> $targetDelay")
-
-            val input = workDataOf(
-                MarketWorker.INPUT_DATA_TARGET_OPTION to targetOption
-            )
-
-            val request = OneTimeWorkRequestBuilder<MarketWorker>()
-                .setInputData(input)
-                .setInitialDelay(targetDelay, TimeUnit.MILLISECONDS)
-                .build()
-
-            workManager.enqueueUniqueWork(
-                MarketWorker.Companion.UNIQUE_WORK_NAME,
-                ExistingWorkPolicy.REPLACE,
-                request
-            )
-
-            workManager.getWorkInfoByIdLiveData(request.id).asFlow()
-                .collect() { wi ->
-                    when (wi.state) {
-                        WorkInfo.State.SUCCEEDED -> {
-                            workManager.enqueueUniqueWork(
-                                MarketWorker.UNIQUE_WORK_NAME,
-                                ExistingWorkPolicy.REPLACE,
-                                request
-                            )
-                        }
-                        else -> {
-                            //TODO - 에러케이스
-                        }
-                    }
-                }
         }
     }
 

@@ -73,12 +73,6 @@ fun SplashScreen(
         }
     }
 
-    LaunchedEffect(state.hasMarketInfo) {
-        if (state.hasMarketInfo) {
-            viewModel.startMarketInfoWorker()
-        }
-    }
-
     LaunchedEffect(state.hasToken, state.connectWebSocekt) {
         if (state.hasToken &&
             state.hasMarketInfo &&
