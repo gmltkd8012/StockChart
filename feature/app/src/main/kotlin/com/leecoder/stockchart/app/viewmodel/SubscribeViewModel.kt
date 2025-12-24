@@ -2,8 +2,10 @@ package com.leecoder.stockchart.app.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.leecoder.data.repository.KoreaAeximRepository
 import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.stock.StockRepository
+import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.manager.BollingerManager
 import com.leecoder.stockchart.domain.manager.BollingerManager.Companion
 import com.leecoder.stockchart.domain.usecase.exchage.GetExchangeRateUsecase
@@ -26,6 +28,7 @@ import javax.inject.Inject
 class SubscribeViewModel @Inject constructor(
     private val stockRepository: StockRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
+    private val dataStoreRepository: DataStoreRepository,
     private val bollingerManager: BollingerManager,
     private val getExchangeRateUsecase: GetExchangeRateUsecase,
 ) : StateViewModel<SubscribeState, SubscribeSideEffect>(SubscribeState()) {
@@ -64,29 +67,20 @@ class SubscribeViewModel @Inject constructor(
                 }
             }.launchIn(this@SubscribeViewModel)
 
+    // 환율 모니터링
+    private val currenyJob: Job =
+        dataStoreRepository.currentExchangeRateUsd
+            .onEach { currency ->
+                reduceState {
+                    copy(currency = currency.convertToDouble())
+                }
+            }.launchIn(this@SubscribeViewModel)
+
     /**
      *  ViewModel 초기화 작업
      */
     init {
-        initExchangeRate()
         initBollingerManager()
-    }
-
-    // 환율 조회
-    private fun initExchangeRate() {
-        launch {
-            val exchangeRates = getExchangeRateUsecase()
-            val currency = exchangeRates.first().exchageRate.convertToDouble()
-
-            Log.d(TAG, "exchangeRates: $exchangeRates / currency = $currency")
-
-            reduceState {
-                copy(
-                    exchangeRates = exchangeRates,
-                    currency = currency,
-                )
-            }
-        }
     }
 
     /**
@@ -159,7 +153,6 @@ class SubscribeViewModel @Inject constructor(
 
 data class SubscribeState(
     val tick: List<NasdaqUiData> = emptyList(),
-    val exchangeRates: List<ExchangeRateData> = emptyList(),
     val currency: Double = 0.0,
     /** 볼린저 하한가 달성 종목 코드 리스트 */
     val bollingerLowerAlertCodes: List<String> = emptyList(),

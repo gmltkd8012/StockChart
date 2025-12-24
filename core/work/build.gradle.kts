@@ -19,6 +19,8 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:domain"))
     implementation(project(":core:datastore"))
+    implementation(project(":core:model"))
+    implementation(project(":core:util"))
 
     // Test
     testImplementation(libs.junit)

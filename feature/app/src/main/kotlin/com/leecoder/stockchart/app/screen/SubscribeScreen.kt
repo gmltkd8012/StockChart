@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -45,7 +46,6 @@ fun SubscribeScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val stockTick = state.tick
-    val exchangeRates = state.exchangeRates
 
     Box(
         modifier = Modifier
@@ -66,18 +66,22 @@ fun SubscribeScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            LazyRow() {
-                itemsIndexed(exchangeRates) { idx, curreny ->
-                    BaseRateBox(
-                        name = curreny.curName,
-                        unit = curreny.curUnit,
-                        price = curreny.exchageRate,
-                        diffPrice = curreny.prdyVrss,
-                        diffPer = curreny.prdyCtrt,
-                    )
+            Row() {
+                BaseRateBox(
+                    name = "KRW",
+                    unit = "원",
+                    price = 1000.0,
+                    modifier = Modifier.weight(1f),
+                )
 
-                    if (idx != exchangeRates.size - 1) Spacer(Modifier.width(4.dp))
-                }
+                Spacer(Modifier.width(4.dp))
+
+                BaseRateBox(
+                    name = "USD",
+                    unit = "달러",
+                    price = state.currency,
+                    modifier = Modifier.weight(1f),
+                )
             }
 
             Spacer(Modifier.height(20.dp))
