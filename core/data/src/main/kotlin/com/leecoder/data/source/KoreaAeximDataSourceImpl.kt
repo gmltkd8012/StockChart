@@ -1,6 +1,5 @@
 package com.leecoder.data.source
 
-import android.util.Log
 import com.leecoder.network.api.KoreaAeximApi
 import com.leecoder.network.entity.toDataList
 import com.leecoder.stockchart.appconfig.config.AppConfig
@@ -31,7 +30,7 @@ class KoreaAeximDataSourceImpl @Inject constructor(
                 data = "AP01"
             ).toDataList()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to fetch exchange info for date: $date", e)
+            Logger.e("Failed to fetch exchange info for date: $date", throwable = e)
             emptyList()
         }
     }
