@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +47,8 @@ fun SubscribeScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val stockTick = state.tick
+
+    var isBool by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -118,9 +121,9 @@ fun SubscribeScreen(
                             currencyUSD = state.currency,
                             date = stockTick.kymd + stockTick.khms,
                             onDelete = { code, name ->
-                                onDeletedSymbol(code, name)
+                                isBool = true
                             },
-                            isBollingerLowerAlert = state.bollingerLowerAlertCodes.contains(stockTick.code)
+                            isBollingerLowerAlert = isBool
                         )
 
                         Spacer(Modifier.height(12.dp))

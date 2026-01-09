@@ -111,13 +111,13 @@ fun BaseStockBox(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                modifier = Modifier.wrapContentSize(),
+                modifier = Modifier.weight(1f),
                 text = name,
                 style = TextStyle(
-                    fontSize = 30.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                 ),
-                color = if (showAlertBadge) Color.Yellow else Color.White
+                color = Color.White
             )
 
             Icon(
@@ -136,10 +136,10 @@ fun BaseStockBox(
             modifier = Modifier.width(300.dp),
             text = "($code)",
             style = TextStyle(
-                fontSize = 24.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
             ),
-            color = if (showAlertBadge) Color.Yellow else Color.White
+            color = Color.White
         )
 
         Spacer(Modifier.height(12.dp))
@@ -160,7 +160,7 @@ fun BaseStockBox(
                 )
             )
 
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(12.dp))
 
             Text(
                 text = "$${tradePrice}",
@@ -175,115 +175,94 @@ fun BaseStockBox(
         Spacer(Modifier.height(4.dp))
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .wrapContentHeight(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "전일 대비",
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    color = if (showAlertBadge) Color.Yellow else Color.White
-                )
+            Text(
+                text = "전일 대비",
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = Color.White
+            )
 
-                Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(6.dp))
 
-                Text(
-                    text = "${rate.toInt().toPlusMinus()}${(priceDiff * currencyUSD).toCurrency()}원",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    color = when {
-                        rate > 0 -> Color.Red
-                        rate < 0 -> Color.Blue
-                        else -> Color.Gray
-                    }
-                )
-
-                Spacer(Modifier.width(2.dp))
-
-                Text(
-                    text = "(${rate})%",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    color = when {
-                        rate > 0 -> Color.Red
-                        rate < 0 -> Color.Blue
-                        else -> Color.Gray
-                    }
-                )
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                // 애니메이션 완료 후 표시되는 알림 배지
-                AnimatedVisibility(
-                    visible = showAlertBadge,
-                    enter = slideInHorizontally(
-                        initialOffsetX = { -it },
-                        animationSpec = tween(200)
-                    ) + fadeIn(animationSpec = tween(200)),
-                    exit = slideOutHorizontally(
-                        targetOffsetX = { -it },
-                        animationSpec = tween(200)
-                    ) + fadeOut(animationSpec = tween(200))
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .background(
-                                color = Color.Yellow,
-                                shape = RoundedCornerShape(4.dp)
-                            )
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        text = "볼린저 하한가 도달!",
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                        ),
-                        color = Color.Black
-                    )
+            Text(
+                text = "${rate.toInt().toPlusMinus()}${(priceDiff * currencyUSD).toCurrency()}원",
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = when {
+                    rate > 0 -> Color.Red
+                    rate < 0 -> Color.Blue
+                    else -> Color.Gray
                 }
+            )
 
-                Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(2.dp))
 
+            Text(
+                text = "(${rate})%",
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = when {
+                    rate > 0 -> Color.Red
+                    rate < 0 -> Color.Blue
+                    else -> Color.Gray
+                }
+            )
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "${date.convertDate()}",
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = if (showAlertBadge) Color.Yellow else Color.White
+            )
+
+            // 애니메이션 완료 후 표시되는 알림 배지
+            AnimatedVisibility(
+                visible = showAlertBadge,
+                enter = slideInHorizontally(
+                    initialOffsetX = { -it },
+                    animationSpec = tween(200)
+                ) + fadeIn(animationSpec = tween(200)),
+                exit = slideOutHorizontally(
+                    targetOffsetX = { -it },
+                    animationSpec = tween(200)
+                ) + fadeOut(animationSpec = tween(200))
+            ) {
                 Text(
-                    text = "${date.convertDate()}",
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .background(
+                            color = Color.Yellow,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    text = "볼린저 하한가 도달!",
                     style = TextStyle(
-                        fontSize = 20.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                     ),
-                    color = if (showAlertBadge) Color.Yellow else Color.White
+                    color = Color.Black
                 )
             }
         }
-
-
-
-//        else {
-//            Text(
-//                text = "종목 정보 가져오는중...",
-//                style = TextStyle(
-//                    fontSize = 30.sp,
-//                    color = Color.Gray
-//                )
-//            )
-//        }
     }
 }
 

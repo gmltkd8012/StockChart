@@ -38,12 +38,29 @@ class SubscribeViewModel @Inject constructor(
     }
 
     // 실시간 WebSocket 데이터 구독 (UI 표시용)
-    // bollingerLowerAlertCodes에 있는 종목은 UI 업데이트에서 제외
+    // pausedStockCodes에 있는 종목은 UI 업데이트에서 제외하고 기존 값 유지
     private val stockTickJob: Job =
         stockRepository.stocksUiFlow
-            .onEach { ticks ->
+            .onEach { newTicks ->
                 reduceState {
-                    copy(tick = ticks)
+                    val pausedCodes = pausedStockCodes
+                    if (pausedCodes.isEmpty()) {
+                        // 일시 정지된 종목이 없으면 그대로 업데이트
+                        copy(tick = newTicks)
+                    } else {
+                        // 일시 정지된 종목은 기존 값 유지, 나머지는 새 값으로 업데이트
+                        val pausedTicksMap =
+                            tick.filter { it.code in pausedCodes }.associateBy { it.code }
+                        val updatedTicks = newTicks.map { newTick ->
+                            if (newTick.code in pausedCodes) {
+                                // 일시 정지된 종목은 기존 값 유지 (없으면 새 값 사용)
+                                pausedTicksMap[newTick.code] ?: newTick
+                            } else {
+                                newTick
+                            }
+                        }
+                        copy(tick = updatedTicks)
+                    }
                 }
             }.launchIn(this@SubscribeViewModel)
 
@@ -58,12 +75,17 @@ class SubscribeViewModel @Inject constructor(
             }.launchIn(this@SubscribeViewModel)
 
     // 볼린저 하한가 달성 종목 구독
+    // 알림이 발생하면 해당 종목의 UI 업데이트를 일시 정지
     private val bollingerAlertJob: Job =
         bollingerManager.bollingerLowerAlertCodes
             .onEach { alertCodes ->
                 Logger.d("Bollinger lower alert codes: $alertCodes")
                 reduceState {
-                    copy(bollingerLowerAlertCodes = alertCodes.toList())
+                    copy(
+                        bollingerLowerAlertCodes = alertCodes.toList(),
+                        // 새로 추가된 알림 종목을 일시 정지 목록에 추가
+                        pausedStockCodes = pausedStockCodes + alertCodes
+                    )
                 }
             }.launchIn(this@SubscribeViewModel)
 
@@ -140,6 +162,50 @@ class SubscribeViewModel @Inject constructor(
     }
 
     /**
+     * 특정 종목의 UI 업데이트 재개
+     * 사용자가 알림을 확인하고 다시 실시간 업데이트를 원할 때 호출
+     */
+    fun resumeStockUpdate(code: String) {
+        launch {
+            reduceState {
+                copy(pausedStockCodes = pausedStockCodes - code)
+            }
+            Logger.d("Resumed UI update for stock: $code")
+        }
+    }
+
+    /**
+     * 모든 종목의 UI 업데이트 재개
+     */
+    fun resumeAllStockUpdates() {
+        launch {
+            reduceState {
+                copy(pausedStockCodes = emptySet())
+            }
+            Logger.d("Resumed UI update for all stocks")
+        }
+    }
+
+    /**
+     * 특정 종목의 UI 업데이트 일시 정지
+     */
+    fun pauseStockUpdate(code: String) {
+        launch {
+            reduceState {
+                copy(pausedStockCodes = pausedStockCodes + code)
+            }
+            Logger.d("Paused UI update for stock: $code")
+        }
+    }
+
+    /**
+     * 특정 종목의 UI 업데이트가 일시 정지되어 있는지 확인
+     */
+    fun isStockPaused(code: String): Boolean {
+        return state.value.pausedStockCodes.contains(code)
+    }
+
+    /**
      *  ViewModel 리소스 해제
      */
     override fun onCleared() {
@@ -158,6 +224,8 @@ data class SubscribeState(
     val bollingerLowerAlertCodes: List<String> = emptyList(),
     /** 볼린저 초기화 완료 여부 */
     val isBollingerInitialized: Boolean = false,
+    /** UI 업데이트가 일시 정지된 종목 코드 Set (볼린저 하한가 달성 시 추가) */
+    val pausedStockCodes: Set<String> = emptySet(),
 )
 
 sealed interface SubscribeSideEffect {
