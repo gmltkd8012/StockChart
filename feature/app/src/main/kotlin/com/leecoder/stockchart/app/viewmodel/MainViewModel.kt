@@ -7,6 +7,7 @@ import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.WebSocketRepository
 import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.network.util.NetworkStateObserver
+import com.leecoder.stockchart.domain.manager.BollingerManager
 import com.leecoder.stockchart.domain.usecase.ReconnectWebSocketUseCase
 import com.leecoder.stockchart.domain.usecase.overseas.SaveOverseasStockCurrentPriceUseCase
 import com.leecoder.stockchart.domain.usecase.search.SearchSymbolUseCase
@@ -43,6 +44,7 @@ class MainViewModel @Inject constructor(
     private val networkStateObserver: NetworkStateObserver,
     private val reconnectWebSocketUseCase: ReconnectWebSocketUseCase,
     private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
+    private val bollingerManager: BollingerManager,
 ): StateViewModel<MainState, MainSideEffect>(MainState()) {
 
     private val _subscribedMap = mutableStateMapOf<String, NasdaqUiData>()
@@ -108,6 +110,8 @@ class MainViewModel @Inject constructor(
         launch(Dispatchers.IO) {
             saveOverseasStockCurrentPriceUseCase(SubscribedStockData(code, name))
             webSocketRepository.subscribe(code)
+            // 볼린저 계산을 위해 BollingerManager에 종목 추가
+            bollingerManager.addStock(code)
         }
     }
 
@@ -115,6 +119,8 @@ class MainViewModel @Inject constructor(
         launch(Dispatchers.IO) {
             roomDatabaseRepository.unSubscribeStock(SubscribedStockData(code, name))
             webSocketRepository.unSubscribe(code)
+            // 볼린저 매니저에서 종목 제거
+            bollingerManager.removeStock(code)
         }
     }
 

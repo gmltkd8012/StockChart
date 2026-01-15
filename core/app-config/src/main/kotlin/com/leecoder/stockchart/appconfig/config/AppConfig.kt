@@ -2,10 +2,6 @@ package com.leecoder.stockchart.appconfig.config
 
 interface AppConfig {
 
-    val appKey: String // 앱 키
-
-    val appSecret: String // 앱 시크릿 키
-
     val baseUrl: String // REST API Base url
 
     val webSocketUrl: String // WebSocket Base url

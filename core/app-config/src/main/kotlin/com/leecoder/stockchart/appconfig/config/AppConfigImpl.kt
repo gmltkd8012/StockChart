@@ -8,12 +8,6 @@ import javax.inject.Singleton
 @Singleton
 class AppConfigImpl @Inject constructor() : AppConfig {
 
-    override val appKey: String
-        get() = BuildConfig.AppKey
-
-    override val appSecret: String
-        get() = BuildConfig.AppSecret
-
     override val baseUrl: String
         get() = BuildConfig.KIS_BaseUrl
 

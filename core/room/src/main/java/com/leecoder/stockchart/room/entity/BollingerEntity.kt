@@ -11,9 +11,9 @@ data class BollingerEntity(
     @PrimaryKey
     val code: String,
     val name: String,
-    val upper: Int,
-    val middle: Int,
-    val lower: Int,
+    val upper: Double,
+    val middle: Double,
+    val lower: Double,
 )
 
 fun BollingerEntity.toData() = BollingerData(

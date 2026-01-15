@@ -27,9 +27,9 @@ import androidx.compose.ui.unit.sp
 fun BaseRateBox(
     name: String,
     unit: String,
-    price: String, // 현재가
-    diffPrice: String?, // 전일 대비 상승가
-    diffPer: String?, // 전일 대비 상승률
+    price: Double, // 현재가
+    diffPrice: String? = null, // 전일 대비 상승가
+    diffPer: String? = null, // 전일 대비 상승률
     modifier: Modifier = Modifier,
 ) {
     val diffValue = diffPrice?.toDoubleOrNull()
@@ -65,7 +65,7 @@ fun BaseRateBox(
             verticalAlignment = Alignment.Bottom,
         ) {
             Text(
-                text = price,
+                text = price.toString(),
                 style = TextStyle(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -86,10 +86,6 @@ fun BaseRateBox(
                 modifier = Modifier.padding(bottom = 1.dp)
             )
         }
-
-
-
-
     }
 
 }
@@ -102,7 +98,7 @@ fun BaseRateBoxPreivew() {
     BaseRateBox(
         name = "달러",
         unit = "$",
-        price = "1471.03",
+        price = 1471.03,
         diffPrice = "-13.5",
         diffPer = "-0.3",
         modifier = Modifier

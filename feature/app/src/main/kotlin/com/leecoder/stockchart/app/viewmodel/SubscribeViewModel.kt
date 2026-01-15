@@ -2,14 +2,18 @@ package com.leecoder.stockchart.app.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.leecoder.data.repository.KoreaAeximRepository
 import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.stock.StockRepository
+import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.manager.BollingerManager
+import com.leecoder.stockchart.domain.manager.BollingerManager.Companion
 import com.leecoder.stockchart.domain.usecase.exchage.GetExchangeRateUsecase
 import com.leecoder.stockchart.model.exchange.ExchangeRateData
 import com.leecoder.stockchart.model.ui.NasdaqUiData
 import com.leecoder.stockchart.ui.base.StateViewModel
 import com.leecoder.stockchart.util.extension.convertToDouble
+import com.leecoder.stockchart.util.log.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,6 +28,7 @@ import javax.inject.Inject
 class SubscribeViewModel @Inject constructor(
     private val stockRepository: StockRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
+    private val dataStoreRepository: DataStoreRepository,
     private val bollingerManager: BollingerManager,
     private val getExchangeRateUsecase: GetExchangeRateUsecase,
 ) : StateViewModel<SubscribeState, SubscribeSideEffect>(SubscribeState()) {
@@ -33,19 +38,31 @@ class SubscribeViewModel @Inject constructor(
     }
 
     // 실시간 WebSocket 데이터 구독 (UI 표시용)
-    // bollingerLowerAlertCodes에 있는 종목은 UI 업데이트에서 제외
+    // pausedStockCodes에 있는 종목은 UI 업데이트에서 제외하고 기존 값 유지
     private val stockTickJob: Job =
-        combine(
-            stockRepository.stocksUiFlow,
-            bollingerManager.bollingerLowerAlertCodes
-        ) { ticks, alertCodes ->
-            // 볼린저 하한가 알림 종목은 필터링하여 UI 업데이트 제외
-            ticks.filter { tick -> tick.code !in alertCodes }
-        }.onEach { filteredTicks ->
-            reduceState {
-                copy(tick = filteredTicks)
-            }
-        }.launchIn(viewModelScope)
+        stockRepository.stocksUiFlow
+            .onEach { newTicks ->
+                reduceState {
+                    val pausedCodes = pausedStockCodes
+                    if (pausedCodes.isEmpty()) {
+                        // 일시 정지된 종목이 없으면 그대로 업데이트
+                        copy(tick = newTicks)
+                    } else {
+                        // 일시 정지된 종목은 기존 값 유지, 나머지는 새 값으로 업데이트
+                        val pausedTicksMap =
+                            tick.filter { it.code in pausedCodes }.associateBy { it.code }
+                        val updatedTicks = newTicks.map { newTick ->
+                            if (newTick.code in pausedCodes) {
+                                // 일시 정지된 종목은 기존 값 유지 (없으면 새 값 사용)
+                                pausedTicksMap[newTick.code] ?: newTick
+                            } else {
+                                newTick
+                            }
+                        }
+                        copy(tick = updatedTicks)
+                    }
+                }
+            }.launchIn(this@SubscribeViewModel)
 
     // 실시간 tick을 볼린저 계산에 전달
     private val bollingerTickJob: Job =
@@ -53,42 +70,39 @@ class SubscribeViewModel @Inject constructor(
             .onEach { tick ->
                 val alertCode = bollingerManager.processTick(tick)
                 if (alertCode != null) {
-                    Log.i(TAG, "Bollinger lower alert: $alertCode")
+                    Logger.d("Bollinger lower alert: $alertCode")
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(this@SubscribeViewModel)
 
     // 볼린저 하한가 달성 종목 구독
+    // 알림이 발생하면 해당 종목의 UI 업데이트를 일시 정지
     private val bollingerAlertJob: Job =
         bollingerManager.bollingerLowerAlertCodes
             .onEach { alertCodes ->
+                Logger.d("Bollinger lower alert codes: $alertCodes")
                 reduceState {
-                    copy(bollingerLowerAlertCodes = alertCodes.toList())
+                    copy(
+                        bollingerLowerAlertCodes = alertCodes.toList(),
+                        // 새로 추가된 알림 종목을 일시 정지 목록에 추가
+                        pausedStockCodes = pausedStockCodes + alertCodes
+                    )
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(this@SubscribeViewModel)
+
+    // 환율 모니터링
+    private val currenyJob: Job =
+        dataStoreRepository.currentExchangeRateUsd
+            .onEach { currency ->
+                reduceState {
+                    copy(currency = currency.convertToDouble())
+                }
+            }.launchIn(this@SubscribeViewModel)
 
     /**
      *  ViewModel 초기화 작업
      */
     init {
-        initExchangeRate()
         initBollingerManager()
-    }
-
-    // 환율 조회
-    private fun initExchangeRate() {
-        launch {
-            val exchangeRates = getExchangeRateUsecase()
-            val currency = exchangeRates.first().exchageRate.convertToDouble()
-
-            Log.d(TAG, "exchangeRates: $exchangeRates / currency = $currency")
-
-            reduceState {
-                copy(
-                    exchangeRates = exchangeRates,
-                    currency = currency,
-                )
-            }
-        }
     }
 
     /**
@@ -101,7 +115,7 @@ class SubscribeViewModel @Inject constructor(
                 val subscribedStocks = roomDatabaseRepository.getAllSubscribedStocks().first()
                 val codes = subscribedStocks.map { it.code }
 
-                Log.d(TAG, "Initializing BollingerManager with ${codes.size} stocks: $codes")
+                Logger.d("Initializing BollingerManager with ${codes.size} stocks: $codes")
 
                 bollingerManager.initializeStocks(codes)
 
@@ -109,10 +123,9 @@ class SubscribeViewModel @Inject constructor(
                     copy(isBollingerInitialized = true)
                 }
 
-                Log.d(TAG, "BollingerManager initialized successfully")
+                Logger.d("BollingerManager initialized successfully")
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to initialize BollingerManager: ${e.message}")
-            }
+                Logger.e("Failed to initialize BollingerManager: ${e.message}")           }
         }
     }
 
@@ -149,6 +162,50 @@ class SubscribeViewModel @Inject constructor(
     }
 
     /**
+     * 특정 종목의 UI 업데이트 재개
+     * 사용자가 알림을 확인하고 다시 실시간 업데이트를 원할 때 호출
+     */
+    fun resumeStockUpdate(code: String) {
+        launch {
+            reduceState {
+                copy(pausedStockCodes = pausedStockCodes - code)
+            }
+            Logger.d("Resumed UI update for stock: $code")
+        }
+    }
+
+    /**
+     * 모든 종목의 UI 업데이트 재개
+     */
+    fun resumeAllStockUpdates() {
+        launch {
+            reduceState {
+                copy(pausedStockCodes = emptySet())
+            }
+            Logger.d("Resumed UI update for all stocks")
+        }
+    }
+
+    /**
+     * 특정 종목의 UI 업데이트 일시 정지
+     */
+    fun pauseStockUpdate(code: String) {
+        launch {
+            reduceState {
+                copy(pausedStockCodes = pausedStockCodes + code)
+            }
+            Logger.d("Paused UI update for stock: $code")
+        }
+    }
+
+    /**
+     * 특정 종목의 UI 업데이트가 일시 정지되어 있는지 확인
+     */
+    fun isStockPaused(code: String): Boolean {
+        return state.value.pausedStockCodes.contains(code)
+    }
+
+    /**
      *  ViewModel 리소스 해제
      */
     override fun onCleared() {
@@ -162,12 +219,13 @@ class SubscribeViewModel @Inject constructor(
 
 data class SubscribeState(
     val tick: List<NasdaqUiData> = emptyList(),
-    val exchangeRates: List<ExchangeRateData> = emptyList(),
     val currency: Double = 0.0,
     /** 볼린저 하한가 달성 종목 코드 리스트 */
     val bollingerLowerAlertCodes: List<String> = emptyList(),
     /** 볼린저 초기화 완료 여부 */
     val isBollingerInitialized: Boolean = false,
+    /** UI 업데이트가 일시 정지된 종목 코드 Set (볼린저 하한가 달성 시 추가) */
+    val pausedStockCodes: Set<String> = emptySet(),
 )
 
 sealed interface SubscribeSideEffect {

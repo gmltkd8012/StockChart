@@ -16,9 +16,13 @@ object DataStoreConst {
         const val MARKET_INFO = "market_info"
 
         const val EXCHANGE_RATE_SAVE_TIME = "exchange_rate_save_time"
+        const val EXCHANGE_RATE_USD = "exchange_rate_usd"
 
         const val NASDAQ_TRADE_CODE = "nasdaq_trade_code"
         const val NASDAQ_MARKET_SESSION = "nasdaq_market_session"
+
+        const val APP_KEY = "app_key"
+        const val APP_SECRET = "app_secret"
     }
 
     object ValueConst {

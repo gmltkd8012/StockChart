@@ -5,7 +5,7 @@ import com.leecoder.stockchart.util.BuildConfig
 
 object Logger {
 
-    private const val DEFAULT_TAG = "StockChart"
+    private const val DEFAULT_TAG = "[Bolly]"
 
     private val isLoggable: Boolean
         get() = BuildConfig.DEBUG

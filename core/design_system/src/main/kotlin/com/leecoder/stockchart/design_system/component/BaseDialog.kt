@@ -34,8 +34,9 @@ import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun BaseDialog(
+    title: String? = null,
     description: String?,
-    code: String?,
+    code: String? = null,
     onClickConfirm: () -> Unit,
 ) {
     Dialog (
@@ -58,7 +59,7 @@ fun BaseDialog(
                 Spacer(Modifier.height(10.dp))
 
                 Text(
-                    text = "에러",
+                    text = title ?: "에러",
                     textAlign = TextAlign.Center,
                     style = TextStyle(
                         color = Color.Black,

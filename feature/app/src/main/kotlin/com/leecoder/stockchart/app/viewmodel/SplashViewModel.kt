@@ -11,13 +11,11 @@ import androidx.work.workDataOf
 import com.leecoder.data.repository.KsInvestmentRepository
 import com.leecoder.data.repository.room.RoomDatabaseRepository
 import com.leecoder.data.repository.WebSocketRepository
-import com.leecoder.data.token.TokenRepository
-import com.leecoder.stockchart.work.worker.MarketWorker
+import com.leecoder.data.token.AuthRepository
 import com.leecoder.network.const.Credential
 import com.leecoder.stockchart.appconfig.config.AppConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.domain.usecase.SaveStockWithCurrentPriceUseCase
-import com.leecoder.stockchart.domain.usecase.exchage.CheckExChangeRateUseCase
 import com.leecoder.stockchart.domain.usecase.overseas.SaveOverseasStockCurrentPriceUseCase
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.ui.base.StateViewModel
@@ -37,26 +35,41 @@ class SplashViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val workManager: WorkManager,
     private val appConfig: AppConfig,
+    private val authRepository: AuthRepository,
     private val webSocketRepository: WebSocketRepository,
-    private val tokenRepository: TokenRepository,
     private val ksInvestmentRepository: KsInvestmentRepository,
     private val dataStoreRepository: DataStoreRepository,
     private val roomDatabaseRepository: RoomDatabaseRepository,
     private val saveStockWithCurrentPriceUseCase: SaveStockWithCurrentPriceUseCase,
-    private val checkExChangeRateUseCase: CheckExChangeRateUseCase,
     private val saveOverseasStockCurrentPriceUseCase: SaveOverseasStockCurrentPriceUseCase,
 ): StateViewModel<SplashState, SplashSideEffect>(SplashState()) {
 
-    internal fun checkToken(){
+    internal fun checkLoginStatus() {
         launch(Dispatchers.IO) {
-            val tokenExpiredTime = dataStoreRepository.currentKrInvestmentTokenExpired.first() ?: 0L
-            val storeToken = dataStoreRepository.currentKrInvestmentToken.first()
+            val appKey = dataStoreRepository.currentAppKey.first()
+            val appSecret = dataStoreRepository.currentAppSecret.first()
 
-            if (tokenExpiredTime < System.currentTimeMillis() || storeToken == null) {
-                tokenRepository.postToken(
+            if (appKey.isNullOrEmpty() || appSecret.isNullOrEmpty()) {
+                sendSideEffect(SplashSideEffect.NavigateToLogin)
+            } else {
+                reduceState {
+                    copy(isLoggedIn = true)
+                }
+            }
+        }
+    }
+
+    internal fun checkToken() {
+        launch(Dispatchers.IO) {
+            val appKey = dataStoreRepository.currentAppKey.first() ?: return@launch
+            val appSecret = dataStoreRepository.currentAppSecret.first() ?: return@launch
+            val tokenExpiredTime = dataStoreRepository.currentKrInvestmentTokenExpired.first() ?: 0L
+
+            if (tokenExpiredTime < System.currentTimeMillis()) {
+                authRepository.postToken(
                     Credential.CLIENT_CREDENTIAL,
-                    Credential.APP_SECRET,
-                    Credential.APP_KEY,
+                    appSecret,
+                    appKey,
                 ).let { (isSuccess, errorMessage) ->
                     if (!isSuccess) {
                         showErrorPopup(
@@ -76,13 +89,15 @@ class SplashViewModel @Inject constructor(
 
     internal fun checkAprovalKey() {
         launch(Dispatchers.IO) {
+            val appKey = dataStoreRepository.currentAppKey.first() ?: return@launch
+            val appSecret = dataStoreRepository.currentAppSecret.first() ?: return@launch
             val approvalKey = dataStoreRepository.currentKrInvestmentWebSocket.first()
 
             if (approvalKey == null) {
                 webSocketRepository.postWebSocket(
                     Credential.CLIENT_CREDENTIAL,
-                    Credential.APP_KEY,
-                    Credential.APP_SECRET,
+                    appKey,
+                    appSecret,
                 ).let { (isSuccess, errorMessage) ->
                     if (!isSuccess) {
                         showErrorPopup(
@@ -141,50 +156,6 @@ class SplashViewModel @Inject constructor(
         }
     }
 
-    internal fun checkCurrentExchangeRate() {
-        launch(Dispatchers.IO) {
-            checkExChangeRateUseCase()
-        }
-    }
-
-    internal fun startMarketInfoWorker() {
-        launch(Dispatchers.IO) {
-            val (targetOption, targetDelay) = ScheduleUtil.caculatorDelayMillisToNextTarget()
-            Log.e("[Leecoder]", "Worker Request -> $targetDelay")
-
-            val input = workDataOf(
-                MarketWorker.INPUT_DATA_TARGET_OPTION to targetOption
-            )
-
-            val request = OneTimeWorkRequestBuilder<MarketWorker>()
-                .setInputData(input)
-                .setInitialDelay(targetDelay, TimeUnit.MILLISECONDS)
-                .build()
-
-            workManager.enqueueUniqueWork(
-                MarketWorker.Companion.UNIQUE_WORK_NAME,
-                ExistingWorkPolicy.REPLACE,
-                request
-            )
-
-            workManager.getWorkInfoByIdLiveData(request.id).asFlow()
-                .collect() { wi ->
-                    when (wi.state) {
-                        WorkInfo.State.SUCCEEDED -> {
-                            workManager.enqueueUniqueWork(
-                                MarketWorker.UNIQUE_WORK_NAME,
-                                ExistingWorkPolicy.REPLACE,
-                                request
-                            )
-                        }
-                        else -> {
-                            //TODO - 에러케이스
-                        }
-                    }
-                }
-        }
-    }
-
     private fun showErrorPopup(errorCode: String?, errorMessage: String?) {
         launch(Dispatchers.IO) {
             sendSideEffect(SplashSideEffect.ErrorPopup(
@@ -200,9 +171,12 @@ sealed interface SplashSideEffect {
         val errorCode: String?,
         val errorMessage: String?,
     ): SplashSideEffect
+
+    data object NavigateToLogin : SplashSideEffect
 }
 
 data class SplashState(
+    val isLoggedIn: Boolean = false,
     val hasToken: Boolean = false,
     val hasApprovalKey: Boolean = false,
     val hasMarketInfo: Boolean = false,

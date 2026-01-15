@@ -14,8 +14,8 @@ import com.leecoder.data.repository.stock.StockRepository
 import com.leecoder.data.repository.stock.StockRepositoryImpl
 import com.leecoder.data.repository.symbol.SymbolRepository
 import com.leecoder.data.repository.symbol.SymbolRepositoryImpl
-import com.leecoder.data.token.TokenRepository
-import com.leecoder.data.token.TokenRepositoryImpl
+import com.leecoder.data.token.AuthRepository
+import com.leecoder.data.token.AuthRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -50,9 +50,9 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindsTokenRepository(
-        impl: TokenRepositoryImpl
-    ): TokenRepository
+    abstract fun bindsAuthRepository(
+        impl: AuthRepositoryImpl
+    ): AuthRepository
 
     @Binds
     @Singleton
