@@ -1,24 +1,20 @@
 package com.leecoder.stockchart.app.screen
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,12 +27,6 @@ import com.leecoder.stockchart.app.viewmodel.SubscribeViewModel
 import com.leecoder.stockchart.design_system.component.BaseRateBox
 import com.leecoder.stockchart.design_system.component.BaseRegistedBox
 import com.leecoder.stockchart.design_system.component.BaseStockBox
-import com.leecoder.stockchart.design_system.component.BaseSymbolItem
-import com.leecoder.stockchart.model.exchange.ExchangeRateData
-import com.leecoder.stockchart.model.stock.StockTick
-import com.leecoder.stockchart.model.ui.NasdaqUiData
-import com.leecoder.stockchart.model.ui.StockUiData
-import com.leecoder.stockchart.util.extension.convertToDouble
 
 @Composable
 fun SubscribeScreen(
@@ -45,7 +35,7 @@ fun SubscribeScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val stockTick = state.tick
-    val exchangeRates = state.exchangeRates
+    val bollingerAlertCodes = state.bollingerLowerAlertCodes
 
     Box(
         modifier = Modifier
@@ -66,18 +56,22 @@ fun SubscribeScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            LazyRow() {
-                itemsIndexed(exchangeRates) { idx, curreny ->
-                    BaseRateBox(
-                        name = curreny.curName,
-                        unit = curreny.curUnit,
-                        price = curreny.exchageRate,
-                        diffPrice = curreny.prdyVrss,
-                        diffPer = curreny.prdyCtrt,
-                    )
+            Row() {
+                BaseRateBox(
+                    name = "KRW",
+                    unit = "원",
+                    price = 1000.0,
+                    modifier = Modifier.weight(1f),
+                )
 
-                    if (idx != exchangeRates.size - 1) Spacer(Modifier.width(4.dp))
-                }
+                Spacer(Modifier.width(4.dp))
+
+                BaseRateBox(
+                    name = "USD",
+                    unit = "달러",
+                    price = state.currency,
+                    modifier = Modifier.weight(1f),
+                )
             }
 
             Spacer(Modifier.height(20.dp))
@@ -116,7 +110,8 @@ fun SubscribeScreen(
                             onDelete = { code, name ->
                                 onDeletedSymbol(code, name)
                             },
-                            isBollingerLowerAlert = state.bollingerLowerAlertCodes.contains(stockTick.name)
+                            // 볼린저 하한가 달성 종목인지 확인
+                            isBollingerLowerAlert = bollingerAlertCodes.contains(stockTick.code)
                         )
 
                         Spacer(Modifier.height(12.dp))

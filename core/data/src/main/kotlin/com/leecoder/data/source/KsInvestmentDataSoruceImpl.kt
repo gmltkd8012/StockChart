@@ -5,7 +5,6 @@ import com.leecoder.network.api.KisInvestmentApi
 import com.leecoder.network.entity.DailyPriceResponse
 import com.leecoder.network.entity.KisInvestmentRquestHeader
 import com.leecoder.network.entity.toData
-import com.leecoder.stockchart.appconfig.BuildConfig
 import com.leecoder.stockchart.datastore.repository.DataStoreRepository
 import com.leecoder.stockchart.model.stock.CurrentPriceData
 import com.leecoder.stockchart.model.stock.DailyPriceData
@@ -31,17 +30,19 @@ class KsInvestmentDataSoruceImpl @Inject constructor(
         periodCode: String
     ): Flow<List<DailyPriceData>> {
         val authorization = datsStoreRepository.currentKrInvestmentToken.first()
+        val appKey = datsStoreRepository.currentAppKey.first()
+        val appSecret = datsStoreRepository.currentAppSecret.first()
 
-        if (authorization == null) {
-            Log.e("[LeeCode]", "Error : Token is null")
+        if (authorization == null || appKey == null || appSecret == null) {
+            Log.e("[LeeCode]", "Error : Token or AppKey/AppSecret is null")
             return flow { emit(emptyList()) }
         }
 
         val requestHeader = KisInvestmentRquestHeader(
             contentType = "application/json; charset=utf-8",
             authorization = authorization,
-            appkey = BuildConfig.AppKey,
-            appsecret = BuildConfig.AppSecret,
+            appkey = appKey,
+            appsecret = appSecret,
             personalseckeypkey = null,
             trId = "FHKST01010400",
             trCont = null,
@@ -79,17 +80,19 @@ class KsInvestmentDataSoruceImpl @Inject constructor(
         iscd: String
     ): Flow<List<TimeItemChartPriceData>> {
         val authorization = datsStoreRepository.currentKrInvestmentToken.first()
+        val appKey = datsStoreRepository.currentAppKey.first()
+        val appSecret = datsStoreRepository.currentAppSecret.first()
 
-        if (authorization == null) {
-            Log.e("[LeeCode]", "Error : Token is null")
+        if (authorization == null || appKey == null || appSecret == null) {
+            Log.e("[LeeCode]", "Error : Token or AppKey/AppSecret is null")
             return flow { emit(emptyList()) }
         }
 
         val requestHeader = KisInvestmentRquestHeader(
             contentType = "application/json; charset=utf-8",
             authorization = authorization,
-            appkey = BuildConfig.AppKey,
-            appsecret = BuildConfig.AppSecret,
+            appkey = appKey,
+            appsecret = appSecret,
             personalseckeypkey = null,
             trId = "FHKST03010200",
             trCont = null,

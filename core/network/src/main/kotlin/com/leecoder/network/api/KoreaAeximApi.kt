@@ -11,7 +11,7 @@ interface KoreaAeximApi {
     @GET(BuildConfig.KOREA_AEXIM_EXCHANGE_ENTRY_POINT)
     suspend fun getExchangeInfo(
         @Query("authkey") authkey: String,
-        @Query("searchdata") date: String,
+        @Query("searchdate") date: String,
         @Query("data") data: String,
     ): List<ExchangeInfoEntity>
 }

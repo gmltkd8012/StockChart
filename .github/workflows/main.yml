@@ -30,8 +30,6 @@ jobs:
           echo 'sdk.dir=/usr/local/lib/android/sdk' > local.properties
           echo 'app_key_alias=${{ secrets.APP_KEY_ALIAS }}' >> local.properties
           echo 'app_key_pw=${{ secrets.APP_KEY_PASSWORD }}' >> local.properties
-          echo 'app_key="${{ secrets.APP_KEY }}"' >> local.properties
-          echo 'app_secret="${{ secrets.APP_SECRET }}"' >> local.properties
           echo 'korea_aexim_api_key="${{ secrets.KOREA_AEXIM_API_KEY }}"' >> local.properties
           echo 'kis_base_url="https://openapi.koreainvestment.com:9443"' >> local.properties
           echo 'kis_websocket_base_url="ws://ops.koreainvestment.com:21000"' >> local.properties

@@ -12,4 +12,8 @@ sealed class AppIntro(
     data object Main: AppIntro(
         route = "main",
     )
+
+    data object Login: AppIntro(
+        route = "login"
+    )
 }

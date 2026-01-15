@@ -22,9 +22,18 @@ interface DataStoreRepository {
     val currentExchangeRateSaveTime: Flow<Long>
     suspend fun updateExchangeRateSaveTime(saveTime: Long)
 
+    val currentExchangeRateUsd: Flow<String>
+    suspend fun updateExchangeRateUsd(rate: String)
+
     val currentNasdaqTradeCode: Flow<String>
     suspend fun updateNasdaqTradeCode(code: String)
 
     val currentNasdaqMarketSession: Flow<String>
     suspend fun updateNasdaqMarketSession(session: String)
+
+    val currentAppKey: Flow<String?>
+    suspend fun saveAppKey(appKey: String)
+
+    val currentAppSecret: Flow<String?>
+    suspend fun saveAppSecret(appSecret: String)
 }

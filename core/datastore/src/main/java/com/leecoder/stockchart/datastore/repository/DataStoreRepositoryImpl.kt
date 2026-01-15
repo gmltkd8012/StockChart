@@ -77,6 +77,17 @@ class DataStoreRepositoryImpl @Inject constructor(
         }
     }
 
+    override val currentExchangeRateUsd: Flow<String>
+        get() = dataStore.data.map { preference ->
+            preference[AppDataStore.Keys.EXCHANGE_RATE_USD] ?: ""
+        }
+
+    override suspend fun updateExchangeRateUsd(rate: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.EXCHANGE_RATE_USD] = rate
+        }
+    }
+
     override val currentNasdaqTradeCode: Flow<String>
         get() = dataStore.data.map { preference ->
             preference[AppDataStore.Keys.NASDAQ_TRADE_CODE]
@@ -98,6 +109,24 @@ class DataStoreRepositoryImpl @Inject constructor(
     override suspend fun updateNasdaqMarketSession(session: String) {
         dataStore.edit { preference ->
             preference[AppDataStore.Keys.NASDAQ_MARKET_SESSION] = session
+        }
+    }
+
+    override val currentAppKey: Flow<String?>
+        get() = dataStore.data.map { preference -> preference[AppDataStore.Keys.APP_KEY] }
+
+    override suspend fun saveAppKey(appKey: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.APP_KEY] = appKey
+        }
+    }
+
+    override val currentAppSecret: Flow<String?>
+        get() = dataStore.data.map { preference -> preference[AppDataStore.Keys.APP_SECRET] }
+
+    override suspend fun saveAppSecret(appSecret: String) {
+        dataStore.edit { preference ->
+            preference[AppDataStore.Keys.APP_SECRET] = appSecret
         }
     }
 }

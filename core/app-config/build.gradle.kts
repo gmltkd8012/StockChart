@@ -9,9 +9,6 @@ plugins {
 android {
     namespace = "com.leecoder.stockchart.appconfig"
 
-    val appKey: String = System.getenv("APP_KEY") ?: gradleLocalProperties(rootDir, providers).getProperty("app_key")
-    val appSecret: String = System.getenv("APP_SECRET") ?: gradleLocalProperties(rootDir, providers).getProperty("app_secret")
-
     val kisBaseUrl: String = System.getenv("KIS_BASE_URL") ?: gradleLocalProperties(rootDir, providers).getProperty("kis_base_url")
     val kisWebsocketBaseUrl: String = System.getenv("KIS_WEBSOCKET_BASE_URL") ?: gradleLocalProperties(rootDir, providers).getProperty("kis_websocket_base_url")
 
@@ -36,9 +33,6 @@ android {
     val kisNasdaqInquireTimeItemChartPriceEntryPoint: String = System.getenv("KIS_NASDAQ_INQUIRE_TIME_ITEMCHARTPRICE_ENTRY_POINT") ?: gradleLocalProperties(rootDir, providers).getProperty("kis_nasdaq_inquire_time_itemchartprice")
 
     defaultConfig {
-        buildConfigField("String", "AppKey", appKey)
-        buildConfigField("String", "AppSecret", appSecret)
-
         buildConfigField("String", "KIS_BaseUrl", kisBaseUrl)
         buildConfigField("String", "KIS_WebSocketUrl", kisWebsocketBaseUrl)
 

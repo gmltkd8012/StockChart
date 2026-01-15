@@ -18,9 +18,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.scan
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,17 +32,10 @@ class StockRepositoryImpl @Inject constructor(
     @Dispatcher(AppDispatchers.Default) private val defaultDispatcher: CoroutineDispatcher,
 ): StockRepository {
 
-    /** 개별 tick을 SharedFlow로 브로드캐스트 */
-    private val _tickSharedFlow: SharedFlow<NasdaqTick> =
-        webSocketDataSource.channelStockTick
-            .receiveAsFlow()
-            .flowOn(ioDispatcher)
-            .shareIn(appScope, SharingStarted.Eagerly)
-
-    override val tickFlow: Flow<NasdaqTick> = _tickSharedFlow
+    override val tickFlow: SharedFlow<NasdaqTick> = webSocketDataSource.stockTickFlow
 
     private val latestTicks: StateFlow<Map<String, NasdaqTick>> =
-        _tickSharedFlow
+        tickFlow
             .mapNotNull { tick: NasdaqTick ->
                 tick.symb?.let { code -> code to tick }
             }

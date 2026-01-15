@@ -3,14 +3,12 @@ package com.leecoder.data.source
 import com.leecoder.stockchart.model.network.WebSocketState
 import com.leecoder.stockchart.model.stock.NasdaqTick
 import com.leecoder.stockchart.model.stock.StockTick
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
-import okhttp3.WebSocketListener
+import kotlinx.coroutines.flow.SharedFlow
 
 interface WebSocketDataSource {
 
-    val channelStockTick: ReceiveChannel<NasdaqTick>
+    val stockTickFlow: SharedFlow<NasdaqTick>
     val connectedWebSocketSession: Flow<WebSocketState>
 
     fun connect(url: String)
